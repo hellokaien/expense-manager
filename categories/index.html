@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories - MoneyFlow Pro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            width: 70px;
+        }
+        
+        .sidebar.collapsed .sidebar-text,
+        .sidebar.collapsed .logo-text {
+            display: none;
+        }
+        
+        .sidebar.collapsed .user-name {
+            display: none;
+        }
+        
+        .main-content {
+            transition: all 0.3s ease;
+        }
+        
+        .category-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+        
+        .category-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+        
+        .category-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .category-income {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .category-expense {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .type-essential {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .type-discretionary {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+        }
+        
+        .type-savings {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .type-other {
+            background-color: #f1f5f9;
+            color: #475569;
+        }
+        
+        .category-color-preview {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            margin-right: 8px;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .category-icon-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-right: 12px;
+        }
+        
+        .tab-active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .tab-inactive {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .tab-inactive:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .notification-slide {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .color-option {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.selected {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+        
+        .icon-option {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .icon-option:hover {
+            background-color: #e5e7eb;
+            transform: scale(1.05);
+        }
+        
+        .icon-option.selected {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .drag-handle {
+            cursor: move;
+            color: #9ca3af;
+            transition: color 0.2s ease;
+        }
+        
+        .drag-handle:hover {
+            color: #6b7280;
+        }
+        
+        .sortable-ghost {
+            opacity: 0.4;
+        }
+        
+        .sortable-chosen {
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Main Container -->
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <div class="sidebar bg-gray-900 text-white w-64 fixed h-full overflow-y-auto z-30">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-10">
+                    <div class="flex items-center">
+                        <i class="fas fa-wallet text-blue-400 text-2xl"></i>
+                        <h1 class="logo-text text-xl font-bold ml-3">MoneyFlow Pro</h1>
+                    </div>
+                    <button id="toggleSidebar" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                
+                <!-- User Profile -->
+                <div class="flex items-center mb-8 p-3 bg-gray-800 rounded-lg">
+                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                        <span class="font-bold">JD</span>
+                    </div>
+                    <div class="ml-3 sidebar-text">
+                        <p class="font-medium user-name">John Doe</p>
+                        <p class="text-gray-400 text-sm">Premium User</p>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="mb-8">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" id="dashboardNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-chart-pie w-6"></i>
+                                <span class="sidebar-text ml-3 font-medium">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="transactionsNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-exchange-alt w-6"></i>
+                                <span class="sidebar-text ml-3">Transactions</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="analyticsNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-chart-line w-6"></i>
+                                <span class="sidebar-text ml-3">Analytics</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="budgetNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-calendar-alt w-6"></i>
+                                <span class="sidebar-text ml-3">Budget Planner</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="categoriesNav" class="flex items-center p-3 rounded-lg bg-blue-900 text-white">
+                                <i class="fas fa-tags w-6"></i>
+                                <span class="sidebar-text ml-3">Categories</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="settingsNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-cog w-6"></i>
+                                <span class="sidebar-text ml-3">Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <!-- Logout Button -->
+                <div class="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-800">
+                    <button id="logoutBtn" class="flex items-center justify-center w-full p-3 rounded-lg bg-gray-800 hover:bg-red-900 text-gray-300 hover:text-white transition-all">
+                        <i class="fas fa-sign-out-alt w-6"></i>
+                        <span class="sidebar-text ml-3 font-medium">Logout</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content ml-64 flex-1 transition-all">
+            <!-- Top Header -->
+            <header class="bg-white shadow-sm">
+                <div class="px-8 py-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800" id="pageTitle">Categories</h2>
+                            <p class="text-gray-600" id="pageSubtitle">Manage your income and expense categories</p>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <!-- Search -->
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" id="categorySearch" placeholder="Search categories..." class="pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition w-64">
+                            </div>
+                            
+                            <!-- Notifications -->
+                            <button class="relative p-2 text-gray-600 hover:text-blue-600">
+                                <i class="fas fa-bell text-xl"></i>
+                                <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
+                            </button>
+                            
+                            <!-- Add Category Button -->
+                            <button id="addNewCategoryBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg flex items-center transition duration-300 shadow-md">
+                                <i class="fas fa-plus mr-2"></i> Add Category
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Category Tabs -->
+                    <div class="mt-6">
+                        <div class="flex space-x-2">
+                            <button id="allCategoriesTab" class="category-tab-btn py-3 px-6 rounded-lg font-medium transition-all tab-active" data-tab="all">
+                                <i class="fas fa-list mr-2"></i> All Categories
+                            </button>
+                            <button id="incomeCategoriesTab" class="category-tab-btn py-3 px-6 rounded-lg font-medium transition-all tab-inactive" data-tab="income">
+                                <i class="fas fa-arrow-down mr-2"></i> Income Categories
+                            </button>
+                            <button id="expenseCategoriesTab" class="category-tab-btn py-3 px-6 rounded-lg font-medium transition-all tab-inactive" data-tab="expense">
+                                <i class="fas fa-arrow-up mr-2"></i> Expense Categories
+                            </button>
+                            <button id="customCategoriesTab" class="category-tab-btn py-3 px-6 rounded-lg font-medium transition-all tab-inactive" data-tab="custom">
+                                <i class="fas fa-star mr-2"></i> Custom Categories
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Categories Content -->
+            <div class="p-8">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="category-card p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Total Categories</p>
+                                <h3 class="text-2xl font-bold text-gray-800 mt-1">24</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                <i class="fas fa-tags text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="text-green-600 text-sm font-medium mt-3">
+                            <i class="fas fa-arrow-up mr-1"></i> 3 added this month
+                        </div>
+                    </div>
+                    
+                    <div class="category-card p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Income Categories</p>
+                                <h3 class="text-2xl font-bold text-gray-800 mt-1">8</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                                <i class="fas fa-arrow-down text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="text-gray-500 text-sm mt-3">
+                            Most used: Salary
+                        </div>
+                    </div>
+                    
+                    <div class="category-card p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Expense Categories</p>
+                                <h3 class="text-2xl font-bold text-gray-800 mt-1">16</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                                <i class="fas fa-arrow-up text-red-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="text-gray-500 text-sm mt-3">
+                            Most used: Food & Dining
+                        </div>
+                    </div>
+                    
+                    <div class="category-card p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Custom Categories</p>
+                                <h3 class="text-2xl font-bold text-gray-800 mt-1">6</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                                <i class="fas fa-star text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="text-blue-600 text-sm font-medium mt-3">
+                            <i class="fas fa-plus-circle mr-1"></i> Add custom
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Categories Management -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Categories List -->
+                    <div class="lg:col-span-2">
+                        <div class="category-card p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800">All Categories</h3>
+                                    <p class="text-gray-600">Drag to reorder categories</p>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button id="sortByNameBtn" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm">
+                                        <i class="fas fa-sort-alpha-down mr-2"></i> Sort by Name
+                                    </button>
+                                    <button id="sortByUsageBtn" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm">
+                                        <i class="fas fa-chart-bar mr-2"></i> Sort by Usage
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Categories Table -->
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="border-b border-gray-200">
+                                        <tr>
+                                            <th class="pb-3 text-left text-gray-700 font-medium"></th>
+                                            <th class="pb-3 text-left text-gray-700 font-medium">Category</th>
+                                            <th class="pb-3 text-left text-gray-700 font-medium">Type</th>
+                                            <th class="pb-3 text-left text-gray-700 font-medium">Transactions</th>
+                                            <th class="pb-3 text-left text-gray-700 font-medium">Last Used</th>
+                                            <th class="pb-3 text-left text-gray-700 font-medium">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="categoriesTableBody" class="sortable-list">
+                                        <!-- Categories will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Empty State -->
+                            <div id="emptyCategoriesState" class="hidden py-12 text-center">
+                                <div class="mb-4">
+                                    <i class="fas fa-tags text-gray-300 text-6xl"></i>
+                                </div>
+                                <h3 class="text-xl font-medium text-gray-700 mb-2">No categories found</h3>
+                                <p class="text-gray-500 mb-6">Try adding a new category or adjusting your filters</p>
+                                <button id="addFirstCategoryBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-lg">
+                                    <i class="fas fa-plus mr-2"></i> Add Your First Category
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Bulk Actions -->
+                        <div class="category-card p-6 mt-6">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <input type="checkbox" id="selectAllCategories" class="w-5 h-5 border border-gray-300 rounded mr-3">
+                                    <label for="selectAllCategories" class="text-gray-700 font-medium">Select All</label>
+                                    <span class="text-gray-500 text-sm ml-3" id="selectedCount">0 categories selected</span>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button id="bulkEditBtn" class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                        <i class="fas fa-edit mr-1"></i> Edit Selected
+                                    </button>
+                                    <button id="bulkDeleteBtn" class="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                        <i class="fas fa-trash mr-1"></i> Delete Selected
+                                    </button>
+                                    <button id="bulkExportBtn" class="px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg">
+                                        <i class="fas fa-download mr-1"></i> Export
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Category Details & Quick Actions -->
+                    <div>
+                        <!-- Category Preview -->
+                        <div class="category-card p-6 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Category Preview</h3>
+                            <div id="categoryPreview" class="hidden">
+                                <div class="flex items-center mb-6">
+                                    <div id="previewIcon" class="category-icon-preview mr-4">
+                                        <i class="fas fa-utensils"></i>
+                                    </div>
+                                    <div>
+                                        <h4 id="previewName" class="text-lg font-bold text-gray-800">Food & Dining</h4>
+                                        <div class="flex items-center mt-1">
+                                            <span id="previewType" class="category-badge category-expense mr-2">Expense</span>
+                                            <span id="previewSubtype" class="category-badge type-essential">Essential</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-4">
+                                    <div>
+                                        <p class="text-gray-500 text-sm mb-1">Total Transactions</p>
+                                        <p id="previewTransactions" class="text-gray-800 font-medium">142 transactions</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-500 text-sm mb-1">Total Amount</p>
+                                        <p id="previewAmount" class="text-gray-800 font-medium">$3,845.50</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-500 text-sm mb-1">Last Used</p>
+                                        <p id="previewLastUsed" class="text-gray-800 font-medium">Today, 10:30 AM</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-500 text-sm mb-1">Monthly Average</p>
+                                        <p id="previewMonthlyAvg" class="text-gray-800 font-medium">$645.00</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6 pt-6 border-t border-gray-200">
+                                    <div class="flex space-x-3">
+                                        <button id="editPreviewBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg">
+                                            <i class="fas fa-edit mr-2"></i> Edit
+                                        </button>
+                                        <button id="deletePreviewBtn" class="flex-1 border border-red-300 text-red-600 hover:bg-red-50 font-medium py-2.5 rounded-lg">
+                                            <i class="fas fa-trash mr-2"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="noCategorySelected" class="text-center py-8">
+                                <i class="fas fa-mouse-pointer text-gray-300 text-5xl mb-4"></i>
+                                <p class="text-gray-600">Select a category to preview details</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Category Creation -->
+                        <div class="category-card p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Quick Create</h3>
+                            <div class="space-y-4">
+                                <button id="quickFoodBtn" class="w-full flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                                    <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mr-4">
+                                        <i class="fas fa-utensils text-yellow-600"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="font-medium text-gray-800">Food & Dining</p>
+                                        <p class="text-gray-500 text-sm">Expense • Essential</p>
+                                    </div>
+                                </button>
+                                
+                                <button id="quickTransportBtn" class="w-full flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+                                        <i class="fas fa-car text-blue-600"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="font-medium text-gray-800">Transportation</p>
+                                        <p class="text-gray-500 text-sm">Expense • Essential</p>
+                                    </div>
+                                </button>
+                                
+                                <button id="quickSalaryBtn" class="w-full flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-4">
+                                        <i class="fas fa-money-bill-wave text-green-600"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="font-medium text-gray-800">Salary</p>
+                                        <p class="text-gray-500 text-sm">Income • Essential</p>
+                                    </div>
+                                </button>
+                                
+                                <button id="quickEntertainmentBtn" class="w-full flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                                    <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center mr-4">
+                                        <i class="fas fa-film text-pink-600"></i>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="font-medium text-gray-800">Entertainment</p>
+                                        <p class="text-gray-500 text-sm">Expense • Discretionary</p>
+                                    </div>
+                                </button>
+                            </div>
+                            
+                            <div class="mt-6">
+                                <button id="customQuickCreateBtn" class="w-full border-2 border-dashed border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 font-medium py-3 rounded-lg transition">
+                                    <i class="fas fa-plus mr-2"></i> Create Custom Category
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Category Types Overview -->
+                <div class="category-card p-6 mt-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">Category Types Overview</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="p-5 border border-gray-200 rounded-lg">
+                            <div class="flex items-center mb-3">
+                                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-arrow-down text-green-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Income</h4>
+                                    <p class="text-gray-500 text-sm">8 categories</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 text-sm">Salary</span>
+                                    <span class="text-gray-800 text-sm font-medium">142 trans</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 text-sm">Freelance</span>
+                                    <span class="text-gray-800 text-sm font-medium">28 trans</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 text-sm">Investments</span>
+                                    <span class="text-gray-800 text-sm font-medium">15 trans</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-5 border border-gray-200 rounded-lg">
+                            <div class="flex items-center mb-3">
+                                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-arrow-up text-red-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Essential Expenses</h4>
+                                    <p class="text-gray-500 text-sm">9 categories</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 text-sm">Food & Dining</span>
+                                    <span class="text-gray-800 text-sm font-medium">86 trans</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 text-sm">Bills & Utilities</span>
+                                    <span class="text-gray-800 text-sm font-medium">24 trans</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 text-sm">Transportation</span>
+                                    <span class="text-gray-800 text-sm font-medium">42 trans</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-5 border border-gray-200 rounded-lg">
+                            <div class="flex items-center mb-3">
+                                <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-shopping-bag text-purple-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Discretionary</h4>
+                                    <p class="text-gray-500 text-sm">5 categories</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 text-sm">Shopping</span>
+                                    <span class="text-gray-800 text-sm font-medium">32 trans</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 text-sm">Entertainment</span>
+                                    <span class="text-gray-800 text-sm font-medium">18 trans</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 text-sm">Dining Out</span>
+                                    <span class="text-gray-800 text-sm font-medium">24 trans</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-5 border border-gray-200 rounded-lg">
+                            <div class="flex items-center mb-3">
+                                <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
+                                    <i class="fas fa-star text-yellow-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Custom</h4>
+                                    <p class="text-gray-500 text-sm">6 categories</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 text-sm">Gifts</span>
+                                    <span class="text-gray-800 text-sm font-medium">12 trans</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 text-sm">Charity</span>
+                                    <span class="text-gray-800 text-sm font-medium">8 trans</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600 text-sm">Business Expenses</span>
+                                    <span class="text-gray-800 text-sm font-medium">15 trans</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Category Modal -->
+    <div id="categoryModal" class="fixed inset-0 modal-overlay flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 id="modalTitle" class="text-2xl font-bold text-gray-800">Add New Category</h3>
+                    <button id="closeCategoryModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <form id="categoryForm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-gray-700 mb-2">Category Name</label>
+                            <input type="text" id="categoryName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="e.g., Groceries" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 mb-2">Category Type</label>
+                            <select id="categoryType" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
+                                <option value="">Select type</option>
+                                <option value="income">Income</option>
+                                <option value="expense">Expense</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 mb-2">Subtype</label>
+                            <select id="categorySubtype" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
+                                <option value="">Select subtype</option>
+                                <option value="essential">Essential</option>
+                                <option value="discretionary">Discretionary</option>
+                                <option value="savings">Savings & Investment</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 mb-2">Budget (Optional)</label>
+                            <input type="number" id="categoryBudget" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="0.00" step="0.01">
+                        </div>
+                    </div>
+                    
+                    <!-- Color Selection -->
+                    <div class="mb-6">
+                        <label class="block text-gray-700 mb-3">Category Color</label>
+                        <div class="flex flex-wrap gap-3">
+                            <div class="color-option bg-red-500 selected" data-color="#ef4444"></div>
+                            <div class="color-option bg-orange-500" data-color="#f97316"></div>
+                            <div class="color-option bg-yellow-500" data-color="#eab308"></div>
+                            <div class="color-option bg-green-500" data-color="#22c55e"></div>
+                            <div class="color-option bg-teal-500" data-color="#14b8a6"></div>
+                            <div class="color-option bg-blue-500" data-color="#3b82f6"></div>
+                            <div class="color-option bg-indigo-500" data-color="#6366f1"></div>
+                            <div class="color-option bg-purple-500" data-color="#8b5cf6"></div>
+                            <div class="color-option bg-pink-500" data-color="#ec4899"></div>
+                            <div class="color-option bg-gray-500" data-color="#6b7280"></div>
+                        </div>
+                        <input type="hidden" id="selectedColor" value="#ef4444">
+                    </div>
+                    
+                    <!-- Icon Selection -->
+                    <div class="mb-6">
+                        <label class="block text-gray-700 mb-3">Category Icon</label>
+                        <div class="grid grid-cols-5 gap-3">
+                            <div class="icon-option selected" data-icon="utensils">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <div class="icon-option" data-icon="car">
+                                <i class="fas fa-car"></i>
+                            </div>
+                            <div class="icon-option" data-icon="home">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="icon-option" data-icon="shopping-bag">
+                                <i class="fas fa-shopping-bag"></i>
+                            </div>
+                            <div class="icon-option" data-icon="film">
+                                <i class="fas fa-film"></i>
+                            </div>
+                            <div class="icon-option" data-icon="heartbeat">
+                                <i class="fas fa-heartbeat"></i>
+                            </div>
+                            <div class="icon-option" data-icon="graduation-cap">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <div class="icon-option" data-icon="money-bill-wave">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="icon-option" data-icon="gift">
+                                <i class="fas fa-gift"></i>
+                            </div>
+                            <div class="icon-option" data-icon="plane">
+                                <i class="fas fa-plane"></i>
+                            </div>
+                            <div class="icon-option" data-icon="gamepad">
+                                <i class="fas fa-gamepad"></i>
+                            </div>
+                            <div class="icon-option" data-icon="dumbbell">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                            <div class="icon-option" data-icon="book">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div class="icon-option" data-icon="wifi">
+                                <i class="fas fa-wifi"></i>
+                            </div>
+                            <div class="icon-option" data-icon="gas-pump">
+                                <i class="fas fa-gas-pump"></i>
+                            </div>
+                        </div>
+                        <input type="hidden" id="selectedIcon" value="utensils">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-gray-700 mb-2">Description (Optional)</label>
+                        <textarea id="categoryDescription" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" rows="3" placeholder="Describe this category..."></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" id="cancelCategoryBtn" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                        <button type="submit" id="saveCategoryBtn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                            <i class="fas fa-save mr-2"></i> Save Category
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteCategoryModal" class="fixed inset-0 modal-overlay flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl w-full max-w-md">
+            <div class="p-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                    </div>
+                    
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Delete Category</h3>
+                    <p class="text-gray-600 mb-6" id="deleteMessage">Are you sure you want to delete this category? This action cannot be undone.</p>
+                    
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 text-left">
+                        <div class="flex items-start">
+                            <i class="fas fa-exclamation-circle text-yellow-600 mt-0.5 mr-3"></i>
+                            <div>
+                                <p class="text-yellow-800 text-sm font-medium">Warning</p>
+                                <p class="text-yellow-700 text-sm mt-1">Transactions using this category will be moved to "Uncategorized".</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-center space-x-4">
+                        <button id="cancelDeleteBtn" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                        <button id="confirmDeleteBtn" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
+                            Yes, Delete Category
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div id="logoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl w-full max-w-md">
+            <div class="p-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-sign-out-alt text-red-600 text-2xl"></i>
+                    </div>
+                    
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Logout Confirmation</h3>
+                    <p class="text-gray-600 mb-6">Are you sure you want to logout? Your data will be saved automatically.</p>
+                    
+                    <div class="flex justify-center space-x-4">
+                        <button id="cancelLogout" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                        <button id="confirmLogout" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
+                            Yes, Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="fixed bottom-4 right-4 z-50 hidden">
+        <div class="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide">
+            <i class="fas fa-check-circle mr-3 text-xl"></i>
+            <span id="toastMessage">Category saved successfully!</span>
+        </div>
+    </div>
+
+    <script>
+        // Sample categories data
+        let categories = [
+            { 
+                id: 1, 
+                name: 'Food & Dining', 
+                type: 'expense', 
+                subtype: 'essential',
+                icon: 'utensils',
+                color: '#f59e0b',
+                transactions: 142,
+                totalAmount: 3845.50,
+                lastUsed: '2023-05-20',
+                monthlyAverage: 645.00,
+                description: 'Groceries, restaurants, coffee shops',
+                budget: 700,
+                isCustom: false,
+                order: 1
+            },
+            { 
+                id: 2, 
+                name: 'Salary', 
+                type: 'income', 
+                subtype: 'essential',
+                icon: 'money-bill-wave',
+                color: '#10b981',
+                transactions: 24,
+                totalAmount: 45600.00,
+                lastUsed: '2023-05-15',
+                monthlyAverage: 3800.00,
+                description: 'Monthly salary income',
+                budget: null,
+                isCustom: false,
+                order: 2
+            },
+            { 
+                id: 3, 
+                name: 'Transportation', 
+                type: 'expense', 
+                subtype: 'essential',
+                icon: 'car',
+                color: '#3b82f6',
+                transactions: 86,
+                totalAmount: 1245.30,
+                lastUsed: '2023-05-19',
+                monthlyAverage: 248.00,
+                description: 'Fuel, public transport, rideshare',
+                budget: 250,
+                isCustom: false,
+                order: 3
+            },
+            { 
+                id: 4, 
+                name: 'Shopping', 
+                type: 'expense', 
+                subtype: 'discretionary',
+                icon: 'shopping-bag',
+                color: '#8b5cf6',
+                transactions: 42,
+                totalAmount: 1680.75,
+                lastUsed: '2023-05-18',
+                monthlyAverage: 336.00,
+                description: 'Clothing, electronics, household items',
+                budget: 500,
+                isCustom: false,
+                order: 4
+            },
+            { 
+                id: 5, 
+                name: 'Entertainment', 
+                type: 'expense', 
+                subtype: 'discretionary',
+                icon: 'film',
+                color: '#ec4899',
+                transactions: 28,
+                totalAmount: 420.50,
+                lastUsed: '2023-05-17',
+                monthlyAverage: 84.00,
+                description: 'Movies, concerts, subscriptions',
+                budget: 200,
+                isCustom: false,
+                order: 5
+            },
+            { 
+                id: 6, 
+                name: 'Bills & Utilities', 
+                type: 'expense', 
+                subtype: 'essential',
+                icon: 'home',
+                color: '#22c55e',
+                transactions: 36,
+                totalAmount: 1820.25,
+                lastUsed: '2023-05-16',
+                monthlyAverage: 364.00,
+                description: 'Electricity, water, internet, phone',
+                budget: 350,
+                isCustom: false,
+                order: 6
+            },
+            { 
+                id: 7, 
+                name: 'Freelance Income', 
+                type: 'income', 
+                subtype: 'other',
+                icon: 'laptop',
+                color: '#6366f1',
+                transactions: 18,
+                totalAmount: 5400.00,
+                lastUsed: '2023-05-14',
+                monthlyAverage: 450.00,
+                description: 'Freelance project payments',
+                budget: null,
+                isCustom: true,
+                order: 7
+            },
+            { 
+                id: 8, 
+                name: 'Health & Fitness', 
+                type: 'expense', 
+                subtype: 'essential',
+                icon: 'heartbeat',
+                color: '#ef4444',
+                transactions: 15,
+                totalAmount: 320.00,
+                lastUsed: '2023-05-12',
+                monthlyAverage: 64.00,
+                description: 'Gym membership, supplements, medical',
+                budget: 150,
+                isCustom: true,
+                order: 8
+            }
+        ];
+
+        // DOM Elements
+        const toggleSidebarBtn = document.getElementById('toggleSidebar');
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const cancelLogoutBtn = document.getElementById('cancelLogout');
+        const confirmLogoutBtn = document.getElementById('confirmLogout');
+        const addNewCategoryBtn = document.getElementById('addNewCategoryBtn');
+        const categoryModal = document.getElementById('categoryModal');
+        const closeCategoryModal = document.getElementById('closeCategoryModal');
+        const cancelCategoryBtn = document.getElementById('cancelCategoryBtn');
+        const categoryForm = document.getElementById('categoryForm');
+        const deleteCategoryModal = document.getElementById('deleteCategoryModal');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const categorySearch = document.getElementById('categorySearch');
+        const categoryTabBtns = document.querySelectorAll('.category-tab-btn');
+        const categoriesTableBody = document.getElementById('categoriesTableBody');
+        const emptyCategoriesState = document.getElementById('emptyCategoriesState');
+        const categoryPreview = document.getElementById('categoryPreview');
+        const noCategorySelected = document.getElementById('noCategorySelected');
+        const toastNotification = document.getElementById('toastNotification');
+        const selectAllCategories = document.getElementById('selectAllCategories');
+        const selectedCount = document.getElementById('selectedCount');
+        const bulkEditBtn = document.getElementById('bulkEditBtn');
+        const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+        const bulkExportBtn = document.getElementById('bulkExportBtn');
+        const sortByNameBtn = document.getElementById('sortByNameBtn');
+        const sortByUsageBtn = document.getElementById('sortByUsageBtn');
+        const quickCreateButtons = ['quickFoodBtn', 'quickTransportBtn', 'quickSalaryBtn', 'quickEntertainmentBtn', 'customQuickCreateBtn'];
+        const addFirstCategoryBtn = document.getElementById('addFirstCategoryBtn');
+        
+        // Navigation elements
+        const dashboardNav = document.getElementById('dashboardNav');
+        const transactionsNav = document.getElementById('transactionsNav');
+        const analyticsNav = document.getElementById('analyticsNav');
+        const budgetNav = document.getElementById('budgetNav');
+        const categoriesNav = document.getElementById('categoriesNav');
+        const settingsNav = document.getElementById('settingsNav');
+        
+        // Modal state
+        let isEditing = false;
+        let editingCategoryId = null;
+        let selectedCategoryId = null;
+        let selectedCategories = new Set();
+        let currentFilter = 'all';
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Populate categories table
+            renderCategories();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Set categories nav as active
+            updateActiveNav('categories');
+            
+            // Initialize color and icon selection
+            initializeColorAndIconSelection();
+        });
+        
+        function setupEventListeners() {
+            // Toggle sidebar
+            toggleSidebarBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('ml-64');
+                mainContent.classList.toggle('ml-20');
+            });
+            
+            // Navigation
+            dashboardNav.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo('dashboard');
+            });
+            
+            transactionsNav.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo('transactions');
+            });
+            
+            analyticsNav.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo('analytics');
+            });
+            
+            budgetNav.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo('budget');
+            });
+            
+            categoriesNav.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo('categories');
+            });
+            
+            settingsNav.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo('settings');
+            });
+            
+            // Category tabs
+            categoryTabBtns.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tab = this.getAttribute('data-tab');
+                    
+                    // Update active button
+                    categoryTabBtns.forEach(btn => {
+                        btn.classList.remove('tab-active');
+                        btn.classList.add('tab-inactive');
+                    });
+                    
+                    this.classList.remove('tab-inactive');
+                    this.classList.add('tab-active');
+                    
+                    // Update current filter and re-render
+                    currentFilter = tab;
+                    renderCategories();
+                });
+            });
+            
+            // Search functionality
+            categorySearch.addEventListener('input', debounce(() => {
+                renderCategories();
+            }, 300));
+            
+            // Add new category modal
+            addNewCategoryBtn.addEventListener('click', () => {
+                openCategoryModal();
+            });
+            
+            // Quick create buttons
+            quickCreateButtons.forEach(buttonId => {
+                document.getElementById(buttonId)?.addEventListener('click', () => {
+                    openCategoryModal();
+                    
+                    // Pre-fill based on button type
+                    if (buttonId === 'quickFoodBtn') {
+                        document.getElementById('categoryName').value = 'Food & Dining';
+                        document.getElementById('categoryType').value = 'expense';
+                        document.getElementById('categorySubtype').value = 'essential';
+                        document.getElementById('selectedColor').value = '#f59e0b';
+                        document.getElementById('selectedIcon').value = 'utensils';
+                        updateColorAndIconSelection();
+                    } else if (buttonId === 'quickTransportBtn') {
+                        document.getElementById('categoryName').value = 'Transportation';
+                        document.getElementById('categoryType').value = 'expense';
+                        document.getElementById('categorySubtype').value = 'essential';
+                        document.getElementById('selectedColor').value = '#3b82f6';
+                        document.getElementById('selectedIcon').value = 'car';
+                        updateColorAndIconSelection();
+                    } else if (buttonId === 'quickSalaryBtn') {
+                        document.getElementById('categoryName').value = 'Salary';
+                        document.getElementById('categoryType').value = 'income';
+                        document.getElementById('categorySubtype').value = 'essential';
+                        document.getElementById('selectedColor').value = '#10b981';
+                        document.getElementById('selectedIcon').value = 'money-bill-wave';
+                        updateColorAndIconSelection();
+                    } else if (buttonId === 'quickEntertainmentBtn') {
+                        document.getElementById('categoryName').value = 'Entertainment';
+                        document.getElementById('categoryType').value = 'expense';
+                        document.getElementById('categorySubtype').value = 'discretionary';
+                        document.getElementById('selectedColor').value = '#ec4899';
+                        document.getElementById('selectedIcon').value = 'film';
+                        updateColorAndIconSelection();
+                    }
+                });
+            });
+            
+            // Add first category button
+            addFirstCategoryBtn?.addEventListener('click', () => {
+                openCategoryModal();
+            });
+            
+            // Category modal
+            closeCategoryModal.addEventListener('click', closeCategoryModalFunc);
+            cancelCategoryBtn.addEventListener('click', closeCategoryModalFunc);
+            
+            categoryForm.addEventListener('submit', saveCategory);
+            
+            // Delete modal
+            cancelDeleteBtn.addEventListener('click', () => {
+                deleteCategoryModal.classList.add('hidden');
+            });
+            
+            confirmDeleteBtn.addEventListener('click', deleteCategory);
+            
+            // Bulk actions
+            selectAllCategories.addEventListener('change', toggleSelectAll);
+            bulkEditBtn.addEventListener('click', editSelectedCategories);
+            bulkDeleteBtn.addEventListener('click', deleteSelectedCategories);
+            bulkExportBtn.addEventListener('click', exportSelectedCategories);
+            
+            // Sorting
+            sortByNameBtn.addEventListener('click', () => {
+                sortCategories('name');
+                showToast('Categories sorted by name', 'info');
+            });
+            
+            sortByUsageBtn.addEventListener('click', () => {
+                sortCategories('usage');
+                showToast('Categories sorted by usage', 'info');
+            });
+            
+            // Logout functionality
+            logoutBtn.addEventListener('click', () => {
+                document.getElementById('logoutModal').classList.remove('hidden');
+            });
+            
+            cancelLogoutBtn.addEventListener('click', () => {
+                document.getElementById('logoutModal').classList.add('hidden');
+            });
+            
+            confirmLogoutBtn.addEventListener('click', () => {
+                showToast('Logged out successfully!', 'info');
+                document.getElementById('logoutModal').classList.add('hidden');
+                
+                // In a real app, you would redirect to login page
+                setTimeout(() => {
+                    alert('Redirecting to login page... (This is a demo)');
+                }, 1000);
+            });
+            
+            // Edit and delete preview buttons
+            document.getElementById('editPreviewBtn')?.addEventListener('click', () => {
+                if (selectedCategoryId) {
+                    editCategory(selectedCategoryId);
+                }
+            });
+            
+            document.getElementById('deletePreviewBtn')?.addEventListener('click', () => {
+                if (selectedCategoryId) {
+                    showDeleteConfirmation(selectedCategoryId);
+                }
+            });
+        }
+        
+        function navigateTo(page) {
+            // Update page title based on navigation
+            // In a real app, this would navigate to different pages
+            alert(`Navigating to ${page} page... (This is a demo)`);
+            
+            // Update active navigation
+            updateActiveNav(page);
+        }
+        
+        function updateActiveNav(activePage) {
+            // Remove active class from all nav items
+            const navItems = [dashboardNav, transactionsNav, analyticsNav, budgetNav, categoriesNav, settingsNav];
+            navItems.forEach(nav => {
+                nav.classList.remove('bg-blue-900', 'text-white');
+                nav.classList.add('hover:bg-gray-800', 'text-gray-300');
+            });
+            
+            // Add active class to current nav item
+            switch(activePage) {
+                case 'dashboard':
+                    dashboardNav.classList.add('bg-blue-900', 'text-white');
+                    dashboardNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
+                    break;
+                case 'transactions':
+                    transactionsNav.classList.add('bg-blue-900', 'text-white');
+                    transactionsNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
+                    break;
+                case 'analytics':
+                    analyticsNav.classList.add('bg-blue-900', 'text-white');
+                    analyticsNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
+                    break;
+                case 'budget':
+                    budgetNav.classList.add('bg-blue-900', 'text-white');
+                    budgetNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
+                    break;
+                case 'categories':
+                    categoriesNav.classList.add('bg-blue-900', 'text-white');
+                    categoriesNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
+                    break;
+                case 'settings':
+                    settingsNav.classList.add('bg-blue-900', 'text-white');
+                    settingsNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
+                    break;
+            }
+        }
+        
+        function renderCategories() {
+            const searchTerm = categorySearch.value.toLowerCase();
+            
+            // Filter categories
+            let filteredCategories = categories.filter(category => {
+                // Apply search filter
+                const matchesSearch = category.name.toLowerCase().includes(searchTerm) || 
+                                     (category.description && category.description.toLowerCase().includes(searchTerm));
+                
+                // Apply type filter
+                let matchesType = true;
+                if (currentFilter === 'income') {
+                    matchesType = category.type === 'income';
+                } else if (currentFilter === 'expense') {
+                    matchesType = category.type === 'expense';
+                } else if (currentFilter === 'custom') {
+                    matchesType = category.isCustom === true;
+                }
+                
+                return matchesSearch && matchesType;
+            });
+            
+            // Clear table
+            categoriesTableBody.innerHTML = '';
+            selectedCategories.clear();
+            updateSelectedCount();
+            
+            if (filteredCategories.length === 0) {
+                emptyCategoriesState.classList.remove('hidden');
+                categoriesTableBody.classList.add('hidden');
+            } else {
+                emptyCategoriesState.classList.add('hidden');
+                categoriesTableBody.classList.remove('hidden');
+                
+                // Sort by order
+                filteredCategories.sort((a, b) => a.order - b.order);
+                
+                // Render each category
+                filteredCategories.forEach(category => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b border-gray-100 hover:bg-gray-50 draggable-item';
+                    row.dataset.id = category.id;
+                    
+                    // Format last used date
+                    const lastUsed = new Date(category.lastUsed);
+                    const formattedDate = lastUsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    const isRecent = (new Date() - lastUsed) < 7 * 24 * 60 * 60 * 1000; // Within last 7 days
+                    
+                    // Determine type badge class
+                    const typeClass = category.type === 'income' ? 'category-income' : 'category-expense';
+                    const typeIcon = category.type === 'income' ? 'fa-arrow-down' : 'fa-arrow-up';
+                    
+                    // Determine subtype badge class
+                    let subtypeClass = 'type-other';
+                    switch(category.subtype) {
+                        case 'essential': subtypeClass = 'type-essential'; break;
+                        case 'discretionary': subtypeClass = 'type-discretionary'; break;
+                        case 'savings': subtypeClass = 'type-savings'; break;
+                    }
+                    
+                    row.innerHTML = `
+                        <td class="py-4">
+                            <div class="flex items-center">
+                                <input type="checkbox" class="category-checkbox w-5 h-5 border border-gray-300 rounded mr-3" data-id="${category.id}">
+                                <div class="drag-handle">
+                                    <i class="fas fa-grip-vertical"></i>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            <div class="flex items-center">
+                                <div class="category-icon-preview mr-3" style="background-color: ${category.color}20; color: ${category.color};">
+                                    <i class="fas fa-${category.icon}"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-800">${category.name}</div>
+                                    ${category.description ? `<div class="text-gray-500 text-sm mt-1">${category.description}</div>` : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4">
+                            <div class="flex flex-col space-y-1">
+                                <span class="category-badge ${typeClass}">
+                                    <i class="fas ${typeIcon} mr-1"></i> ${category.type === 'income' ? 'Income' : 'Expense'}
+                                </span>
+                                <span class="category-badge ${subtypeClass}">
+                                    ${category.subtype.charAt(0).toUpperCase() + category.subtype.slice(1)}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="py-4 text-gray-700">
+                            <div class="font-medium">${category.transactions}</div>
+                            <div class="text-gray-500 text-sm">$${category.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                        </td>
+                        <td class="py-4">
+                            <div class="text-gray-700">${formattedDate}</div>
+                            ${isRecent ? '<div class="text-green-600 text-sm"><i class="fas fa-circle mr-1"></i> Recent</div>' : ''}
+                        </td>
+                        <td class="py-4">
+                            <div class="flex space-x-2">
+                                <button class="view-category text-blue-600 hover:text-blue-800" data-id="${category.id}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="edit-category text-gray-600 hover:text-gray-800" data-id="${category.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="delete-category text-red-600 hover:text-red-800" data-id="${category.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    categoriesTableBody.appendChild(row);
+                });
+                
+                // Add event listeners to action buttons
+                document.querySelectorAll('.view-category').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const categoryId = parseInt(this.getAttribute('data-id'));
+                        viewCategory(categoryId);
+                    });
+                });
+                
+                document.querySelectorAll('.edit-category').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const categoryId = parseInt(this.getAttribute('data-id'));
+                        editCategory(categoryId);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-category').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const categoryId = parseInt(this.getAttribute('data-id'));
+                        showDeleteConfirmation(categoryId);
+                    });
+                });
+                
+                // Add event listeners to checkboxes
+                document.querySelectorAll('.category-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const categoryId = parseInt(this.getAttribute('data-id'));
+                        
+                        if (this.checked) {
+                            selectedCategories.add(categoryId);
+                        } else {
+                            selectedCategories.delete(categoryId);
+                            selectAllCategories.checked = false;
+                        }
+                        
+                        updateSelectedCount();
+                        updateBulkActions();
+                    });
+                });
+                
+                // Initialize drag and drop for reordering
+                initializeDragAndDrop();
+            }
+        }
+        
+        function viewCategory(categoryId) {
+            const category = categories.find(c => c.id === categoryId);
+            if (!category) return;
+            
+            selectedCategoryId = categoryId;
+            
+            // Show preview and hide placeholder
+            categoryPreview.classList.remove('hidden');
+            noCategorySelected.classList.add('hidden');
+            
+            // Update preview content
+            document.getElementById('previewName').textContent = category.name;
+            document.getElementById('previewIcon').innerHTML = `<i class="fas fa-${category.icon}"></i>`;
+            document.getElementById('previewIcon').style.backgroundColor = `${category.color}20`;
+            document.getElementById('previewIcon').style.color = category.color;
+            
+            // Update type badges
+            const typeBadge = document.getElementById('previewType');
+            typeBadge.textContent = category.type === 'income' ? 'Income' : 'Expense';
+            typeBadge.className = `category-badge ${category.type === 'income' ? 'category-income' : 'category-expense'}`;
+            
+            const subtypeBadge = document.getElementById('previewSubtype');
+            let subtypeClass = 'type-other';
+            switch(category.subtype) {
+                case 'essential': subtypeClass = 'type-essential'; break;
+                case 'discretionary': subtypeClass = 'type-discretionary'; break;
+                case 'savings': subtypeClass = 'type-savings'; break;
+            }
+            subtypeBadge.textContent = category.subtype.charAt(0).toUpperCase() + category.subtype.slice(1);
+            subtypeBadge.className = `category-badge ${subtypeClass}`;
+            
+            // Update stats
+            document.getElementById('previewTransactions').textContent = `${category.transactions} transactions`;
+            document.getElementById('previewAmount').textContent = `$${category.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            
+            const lastUsed = new Date(category.lastUsed);
+            const now = new Date();
+            const diffTime = Math.abs(now - lastUsed);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            let lastUsedText = lastUsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            if (diffDays === 0) {
+                lastUsedText = 'Today';
+            } else if (diffDays === 1) {
+                lastUsedText = 'Yesterday';
+            } else if (diffDays < 7) {
+                lastUsedText = `${diffDays} days ago`;
+            }
+            
+            document.getElementById('previewLastUsed').textContent = lastUsedText;
+            document.getElementById('previewMonthlyAvg').textContent = `$${category.monthlyAverage.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        }
+        
+        function openCategoryModal(category = null) {
+            isEditing = category !== null;
+            editingCategoryId = category ? category.id : null;
+            
+            // Update modal title
+            document.getElementById('modalTitle').textContent = isEditing ? 'Edit Category' : 'Add New Category';
+            
+            // Clear or populate form
+            if (category) {
+                document.getElementById('categoryName').value = category.name;
+                document.getElementById('categoryType').value = category.type;
+                document.getElementById('categorySubtype').value = category.subtype;
+                document.getElementById('categoryBudget').value = category.budget || '';
+                document.getElementById('categoryDescription').value = category.description || '';
+                document.getElementById('selectedColor').value = category.color;
+                document.getElementById('selectedIcon').value = category.icon;
+                
+                // Update color and icon selection
+                updateColorAndIconSelection();
+            } else {
+                categoryForm.reset();
+                document.getElementById('selectedColor').value = '#ef4444';
+                document.getElementById('selectedIcon').value = 'utensils';
+                updateColorAndIconSelection();
+            }
+            
+            // Show modal
+            categoryModal.classList.remove('hidden');
+        }
+        
+        function closeCategoryModalFunc() {
+            categoryModal.classList.add('hidden');
+            categoryForm.reset();
+            isEditing = false;
+            editingCategoryId = null;
+        }
+        
+        function saveCategory(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const name = document.getElementById('categoryName').value;
+            const type = document.getElementById('categoryType').value;
+            const subtype = document.getElementById('categorySubtype').value;
+            const budget = document.getElementById('categoryBudget').value;
+            const description = document.getElementById('categoryDescription').value;
+            const color = document.getElementById('selectedColor').value;
+            const icon = document.getElementById('selectedIcon').value;
+            
+            if (!name || !type || !subtype) {
+                showToast('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            if (isEditing && editingCategoryId) {
+                // Update existing category
+                const index = categories.findIndex(c => c.id === editingCategoryId);
+                if (index !== -1) {
+                    categories[index] = {
+                        ...categories[index],
+                        name: name,
+                        type: type,
+                        subtype: subtype,
+                        icon: icon,
+                        color: color,
+                        description: description,
+                        budget: budget ? parseFloat(budget) : null,
+                        isCustom: true // Mark as custom when edited
+                    };
+                    
+                    showToast('Category updated successfully!', 'success');
+                }
+            } else {
+                // Create new category
+                const newCategory = {
+                    id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
+                    name: name,
+                    type: type,
+                    subtype: subtype,
+                    icon: icon,
+                    color: color,
+                    transactions: 0,
+                    totalAmount: 0,
+                    lastUsed: new Date().toISOString().split('T')[0],
+                    monthlyAverage: 0,
+                    description: description,
+                    budget: budget ? parseFloat(budget) : null,
+                    isCustom: true,
+                    order: categories.length + 1
+                };
+                
+                categories.push(newCategory);
+                showToast('Category created successfully!', 'success');
+            }
+            
+            // Update UI
+            renderCategories();
+            
+            // If we were viewing this category, update the preview
+            if (isEditing && editingCategoryId === selectedCategoryId) {
+                viewCategory(editingCategoryId);
+            }
+            
+            // Close modal and reset form
+            closeCategoryModalFunc();
+        }
+        
+        function editCategory(categoryId) {
+            const category = categories.find(c => c.id === categoryId);
+            if (!category) return;
+            
+            openCategoryModal(category);
+        }
+        
+        function showDeleteConfirmation(categoryId) {
+            const category = categories.find(c => c.id === categoryId);
+            if (!category) return;
+            
+            // Update delete message
+            document.getElementById('deleteMessage').textContent = 
+                `Are you sure you want to delete the "${category.name}" category? This action cannot be undone.`;
+            
+            // Store category ID for deletion
+            confirmDeleteBtn.dataset.categoryId = categoryId;
+            
+            // Show modal
+            deleteCategoryModal.classList.remove('hidden');
+        }
+        
+        function deleteCategory() {
+            const categoryId = parseInt(confirmDeleteBtn.dataset.categoryId);
+            
+            // Remove category from array
+            categories = categories.filter(c => c.id !== categoryId);
+            
+            // Remove from selected categories
+            selectedCategories.delete(categoryId);
+            
+            // Update UI
+            renderCategories();
+            
+            // Hide preview if deleted category was being viewed
+            if (selectedCategoryId === categoryId) {
+                categoryPreview.classList.add('hidden');
+                noCategorySelected.classList.remove('hidden');
+                selectedCategoryId = null;
+            }
+            
+            // Show notification
+            showToast('Category deleted successfully!', 'warning');
+            
+            // Close modal
+            deleteCategoryModal.classList.add('hidden');
+        }
+        
+        function toggleSelectAll() {
+            const isChecked = selectAllCategories.checked;
+            const checkboxes = document.querySelectorAll('.category-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+                const categoryId = parseInt(checkbox.getAttribute('data-id'));
+                
+                if (isChecked) {
+                    selectedCategories.add(categoryId);
+                } else {
+                    selectedCategories.delete(categoryId);
+                }
+            });
+            
+            updateSelectedCount();
+            updateBulkActions();
+        }
+        
+        function updateSelectedCount() {
+            const selected = selectedCategories.size;
+            selectedCount.textContent = `${selected} categor${selected === 1 ? 'y' : 'ies'} selected`;
+        }
+        
+        function updateBulkActions() {
+            const hasSelected = selectedCategories.size > 0;
+            
+            bulkEditBtn.disabled = !hasSelected || selectedCategories.size !== 1;
+            bulkDeleteBtn.disabled = !hasSelected;
+        }
+        
+        function editSelectedCategories() {
+            if (selectedCategories.size !== 1) return;
+            
+            const categoryId = Array.from(selectedCategories)[0];
+            editCategory(categoryId);
+        }
+        
+        function deleteSelectedCategories() {
+            if (selectedCategories.size === 0) return;
+            
+            if (confirm(`Are you sure you want to delete ${selectedCategories.size} categor${selectedCategories.size === 1 ? 'y' : 'ies'}?`)) {
+                // Remove selected categories from array
+                categories = categories.filter(c => !selectedCategories.has(c.id));
+                
+                // Clear selected categories
+                selectedCategories.clear();
+                
+                // Update UI
+                renderCategories();
+                
+                // Hide preview if deleted categories included the viewed one
+                if (selectedCategoryId && selectedCategories.has(selectedCategoryId)) {
+                    categoryPreview.classList.add('hidden');
+                    noCategorySelected.classList.remove('hidden');
+                    selectedCategoryId = null;
+                }
+                
+                // Show notification
+                showToast(`${selectedCategories.size} categor${selectedCategories.size === 1 ? 'y' : 'ies'} deleted successfully!`, 'warning');
+            }
+        }
+        
+        function exportSelectedCategories() {
+            let categoriesToExport = [];
+            
+            if (selectedCategories.size > 0) {
+                categoriesToExport = categories.filter(c => selectedCategories.has(c.id));
+            } else {
+                categoriesToExport = categories;
+            }
+            
+            // In a real app, this would export to CSV or JSON
+            showToast(`Exported ${categoriesToExport.length} categories`, 'success');
+        }
+        
+        function sortCategories(sortBy) {
+            if (sortBy === 'name') {
+                categories.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (sortBy === 'usage') {
+                categories.sort((a, b) => b.transactions - a.transactions);
+            }
+            
+            // Update order property
+            categories.forEach((category, index) => {
+                category.order = index + 1;
+            });
+            
+            renderCategories();
+        }
+        
+        function initializeColorAndIconSelection() {
+            // Color selection
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove selected class from all color options
+                    document.querySelectorAll('.color-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    
+                    // Add selected class to clicked option
+                    this.classList.add('selected');
+                    
+                    // Update hidden input
+                    document.getElementById('selectedColor').value = this.getAttribute('data-color');
+                });
+            });
+            
+            // Icon selection
+            document.querySelectorAll('.icon-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove selected class from all icon options
+                    document.querySelectorAll('.icon-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    
+                    // Add selected class to clicked option
+                    this.classList.add('selected');
+                    
+                    // Update hidden input
+                    document.getElementById('selectedIcon').value = this.getAttribute('data-icon');
+                });
+            });
+        }
+        
+        function updateColorAndIconSelection() {
+            const selectedColor = document.getElementById('selectedColor').value;
+            const selectedIcon = document.getElementById('selectedIcon').value;
+            
+            // Update color selection
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.classList.remove('selected');
+                if (option.getAttribute('data-color') === selectedColor) {
+                    option.classList.add('selected');
+                }
+            });
+            
+            // Update icon selection
+            document.querySelectorAll('.icon-option').forEach(option => {
+                option.classList.remove('selected');
+                if (option.getAttribute('data-icon') === selectedIcon) {
+                    option.classList.add('selected');
+                }
+            });
+        }
+        
+        function initializeDragAndDrop() {
+            const draggableItems = document.querySelectorAll('.draggable-item');
+            const dragHandles = document.querySelectorAll('.drag-handle');
+            
+            draggableItems.forEach(item => {
+                item.draggable = true;
+                
+                item.addEventListener('dragstart', function(e) {
+                    this.classList.add('sortable-chosen');
+                    e.dataTransfer.setData('text/plain', this.dataset.id);
+                });
+                
+                item.addEventListener('dragend', function() {
+                    this.classList.remove('sortable-chosen');
+                    
+                    // Remove ghost class from all items
+                    draggableItems.forEach(item => {
+                        item.classList.remove('sortable-ghost');
+                    });
+                });
+            });
+            
+            // Make the entire table body a drop zone
+            categoriesTableBody.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                
+                const afterElement = getDragAfterElement(this, e.clientY);
+                const draggable = document.querySelector('.sortable-chosen');
+                
+                if (afterElement == null) {
+                    this.appendChild(draggable);
+                } else {
+                    this.insertBefore(draggable, afterElement);
+                }
+            });
+            
+            categoriesTableBody.addEventListener('drop', function(e) {
+                e.preventDefault();
+                
+                const id = e.dataTransfer.getData('text/plain');
+                const draggedItem = document.querySelector(`[data-id="${id}"]`);
+                
+                // Update category order based on new position
+                const items = Array.from(this.querySelectorAll('.draggable-item'));
+                items.forEach((item, index) => {
+                    const categoryId = parseInt(item.dataset.id);
+                    const category = categories.find(c => c.id === categoryId);
+                    if (category) {
+                        category.order = index + 1;
+                    }
+                });
+                
+                showToast('Category order updated', 'info');
+            });
+        }
+        
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.draggable-item:not(.sortable-chosen)')];
+            
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+        
+        function showToast(message, type = 'success') {
+            const toastIcon = document.getElementById('toastIcon');
+            const toastMessage = document.getElementById('toastMessage');
+            const toast = document.getElementById('toastNotification');
+            
+            // Set icon and color based on type
+            if (type === 'success') {
+                toastIcon.className = 'fas fa-check-circle mr-3 text-xl';
+                toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
+            } else if (type === 'error') {
+                toastIcon.className = 'fas fa-exclamation-circle mr-3 text-xl';
+                toast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
+            } else if (type === 'warning') {
+                toastIcon.className = 'fas fa-exclamation-triangle mr-3 text-xl';
+                toast.className = 'fixed bottom-4 right-4 bg-amber-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
+            } else {
+                toastIcon.className = 'fas fa-info-circle mr-3 text-xl';
+                toast.className = 'fixed bottom-4 right-4 bg-blue-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
+            }
+            
+            toastMessage.textContent = message;
+            
+            // Show toast
+            toast.classList.remove('hidden');
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+        
+        // Utility function for debouncing
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html>

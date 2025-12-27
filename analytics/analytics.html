@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - MoneyFlow Pro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            width: 70px;
+        }
+        
+        .sidebar.collapsed .sidebar-text,
+        .sidebar.collapsed .logo-text {
+            display: none;
+        }
+        
+        .sidebar.collapsed .user-name {
+            display: none;
+        }
+        
+        .main-content {
+            transition: all 0.3s ease;
+        }
+        
+        .income-bg {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .expense-bg {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .balance-bg {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+        
+        .savings-bg {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+        
+        .category-food { background-color: #fef3c7; color: #92400e; }
+        .category-transport { background-color: #dbeafe; color: #1e40af; }
+        .category-shopping { background-color: #fce7f3; color: #9d174d; }
+        .category-bills { background-color: #dcfce7; color: #166534; }
+        .category-entertainment { background-color: #f3e8ff; color: #6b21a8; }
+        .category-salary { background-color: #ccfbf1; color: #0f766e; }
+        .category-freelance { background-color: #fef9c3; color: #854d0e; }
+        .category-investment { background-color: #f0f9ff; color: #0369a1; }
+        .category-other { background-color: #f1f5f9; color: #475569; }
+        
+        .analytics-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+        
+        .analytics-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .trend-up {
+            color: #10b981;
+        }
+        
+        .trend-down {
+            color: #ef4444;
+        }
+        
+        .insight-card {
+            border-left: 4px solid;
+        }
+        
+        .insight-positive {
+            border-left-color: #10b981;
+            background-color: rgba(16, 185, 129, 0.05);
+        }
+        
+        .insight-warning {
+            border-left-color: #f59e0b;
+            background-color: rgba(245, 158, 11, 0.05);
+        }
+        
+        .insight-negative {
+            border-left-color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.05);
+        }
+        
+        .insight-info {
+            border-left-color: #3b82f6;
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+        
+        .time-filter-active {
+            background-color: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+        }
+        
+        .time-filter-inactive {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .time-filter-inactive:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .tab-active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .tab-inactive {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .tab-inactive:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .notification-slide {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Main Container -->
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <div class="sidebar bg-gray-900 text-white w-64 fixed h-full overflow-y-auto z-30">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-10">
+                    <div class="flex items-center">
+                        <i class="fas fa-wallet text-blue-400 text-2xl"></i>
+                        <h1 class="logo-text text-xl font-bold ml-3">MoneyFlow Pro</h1>
+                    </div>
+                    <button id="toggleSidebar" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                
+                <!-- User Profile -->
+                <div class="flex items-center mb-8 p-3 bg-gray-800 rounded-lg">
+                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                        <span class="font-bold">JD</span>
+                    </div>
+                    <div class="ml-3 sidebar-text">
+                        <p class="font-medium user-name">John Doe</p>
+                        <p class="text-gray-400 text-sm">Premium User</p>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="mb-8">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" id="dashboardNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-chart-pie w-6"></i>
+                                <span class="sidebar-text ml-3 font-medium">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="transactionsNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-exchange-alt w-6"></i>
+                                <span class="sidebar-text ml-3">Transactions</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="analyticsNav" class="flex items-center p-3 rounded-lg bg-blue-900 text-white">
+                                <i class="fas fa-chart-line w-6"></i>
+                                <span class="sidebar-text ml-3">Analytics</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="budgetNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-calendar-alt w-6"></i>
+                                <span class="sidebar-text ml-3">Budget Planner</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="categoriesNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-tags w-6"></i>
+                                <span class="sidebar-text ml-3">Categories</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="settingsNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-cog w-6"></i>
+                                <span class="sidebar-text ml-3">Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <!-- Logout Button -->
+                <div class="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-800">
+                    <button id="logoutBtn" class="flex items-center justify-center w-full p-3 rounded-lg bg-gray-800 hover:bg-red-900 text-gray-300 hover:text-white transition-all">
+                        <i class="fas fa-sign-out-alt w-6"></i>
+                        <span class="sidebar-text ml-3 font-medium">Logout</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content ml-64 flex-1 transition-all">
+            <!-- Top Header -->
+            <header class="bg-white shadow-sm">
+                <div class="px-8 py-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800" id="pageTitle">Analytics</h2>
+                            <p class="text-gray-600" id="pageSubtitle">Detailed insights into your financial patterns</p>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <!-- Date Range Selector -->
+                            <div class="relative">
+                                <select id="dateRangeSelect" class="appearance-none bg-gray-100 border border-gray-300 rounded-lg py-2 pl-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option>Last 30 days</option>
+                                    <option>Last 3 months</option>
+                                    <option selected>Last 6 months</option>
+                                    <option>Last year</option>
+                                    <option>All time</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Export Button -->
+                            <button id="exportAnalyticsBtn" class="flex items-center px-4 py-2.5 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
+                                <i class="fas fa-download mr-2"></i>
+                                <span>Export Report</span>
+                            </button>
+                            
+                            <!-- Notifications -->
+                            <button class="relative p-2 text-gray-600 hover:text-blue-600">
+                                <i class="fas fa-bell text-xl"></i>
+                                <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Time Period Filters -->
+                    <div class="mt-6">
+                        <div class="flex space-x-2">
+                            <button class="time-filter-btn py-2 px-4 rounded-lg font-medium transition-all time-filter-inactive" data-period="week">
+                                Week
+                            </button>
+                            <button class="time-filter-btn py-2 px-4 rounded-lg font-medium transition-all time-filter-inactive" data-period="month">
+                                Month
+                            </button>
+                            <button class="time-filter-btn py-2 px-4 rounded-lg font-medium transition-all time-filter-active" data-period="quarter">
+                                Quarter
+                            </button>
+                            <button class="time-filter-btn py-2 px-4 rounded-lg font-medium transition-all time-filter-inactive" data-period="year">
+                                Year
+                            </button>
+                            <button class="time-filter-btn py-2 px-4 rounded-lg font-medium transition-all time-filter-inactive" data-period="all">
+                                All Time
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Analytics Content -->
+            <div class="p-8">
+                <!-- Key Metrics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="analytics-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-gray-500 text-sm">Total Income</p>
+                                <h3 class="text-2xl font-bold text-gray-800 mt-1">$12,450</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                                <i class="fas fa-arrow-down text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-green-600 text-sm font-medium mr-2">
+                                <i class="fas fa-arrow-up mr-1"></i> 12.5%
+                            </span>
+                            <span class="text-gray-500 text-sm">vs last period</span>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-gray-500 text-sm">Total Expenses</p>
+                                <h3 class="text-2xl font-bold text-gray-800 mt-1">$8,275</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                                <i class="fas fa-arrow-up text-red-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-red-600 text-sm font-medium mr-2">
+                                <i class="fas fa-arrow-up mr-1"></i> 8.2%
+                            </span>
+                            <span class="text-gray-500 text-sm">vs last period</span>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-gray-500 text-sm">Net Savings</p>
+                                <h3 class="text-2xl font-bold text-gray-800 mt-1">$4,175</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                <i class="fas fa-piggy-bank text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-green-600 text-sm font-medium mr-2">
+                                <i class="fas fa-arrow-up mr-1"></i> 24.8%
+                            </span>
+                            <span class="text-gray-500 text-sm">vs last period</span>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-card p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-gray-500 text-sm">Savings Rate</p>
+                                <h3 class="text-2xl font-bold text-gray-800 mt-1">33.5%</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                                <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-green-600 text-sm font-medium mr-2">
+                                <i class="fas fa-arrow-up mr-1"></i> 5.2%
+                            </span>
+                            <span class="text-gray-500 text-sm">vs last period</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Main Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <!-- Income vs Expenses Chart -->
+                    <div class="analytics-card p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800">Income vs Expenses</h3>
+                                <p class="text-gray-600">Monthly comparison over time</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                                    <span class="text-sm text-gray-600">Income</span>
+                                </div>
+                                <div class="flex items-center ml-3">
+                                    <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                                    <span class="text-sm text-gray-600">Expenses</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="incomeExpenseChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Spending by Category Chart -->
+                    <div class="analytics-card p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800">Spending by Category</h3>
+                                <p class="text-gray-600">Distribution of expenses</p>
+                            </div>
+                            <div class="relative">
+                                <select class="appearance-none bg-gray-100 border border-gray-300 rounded-lg py-1.5 pl-3 pr-8 text-gray-700 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <option>Last 30 days</option>
+                                    <option selected>Last 3 months</option>
+                                    <option>Last 6 months</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Trends & Insights Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <!-- Monthly Trends -->
+                    <div class="analytics-card p-6 lg:col-span-2">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">Monthly Trends</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="border-b border-gray-200">
+                                    <tr>
+                                        <th class="pb-3 text-left text-gray-700 font-medium">Month</th>
+                                        <th class="pb-3 text-left text-gray-700 font-medium">Income</th>
+                                        <th class="pb-3 text-left text-gray-700 font-medium">Expenses</th>
+                                        <th class="pb-3 text-left text-gray-700 font-medium">Savings</th>
+                                        <th class="pb-3 text-left text-gray-700 font-medium">Savings Rate</th>
+                                        <th class="pb-3 text-left text-gray-700 font-medium">Trend</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="monthlyTrendsTable">
+                                    <!-- Monthly data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Financial Insights -->
+                    <div class="analytics-card p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">Financial Insights</h3>
+                        <div class="space-y-4">
+                            <div class="insight-card p-4 rounded-r-lg insight-positive">
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3 mt-1">
+                                        <i class="fas fa-check text-green-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-800">Excellent Savings Rate</h4>
+                                        <p class="text-gray-600 text-sm mt-1">Your savings rate of 33.5% is above the recommended 20%.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="insight-card p-4 rounded-r-lg insight-warning">
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center mr-3 mt-1">
+                                        <i class="fas fa-exclamation text-yellow-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-800">High Food Spending</h4>
+                                        <p class="text-gray-600 text-sm mt-1">Food expenses increased by 15% this month. Consider meal planning.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="insight-card p-4 rounded-r-lg insight-info">
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center mr-3 mt-1">
+                                        <i class="fas fa-lightbulb text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-800">Income Growth</h4>
+                                        <p class="text-gray-600 text-sm mt-1">Your income increased by 12.5% compared to last quarter.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="insight-card p-4 rounded-r-lg insight-negative">
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center mr-3 mt-1">
+                                        <i class="fas fa-chart-line text-red-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-800">Shopping Spikes</h4>
+                                        <p class="text-gray-600 text-sm mt-1">Shopping expenses show irregular spikes. Consider setting a monthly budget.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bottom Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Top Categories -->
+                    <div class="analytics-card p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">Top Spending Categories</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Food & Dining</span>
+                                    <span class="font-medium text-gray-800">$1,845</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-yellow-500 h-2 rounded-full" style="width: 35%"></div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-gray-500 text-sm">35% of total expenses</span>
+                                    <span class="text-red-600 text-sm font-medium">
+                                        <i class="fas fa-arrow-up mr-1"></i> 15%
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Shopping</span>
+                                    <span class="font-medium text-gray-800">$1,320</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-purple-500 h-2 rounded-full" style="width: 25%"></div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-gray-500 text-sm">25% of total expenses</span>
+                                    <span class="text-red-600 text-sm font-medium">
+                                        <i class="fas fa-arrow-up mr-1"></i> 22%
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Bills & Utilities</span>
+                                    <span class="font-medium text-gray-800">$985</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 19%"></div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-gray-500 text-sm">19% of total expenses</span>
+                                    <span class="text-green-600 text-sm font-medium">
+                                        <i class="fas fa-arrow-down mr-1"></i> 3%
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Transportation</span>
+                                    <span class="font-medium text-gray-800">$745</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: 14%"></div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-gray-500 text-sm">14% of total expenses</span>
+                                    <span class="text-green-600 text-sm font-medium">
+                                        <i class="fas fa-arrow-down mr-1"></i> 8%
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Entertainment</span>
+                                    <span class="font-medium text-gray-800">$380</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-red-500 h-2 rounded-full" style="width: 7%"></div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-gray-500 text-sm">7% of total expenses</span>
+                                    <span class="text-green-600 text-sm font-medium">
+                                        <i class="fas fa-arrow-down mr-1"></i> 12%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Income Sources -->
+                    <div class="analytics-card p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">Income Sources</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Salary</span>
+                                    <span class="font-medium text-gray-800">$9,560</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 77%"></div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-gray-500 text-sm">77% of total income</span>
+                                    <span class="text-green-600 text-sm font-medium">
+                                        <i class="fas fa-arrow-up mr-1"></i> 5%
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Freelance</span>
+                                    <span class="font-medium text-gray-800">$1,850</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: 15%"></div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-gray-500 text-sm">15% of total income</span>
+                                    <span class="text-green-600 text-sm font-medium">
+                                        <i class="fas fa-arrow-up mr-1"></i> 42%
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Investments</span>
+                                    <span class="font-medium text-gray-800">$750</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-purple-500 h-2 rounded-full" style="width: 6%"></div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-gray-500 text-sm">6% of total income</span>
+                                    <span class="text-green-600 text-sm font-medium">
+                                        <i class="fas fa-arrow-up mr-1"></i> 18%
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Other Income</span>
+                                    <span class="font-medium text-gray-800">$290</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-gray-500 h-2 rounded-full" style="width: 2%"></div>
+                                </div>
+                                <div class="flex justify-between mt-1">
+                                    <span class="text-gray-500 text-sm">2% of total income</span>
+                                    <span class="text-red-600 text-sm font-medium">
+                                        <i class="fas fa-arrow-down mr-1"></i> 10%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8">
+                            <h4 class="font-medium text-gray-700 mb-3">Recommendation</h4>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <p class="text-blue-700 text-sm">Consider diversifying your income sources. Your freelance income grew 42% this quarter - excellent work!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Savings Progress -->
+                    <div class="analytics-card p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">Savings Progress</h3>
+                        <div class="text-center mb-6">
+                            <div class="relative inline-block">
+                                <canvas id="savingsChart" width="200" height="200"></canvas>
+                                <div class="absolute inset-0 flex items-center justify-center flex-col">
+                                    <span class="text-3xl font-bold text-gray-800">67%</span>
+                                    <span class="text-gray-500 text-sm">of goal</span>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 mt-4">Annual Savings Goal: <span class="font-bold">$15,000</span></p>
+                            <p class="text-gray-600">Current: <span class="font-medium text-green-600">$10,050</span></p>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Emergency Fund</span>
+                                    <span class="font-medium text-gray-800">$5,000 / $5,000</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 100%"></div>
+                                </div>
+                                <p class="text-green-600 text-sm mt-1 text-right">Complete!</p>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Vacation Fund</span>
+                                    <span class="font-medium text-gray-800">$2,500 / $3,000</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: 83%"></div>
+                                </div>
+                                <p class="text-blue-600 text-sm mt-1 text-right">$500 remaining</p>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Investment Fund</span>
+                                    <span class="font-medium text-gray-800">$2,550 / $7,000</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-purple-500 h-2 rounded-full" style="width: 36%"></div>
+                                </div>
+                                <p class="text-purple-600 text-sm mt-1 text-right">$4,450 remaining</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition">
+                                <i class="fas fa-bullseye mr-2"></i> Set New Savings Goal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Detail Modal -->
+    <div id="analyticsDetailModal" class="fixed inset-0 modal-overlay flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">Detailed Analytics</h3>
+                    <button id="closeAnalyticsModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="analytics-card p-5">
+                        <h4 class="text-lg font-medium text-gray-700 mb-4">Category Breakdown</h4>
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="detailCategoryChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-card p-5">
+                        <h4 class="text-lg font-medium text-gray-700 mb-4">Monthly Comparison</h4>
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="detailComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="analytics-card p-6">
+                    <h4 class="text-lg font-medium text-gray-700 mb-4">Detailed Statistics</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="text-center p-4 border border-gray-200 rounded-lg">
+                            <p class="text-gray-500 text-sm">Average Monthly Income</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-1">$4,150</p>
+                        </div>
+                        <div class="text-center p-4 border border-gray-200 rounded-lg">
+                            <p class="text-gray-500 text-sm">Average Monthly Expenses</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-1">$2,758</p>
+                        </div>
+                        <div class="text-center p-4 border border-gray-200 rounded-lg">
+                            <p class="text-gray-500 text-sm">Highest Spending Category</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-1">Food & Dining</p>
+                        </div>
+                        <div class="text-center p-4 border border-gray-200 rounded-lg">
+                            <p class="text-gray-500 text-sm">Best Savings Month</p>
+                            <p class="text-2xl font-bold text-gray-800 mt-1">March 2023</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end mt-6">
+                    <button id="closeDetailBtn" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div id="logoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl w-full max-w-md">
+            <div class="p-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-sign-out-alt text-red-600 text-2xl"></i>
+                    </div>
+                    
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Logout Confirmation</h3>
+                    <p class="text-gray-600 mb-6">Are you sure you want to logout? Your data will be saved automatically.</p>
+                    
+                    <div class="flex justify-center space-x-4">
+                        <button id="cancelLogout" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                        <button id="confirmLogout" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
+                            Yes, Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="fixed bottom-4 right-4 z-50 hidden">
+        <div class="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide">
+            <i class="fas fa-check-circle mr-3 text-xl"></i>
+            <span id="toastMessage">Analytics report exported successfully!</span>
+        </div>
+    </div>
+
+    <script>
+        // Sample analytics data
+        const monthlyData = [
+            { month: 'Jan 2023', income: 3850, expenses: 2540, savings: 1310, savingsRate: 34 },
+            { month: 'Feb 2023', income: 3950, expenses: 2680, savings: 1270, savingsRate: 32 },
+            { month: 'Mar 2023', income: 4250, expenses: 2450, savings: 1800, savingsRate: 42 },
+            { month: 'Apr 2023', income: 4100, expenses: 2850, savings: 1250, savingsRate: 30 },
+            { month: 'May 2023', income: 4350, expenses: 2945, savings: 1405, savingsRate: 32 },
+            { month: 'Jun 2023', income: 4450, expenses: 3010, savings: 1440, savingsRate: 32 }
+        ];
+
+        const categoryData = {
+            labels: ['Food & Dining', 'Shopping', 'Bills & Utilities', 'Transportation', 'Entertainment', 'Other'],
+            data: [35, 25, 19, 14, 7, 10],
+            colors: ['#f59e0b', '#8b5cf6', '#10b981', '#3b82f6', '#ef4444', '#6b7280']
+        };
+
+        const incomeSources = {
+            labels: ['Salary', 'Freelance', 'Investments', 'Other'],
+            data: [77, 15, 6, 2],
+            colors: ['#10b981', '#3b82f6', '#8b5cf6', '#6b7280']
+        };
+
+        // DOM Elements
+        const toggleSidebarBtn = document.getElementById('toggleSidebar');
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const cancelLogoutBtn = document.getElementById('cancelLogout');
+        const confirmLogoutBtn = document.getElementById('confirmLogout');
+        const timeFilterBtns = document.querySelectorAll('.time-filter-btn');
+        const exportAnalyticsBtn = document.getElementById('exportAnalyticsBtn');
+        const monthlyTrendsTable = document.getElementById('monthlyTrendsTable');
+        const toastNotification = document.getElementById('toastNotification');
+        
+        // Navigation elements
+        const dashboardNav = document.getElementById('dashboardNav');
+        const transactionsNav = document.getElementById('transactionsNav');
+        const analyticsNav = document.getElementById('analyticsNav');
+        const budgetNav = document.getElementById('budgetNav');
+        const categoriesNav = document.getElementById('categoriesNav');
+        const settingsNav = document.getElementById('settingsNav');
+        
+        // Chart instances
+        let incomeExpenseChart, categoryChart, savingsChart, detailCategoryChart, detailComparisonChart;
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize charts
+            initializeCharts();
+            
+            // Populate monthly trends table
+            populateMonthlyTrends();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Set analytics nav as active
+            updateActiveNav('analytics');
+        });
+        
+        function setupEventListeners() {
+            // Toggle sidebar
+            toggleSidebarBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('ml-64');
+                mainContent.classList.toggle('ml-20');
+            });
+            
+            // Navigation
+            dashboardNav.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo('dashboard');
+            });
+            
+            transactionsNav.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo('transactions');
+            });
+            
+            analyticsNav.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo('analytics');
+            });
+            
+            budgetNav.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo('budget');
+            });
+            
+            categoriesNav.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo('categories');
+            });
+            
+            settingsNav.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo('settings');
+            });
+            
+            // Time period filters
+            timeFilterBtns.forEach(button => {
+                button.addEventListener('click', function() {
+                    const period = this.getAttribute('data-period');
+                    
+                    // Update active button
+                    timeFilterBtns.forEach(btn => {
+                        btn.classList.remove('time-filter-active');
+                        btn.classList.add('time-filter-inactive');
+                    });
+                    
+                    this.classList.remove('time-filter-inactive');
+                    this.classList.add('time-filter-active');
+                    
+                    // Update charts based on period
+                    updateChartsByPeriod(period);
+                });
+            });
+            
+            // Export analytics
+            exportAnalyticsBtn.addEventListener('click', () => {
+                showToast('Analytics report exported successfully!', 'success');
+            });
+            
+            // Logout functionality
+            logoutBtn.addEventListener('click', () => {
+                document.getElementById('logoutModal').classList.remove('hidden');
+            });
+            
+            cancelLogoutBtn.addEventListener('click', () => {
+                document.getElementById('logoutModal').classList.add('hidden');
+            });
+            
+            confirmLogoutBtn.addEventListener('click', () => {
+                showToast('Logged out successfully!', 'info');
+                document.getElementById('logoutModal').classList.add('hidden');
+                
+                // In a real app, you would redirect to login page
+                setTimeout(() => {
+                    alert('Redirecting to login page... (This is a demo)');
+                }, 1000);
+            });
+            
+            // View detailed analytics
+            document.getElementById('incomeExpenseChart').addEventListener('click', () => {
+                document.getElementById('analyticsDetailModal').classList.remove('hidden');
+                initializeDetailCharts();
+            });
+            
+            // Close analytics modal
+            document.getElementById('closeAnalyticsModal').addEventListener('click', () => {
+                document.getElementById('analyticsDetailModal').classList.add('hidden');
+            });
+            
+            document.getElementById('closeDetailBtn').addEventListener('click', () => {
+                document.getElementById('analyticsDetailModal').classList.add('hidden');
+            });
+        }
+        
+        function navigateTo(page) {
+            // Update page title based on navigation
+            // In a real app, this would navigate to different pages
+            alert(`Navigating to ${page} page... (This is a demo)`);
+            
+            // Update active navigation
+            updateActiveNav(page);
+        }
+        
+        function updateActiveNav(activePage) {
+            // Remove active class from all nav items
+            const navItems = [dashboardNav, transactionsNav, analyticsNav, budgetNav, categoriesNav, settingsNav];
+            navItems.forEach(nav => {
+                nav.classList.remove('bg-blue-900', 'text-white');
+                nav.classList.add('hover:bg-gray-800', 'text-gray-300');
+            });
+            
+            // Add active class to current nav item
+            switch(activePage) {
+                case 'dashboard':
+                    dashboardNav.classList.add('bg-blue-900', 'text-white');
+                    dashboardNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
+                    break;
+                case 'transactions':
+                    transactionsNav.classList.add('bg-blue-900', 'text-white');
+                    transactionsNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
+                    break;
+                case 'analytics':
+                    analyticsNav.classList.add('bg-blue-900', 'text-white');
+                    analyticsNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
+                    break;
+                case 'budget':
+                    budgetNav.classList.add('bg-blue-900', 'text-white');
+                    budgetNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
+                    break;
+                case 'categories':
+                    categoriesNav.classList.add('bg-blue-900', 'text-white');
+                    categoriesNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
+                    break;
+                case 'settings':
+                    settingsNav.classList.add('bg-blue-900', 'text-white');
+                    settingsNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
+                    break;
+            }
+        }
+        
+        function initializeCharts() {
+            // Income vs Expenses Chart
+            const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
+            incomeExpenseChart = new Chart(incomeExpenseCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        {
+                            label: 'Income',
+                            data: [3850, 3950, 4250, 4100, 4350, 4450],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#10b981',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6
+                        },
+                        {
+                            label: 'Expenses',
+                            data: [2540, 2680, 2450, 2850, 2945, 3010],
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#ef4444',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: $${context.parsed.y.toLocaleString()}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Category Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: categoryData.labels,
+                    datasets: [{
+                        data: categoryData.data,
+                        backgroundColor: categoryData.colors,
+                        borderWidth: 0,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.parsed}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Savings Chart
+            const savingsCtx = document.getElementById('savingsChart').getContext('2d');
+            savingsChart = new Chart(savingsCtx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [67, 33],
+                        backgroundColor: ['#3b82f6', '#e5e7eb'],
+                        borderWidth: 0,
+                        circumference: 270,
+                        rotation: 225
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initializeDetailCharts() {
+            // Detail Category Chart
+            if (detailCategoryChart) {
+                detailCategoryChart.destroy();
+            }
+            
+            const detailCategoryCtx = document.getElementById('detailCategoryChart').getContext('2d');
+            detailCategoryChart = new Chart(detailCategoryCtx, {
+                type: 'bar',
+                data: {
+                    labels: categoryData.labels,
+                    datasets: [{
+                        label: 'Percentage',
+                        data: categoryData.data,
+                        backgroundColor: categoryData.colors,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Detail Comparison Chart
+            if (detailComparisonChart) {
+                detailComparisonChart.destroy();
+            }
+            
+            const detailComparisonCtx = document.getElementById('detailComparisonChart').getContext('2d');
+            detailComparisonChart = new Chart(detailComparisonCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [
+                        {
+                            label: 'Income',
+                            data: [3850, 3950, 4250, 4100, 4350, 4450],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                            pointBackgroundColor: '#10b981',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2
+                        },
+                        {
+                            label: 'Expenses',
+                            data: [2540, 2680, 2450, 2850, 2945, 3010],
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            pointBackgroundColor: '#ef4444',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function populateMonthlyTrends() {
+            monthlyTrendsTable.innerHTML = '';
+            
+            monthlyData.forEach(month => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-100 hover:bg-gray-50';
+                
+                // Calculate trend
+                const savingsTrend = month.savingsRate >= 30 ? 'up' : 'down';
+                const trendColor = savingsTrend === 'up' ? 'text-green-600' : 'text-red-600';
+                const trendIcon = savingsTrend === 'up' ? 'fa-arrow-up' : 'fa-arrow-down';
+                
+                row.innerHTML = `
+                    <td class="py-4 text-gray-700 font-medium">${month.month}</td>
+                    <td class="py-4 text-gray-800">$${month.income.toLocaleString()}</td>
+                    <td class="py-4 text-gray-800">$${month.expenses.toLocaleString()}</td>
+                    <td class="py-4 font-medium text-green-600">$${month.savings.toLocaleString()}</td>
+                    <td class="py-4 font-medium ${month.savingsRate >= 30 ? 'text-green-600' : 'text-yellow-600'}">${month.savingsRate}%</td>
+                    <td class="py-4">
+                        <span class="${trendColor}">
+                            <i class="fas ${trendIcon} mr-1"></i> ${savingsTrend === 'up' ? 'Good' : 'Needs attention'}
+                        </span>
+                    </td>
+                `;
+                
+                monthlyTrendsTable.appendChild(row);
+            });
+        }
+        
+        function updateChartsByPeriod(period) {
+            // In a real app, this would fetch new data based on the selected period
+            // For this demo, we'll just update the chart titles and show a toast
+            
+            let periodText = '';
+            switch(period) {
+                case 'week': periodText = 'Weekly'; break;
+                case 'month': periodText = 'Monthly'; break;
+                case 'quarter': periodText = 'Quarterly'; break;
+                case 'year': periodText = 'Yearly'; break;
+                case 'all': periodText = 'All Time'; break;
+            }
+            
+            // Update chart data based on period (simulated)
+            // In a real app, you would fetch new data from an API
+            
+            showToast(`${periodText} analytics data loaded`, 'info');
+        }
+        
+        function showToast(message, type = 'success') {
+            const toastIcon = document.getElementById('toastIcon');
+            const toastMessage = document.getElementById('toastMessage');
+            const toast = document.getElementById('toastNotification');
+            
+            // Set icon and color based on type
+            if (type === 'success') {
+                toastIcon.className = 'fas fa-check-circle mr-3 text-xl';
+                toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
+            } else if (type === 'error') {
+                toastIcon.className = 'fas fa-exclamation-circle mr-3 text-xl';
+                toast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
+            } else if (type === 'warning') {
+                toastIcon.className = 'fas fa-exclamation-triangle mr-3 text-xl';
+                toast.className = 'fixed bottom-4 right-4 bg-amber-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
+            } else {
+                toastIcon.className = 'fas fa-info-circle mr-3 text-xl';
+                toast.className = 'fixed bottom-4 right-4 bg-blue-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
+            }
+            
+            toastMessage.textContent = message;
+            
+            // Show toast
+            toast.classList.remove('hidden');
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

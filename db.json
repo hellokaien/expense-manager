@@ -1,1 +1,132 @@
-{}
+{
+  "transactions": [
+    {
+      "userId": 1,
+      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b3",
+      "title": "Monthly Salary",
+      "amount": 3800,
+      "type": "income",
+      "category": "salary",
+      "date": "2023-05-01",
+      "paymentMethod": "bank_transfer",
+      "status": "completed",
+      "notes": "Monthly paycheck from Company Inc.",
+      "tags": [
+        "essential",
+        "recurring"
+      ]
+    },
+    {
+      "userId": 1,
+      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b6",
+      "title": "Grocery Shopping",
+      "amount": 145.5,
+      "type": "expense",
+      "category": "food",
+      "date": "2023-05-03",
+      "paymentMethod": "credit_card",
+      "status": "completed",
+      "notes": "Weekly groceries at Walmart",
+      "tags": [
+        "essential",
+        "food"
+      ]
+    },
+    {
+      "userId": 1,
+      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b8",
+      "title": "Netflix Subscription",
+      "amount": 15.99,
+      "type": "expense",
+      "category": "entertainment",
+      "date": "2023-05-05",
+      "paymentMethod": "debit_card",
+      "status": "completed",
+      "notes": "Monthly subscription",
+      "tags": [
+        "subscription",
+        "entertainment"
+      ]
+    },
+    {
+      "userId": 1,
+      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b1",
+      "title": "Freelance Project",
+      "amount": 450,
+      "type": "income",
+      "category": "freelance",
+      "date": "2023-05-08",
+      "paymentMethod": "bank_transfer",
+      "status": "completed",
+      "notes": "Website design project for client",
+      "tags": [
+        "business",
+        "freelance"
+      ]
+    },
+    {
+      "userId": 1,
+      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2c3",
+      "title": "Electricity Bill",
+      "amount": 85.25,
+      "type": "expense",
+      "category": "bills",
+      "date": "2023-05-10",
+      "paymentMethod": "bank_transfer",
+      "status": "completed",
+      "notes": "Monthly electricity bill",
+      "tags": [
+        "essential",
+        "bills"
+      ]
+    },
+    {
+      "userId": 1,
+      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b9",
+      "title": "Uber Rides",
+      "amount": 62.3,
+      "type": "expense",
+      "category": "transport",
+      "date": "2023-05-12",
+      "paymentMethod": "digital_wallet",
+      "status": "completed",
+      "notes": "Transportation for the week",
+      "tags": [
+        "transport",
+        "personal"
+      ]
+    },
+    {
+      "userId": 1,
+      "id": "7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a1b3",
+      "title": "New Headphones",
+      "amount": 129.99,
+      "type": "expense",
+      "category": "shopping",
+      "date": "2023-05-15",
+      "paymentMethod": "credit_card",
+      "status": "completed",
+      "notes": "Bought new wireless headphones",
+      "tags": [
+        "shopping",
+        "personal"
+      ]
+    },
+    {
+      "userId": 1,
+      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b3",
+      "title": "Dividend Payment",
+      "amount": 250,
+      "type": "income",
+      "category": "investment",
+      "date": "2023-05-18",
+      "paymentMethod": "bank_transfer",
+      "status": "completed",
+      "notes": "Stock dividends from investments",
+      "tags": [
+        "investment",
+        "passive income"
+      ]
+    }
+  ]
+}
