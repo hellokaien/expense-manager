@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyFlow Pro - Expense Manager Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .income-bg {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        .expense-bg {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        .balance-bg {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+        .savings-bg {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+        
+        .transaction-income {
+            border-left: 4px solid #10b981;
+        }
+        
+        .transaction-expense {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .category-food { background-color: #fef3c7; color: #92400e; }
+        .category-transport { background-color: #dbeafe; color: #1e40af; }
+        .category-shopping { background-color: #fce7f3; color: #9d174d; }
+        .category-bills { background-color: #dcfce7; color: #166534; }
+        .category-entertainment { background-color: #f3e8ff; color: #6b21a8; }
+        .category-salary { background-color: #ccfbf1; color: #0f766e; }
+        .category-investment { background-color: #fef9c3; color: #854d0e; }
+        .category-other { background-color: #f1f5f9; color: #475569; }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        /* Animation for modal */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-animation {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Tab styling */
+        .tab-active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .tab-inactive {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .tab-inactive:hover {
+            background-color: #e5e7eb;
+        }
+        
+        /* Sidebar styling */
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        
+        .sidebar.collapsed .sidebar-text {
+            display: none;
+        }
+        
+        .sidebar.collapsed .logo-text {
+            display: none;
+        }
+        
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+        
+        /* Smooth transitions */
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+        
+        /* Notification animation */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .notification-slide {
+            animation: slideIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <div class="sidebar bg-gray-900 text-white w-64 fixed h-full overflow-y-auto z-20">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-10">
+                    <div class="flex items-center">
+                        <i class="fas fa-wallet text-blue-400 text-2xl"></i>
+                        <h1 class="logo-text text-xl font-bold ml-3">MoneyFlow Pro</h1>
+                    </div>
+                    <button id="toggleSidebar" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                
+                <!-- User Profile -->
+                <div class="flex items-center mb-8 p-3 bg-gray-800 rounded-lg">
+                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                        <span class="font-bold">JD</span>
+                    </div>
+                    <div class="ml-3 sidebar-text">
+                        <p class="font-medium">John Doe</p>
+                        <p class="text-gray-400 text-sm">Premium User</p>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="mb-8">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" class="flex items-center p-3 rounded-lg bg-blue-900 text-white">
+                                <i class="fas fa-chart-pie w-6"></i>
+                                <span class="sidebar-text ml-3 font-medium">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../transactions/transactions.html" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-exchange-alt w-6"></i>
+                                <span class="sidebar-text ml-3">Transactions</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../analytics/analytics.html" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-chart-line w-6"></i>
+                                <span class="sidebar-text ml-3">Analytics</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../budget-planner/index.html" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-calendar-alt w-6"></i>
+                                <span class="sidebar-text ml-3">Budget Planner</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../categories/index.html" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-tags w-6"></i>
+                                <span class="sidebar-text ml-3">Categories</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="../settings/index.html" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-cog w-6"></i>
+                                <span class="sidebar-text ml-3">Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <!-- Logout Button -->
+                <div class="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-800">
+                    <button id="logoutBtn" class="flex items-center justify-center w-full p-3 rounded-lg bg-gray-800 hover:bg-red-900 text-gray-300 hover:text-white transition-all">
+                        <i class="fas fa-sign-out-alt w-6"></i>
+                        <span class="sidebar-text ml-3 font-medium">Logout</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content ml-64 flex-1 transition-all">
+            <!-- Top Header -->
+            <header class="bg-white shadow-sm">
+                <div class="px-8 py-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
+                            <p class="text-gray-600">Welcome back! Here's your financial summary</p>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <!-- Date Range Selector -->
+                            <div class="relative">
+                                <select class="appearance-none bg-gray-100 border border-gray-300 rounded-lg py-2 pl-4 pr-10 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option>This Month</option>
+                                    <option>Last Month</option>
+                                    <option>This Quarter</option>
+                                    <option>This Year</option>
+                                    <option>Custom Range</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Notifications -->
+                            <button class="relative p-2 text-gray-600 hover:text-blue-600">
+                                <i class="fas fa-bell text-xl"></i>
+                                <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
+                            </button>
+                            
+                            <!-- Add Transaction Button -->
+                            <button id="openAddModal" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg flex items-center transition duration-300 shadow-md">
+                                <i class="fas fa-plus mr-2"></i> Add Transaction
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Dashboard Tabs -->
+                    <div class="mt-6">
+                        <div class="flex space-x-2 border-b border-gray-200">
+                            <button id="overviewTab" class="tab-btn py-3 px-6 rounded-t-lg font-medium transition-all tab-active">
+                                <i class="fas fa-chart-pie mr-2"></i> Overview
+                            </button>
+                            <button id="transactionsTab" class="tab-btn py-3 px-6 rounded-t-lg font-medium transition-all tab-inactive">
+                                <i class="fas fa-exchange-alt mr-2"></i> All Transactions
+                            </button>
+                            <button id="analyticsTab" class="tab-btn py-3 px-6 rounded-t-lg font-medium transition-all tab-inactive">
+                                <i class="fas fa-chart-line mr-2"></i> Analytics
+                            </button>
+                            <button id="budgetTab" class="tab-btn py-3 px-6 rounded-t-lg font-medium transition-all tab-inactive">
+                                <i class="fas fa-wallet mr-2"></i> Budget
+                            </button>
+                            <button id="reportsTab" class="tab-btn py-3 px-6 rounded-t-lg font-medium transition-all tab-inactive">
+                                <i class="fas fa-file-alt mr-2"></i> Reports
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Tab Content Container -->
+            <div class="p-8">
+                <!-- Overview Tab Content (Default) -->
+                <div id="overviewContent" class="tab-content">
+                    <!-- Statistics Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="income-bg text-white rounded-xl p-6 shadow-lg">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-blue-100">Total Income</p>
+                                    <h3 class="text-3xl font-bold mt-2" id="totalIncome">$4,250.00</h3>
+                                    <p class="text-blue-100 text-sm mt-2"><i class="fas fa-arrow-up mr-1"></i> 8% from last month</p>
+                                </div>
+                                <div class="bg-white/20 p-3 rounded-full">
+                                    <i class="fas fa-money-bill-wave text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="expense-bg text-white rounded-xl p-6 shadow-lg">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-red-100">Total Expenses</p>
+                                    <h3 class="text-3xl font-bold mt-2" id="totalExpenses">$1,845.00</h3>
+                                    <p class="text-red-100 text-sm mt-2"><i class="fas fa-arrow-up mr-1"></i> 12% from last month</p>
+                                </div>
+                                <div class="bg-white/20 p-3 rounded-full">
+                                    <i class="fas fa-shopping-cart text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="balance-bg text-white rounded-xl p-6 shadow-lg">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-blue-100">Monthly Balance</p>
+                                    <h3 class="text-3xl font-bold mt-2">$2,405.00</h3>
+                                    <p class="text-blue-100 text-sm mt-2">Remaining for this month</p>
+                                </div>
+                                <div class="bg-white/20 p-3 rounded-full">
+                                    <i class="fas fa-chart-line text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="savings-bg text-white rounded-xl p-6 shadow-lg">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-purple-100">Savings Rate</p>
+                                    <h3 class="text-3xl font-bold mt-2">24%</h3>
+                                    <p class="text-purple-100 text-sm mt-2">$1,015 saved this month</p>
+                                </div>
+                                <div class="bg-white/20 p-3 rounded-full">
+                                    <i class="fas fa-piggy-bank text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Charts and Recent Transactions -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                        <!-- Left Column - Charts -->
+                        <div class="lg:col-span-2">
+                            <!-- Expense vs Income Chart -->
+                            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h2 class="text-xl font-bold text-gray-800">Income vs Expenses</h2>
+                                    <div class="flex space-x-2">
+                                        <button class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">Monthly</button>
+                                        <button class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-700 font-medium">Quarterly</button>
+                                        <button class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-700 font-medium">Yearly</button>
+                                    </div>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="incomeExpenseChart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <!-- Category Breakdown -->
+                            <div class="bg-white rounded-xl shadow-md p-6">
+                                <h2 class="text-xl font-bold text-gray-800 mb-4">Spending by Category</h2>
+                                <div class="chart-container">
+                                    <canvas id="categoryChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column - Recent Transactions -->
+                        <div>
+                            <div class="bg-white rounded-xl shadow-md p-6 h-full">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h2 class="text-xl font-bold text-gray-800">Recent Transactions</h2>
+                                    <button id="viewAllBtn" class="text-blue-600 hover:text-blue-800 font-medium">View All</button>
+                                </div>
+                                
+                                <!-- Transaction Filters -->
+                                <div class="flex space-x-2 mb-6">
+                                    <button class="filter-btn active px-4 py-2 rounded-lg bg-blue-600 text-white" data-filter="all">All</button>
+                                    <button class="filter-btn px-4 py-2 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200" data-filter="income">Income</button>
+                                    <button class="filter-btn px-4 py-2 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200" data-filter="expense">Expenses</button>
+                                </div>
+                                
+                                <!-- Transactions List -->
+                                <div class="space-y-4" id="transactionsList">
+                                    <!-- Transactions will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Monthly Summary -->
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-6">Monthly Summary</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <h3 class="font-medium text-gray-700 mb-3">Top Expenses</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center">
+                                            <div class="w-3 h-3 rounded-full bg-red-500 mr-3"></div>
+                                            <span>Food & Dining</span>
+                                        </div>
+                                        <span class="font-medium">$645.00</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center">
+                                            <div class="w-3 h-3 rounded-full bg-blue-500 mr-3"></div>
+                                            <span>Shopping</span>
+                                        </div>
+                                        <span class="font-medium">$420.50</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center">
+                                            <div class="w-3 h-3 rounded-full bg-green-500 mr-3"></div>
+                                            <span>Bills & Utilities</span>
+                                        </div>
+                                        <span class="font-medium">$320.75</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="font-medium text-gray-700 mb-3">Income Sources</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center">
+                                            <div class="w-3 h-3 rounded-full bg-emerald-500 mr-3"></div>
+                                            <span>Salary</span>
+                                        </div>
+                                        <span class="font-medium">$3,800.00</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center">
+                                            <div class="w-3 h-3 rounded-full bg-amber-500 mr-3"></div>
+                                            <span>Freelance</span>
+                                        </div>
+                                        <span class="font-medium">$450.00</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center">
+                                            <div class="w-3 h-3 rounded-full bg-purple-500 mr-3"></div>
+                                            <span>Investments</span>
+                                        </div>
+                                        <span class="font-medium">$250.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="font-medium text-gray-700 mb-3">Budget Status</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <div class="flex justify-between mb-1">
+                                            <span class="text-sm">Food Budget</span>
+                                            <span class="text-sm font-medium">$645 / $700</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-red-500 h-2 rounded-full" style="width: 92%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between mb-1">
+                                            <span class="text-sm">Entertainment</span>
+                                            <span class="text-sm font-medium">$120 / $200</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-blue-500 h-2 rounded-full" style="width: 60%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between mb-1">
+                                            <span class="text-sm">Shopping</span>
+                                            <span class="text-sm font-medium">$420 / $500</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-purple-500 h-2 rounded-full" style="width: 84%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Transactions Tab Content -->
+                <div id="transactionsContent" class="tab-content hidden">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800">All Transactions</h2>
+                            <div class="flex space-x-4">
+                                <div class="relative">
+                                    <input type="text" placeholder="Search transactions..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                                </div>
+                                <button class="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
+                                    <i class="fas fa-filter mr-2"></i> Filter
+                                </button>
+                                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                    <i class="fas fa-download mr-2"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Transactions Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                        <th class="py-3 px-4 text-left text-gray-700 font-medium">Date</th>
+                                        <th class="py-3 px-4 text-left text-gray-700 font-medium">Description</th>
+                                        <th class="py-3 px-4 text-left text-gray-700 font-medium">Category</th>
+                                        <th class="py-3 px-4 text-left text-gray-700 font-medium">Type</th>
+                                        <th class="py-3 px-4 text-left text-gray-700 font-medium">Amount</th>
+                                        <th class="py-3 px-4 text-left text-gray-700 font-medium">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="allTransactionsTable">
+                                    <!-- All transactions will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <div class="flex justify-between items-center mt-6 pt-6 border-t border-gray-200">
+                            <div class="text-gray-600">
+                                Showing <span class="font-medium">1-8</span> of <span class="font-medium">24</span> transactions
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="px-3 py-2 bg-blue-600 text-white rounded-lg">1</button>
+                                <button class="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">2</button>
+                                <button class="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">3</button>
+                                <button class="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Analytics Tab Content -->
+                <div id="analyticsContent" class="tab-content hidden">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6">Financial Analytics</h2>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-700 mb-4">Spending Trends</h3>
+                                <div class="chart-container">
+                                    <canvas id="trendChart"></canvas>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-700 mb-4">Income vs Expense Ratio</h3>
+                                <div class="chart-container">
+                                    <canvas id="ratioChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="p-5 bg-gray-50 rounded-lg">
+                                <h4 class="font-medium text-gray-700 mb-2">Average Daily Spend</h4>
+                                <p class="text-3xl font-bold text-gray-800">$61.50</p>
+                                <p class="text-green-600 text-sm mt-2"><i class="fas fa-arrow-down mr-1"></i> 5% lower than last month</p>
+                            </div>
+                            
+                            <div class="p-5 bg-gray-50 rounded-lg">
+                                <h4 class="font-medium text-gray-700 mb-2">Largest Expense</h4>
+                                <p class="text-3xl font-bold text-gray-800">$420.50</p>
+                                <p class="text-gray-600 text-sm mt-2">Shopping category on May 15</p>
+                            </div>
+                            
+                            <div class="p-5 bg-gray-50 rounded-lg">
+                                <h4 class="font-medium text-gray-700 mb-2">Savings Goal Progress</h4>
+                                <p class="text-3xl font-bold text-gray-800">67%</p>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mt-3">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 67%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Budget Tab Content -->
+                <div id="budgetContent" class="tab-content hidden">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800">Budget Planner</h2>
+                            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                <i class="fas fa-plus mr-2"></i> Create New Budget
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-700 mb-4">Monthly Budget Overview</h3>
+                                
+                                <div class="space-y-6">
+                                    <div>
+                                        <div class="flex justify-between mb-1">
+                                            <span>Food & Dining</span>
+                                            <span class="font-medium">$645 / $700</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-3">
+                                            <div class="bg-red-500 h-3 rounded-full" style="width: 92%"></div>
+                                        </div>
+                                        <p class="text-red-600 text-sm mt-1">$55 over budget</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <div class="flex justify-between mb-1">
+                                            <span>Shopping</span>
+                                            <span class="font-medium">$420 / $500</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-3">
+                                            <div class="bg-yellow-500 h-3 rounded-full" style="width: 84%"></div>
+                                        </div>
+                                        <p class="text-green-600 text-sm mt-1">$80 remaining</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <div class="flex justify-between mb-1">
+                                            <span>Entertainment</span>
+                                            <span class="font-medium">$120 / $200</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-3">
+                                            <div class="bg-green-500 h-3 rounded-full" style="width: 60%"></div>
+                                        </div>
+                                        <p class="text-green-600 text-sm mt-1">$80 remaining</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <div class="flex justify-between mb-1">
+                                            <span>Transportation</span>
+                                            <span class="font-medium">$185 / $250</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-3">
+                                            <div class="bg-blue-500 h-3 rounded-full" style="width: 74%"></div>
+                                        </div>
+                                        <p class="text-green-600 text-sm mt-1">$65 remaining</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-700 mb-4">Budget Suggestions</h3>
+                                
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-5 mb-6">
+                                    <h4 class="font-medium text-blue-800 mb-2">Reduce Food Spending</h4>
+                                    <p class="text-blue-700 text-sm">You've spent 92% of your food budget. Consider cooking at home more often to stay within budget.</p>
+                                </div>
+                                
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-5 mb-6">
+                                    <h4 class="font-medium text-green-800 mb-2">Great Job on Entertainment</h4>
+                                    <p class="text-green-700 text-sm">You've only used 60% of your entertainment budget. You're doing great at managing discretionary spending!</p>
+                                </div>
+                                
+                                <div class="bg-purple-50 border border-purple-200 rounded-lg p-5">
+                                    <h4 class="font-medium text-purple-800 mb-2">Increase Savings Rate</h4>
+                                    <p class="text-purple-700 text-sm">You're saving 24% of your income. Consider increasing this to 30% to reach your financial goals faster.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reports Tab Content -->
+                <div id="reportsContent" class="tab-content hidden">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6">Financial Reports</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="p-5 border border-gray-200 rounded-lg hover:border-blue-500 cursor-pointer transition-all">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                        <i class="fas fa-file-invoice-dollar text-blue-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-800">Monthly Report</h4>
+                                        <p class="text-gray-600 text-sm">May 2023 Summary</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-5 border border-gray-200 rounded-lg hover:border-blue-500 cursor-pointer transition-all">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                                        <i class="fas fa-chart-bar text-green-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-800">Category Analysis</h4>
+                                        <p class="text-gray-600 text-sm">Spending by category</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-5 border border-gray-200 rounded-lg hover:border-blue-500 cursor-pointer transition-all">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                                        <i class="fas fa-trophy text-purple-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-800">Year-to-Date</h4>
+                                        <p class="text-gray-600 text-sm">Jan 2023 - Present</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border border-gray-200 rounded-lg p-6">
+                            <h3 class="text-lg font-medium text-gray-700 mb-4">Generate Custom Report</h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Report Type</label>
+                                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                                        <option>Income vs Expenses</option>
+                                        <option>Category Breakdown</option>
+                                        <option>Monthly Comparison</option>
+                                        <option>Savings Analysis</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Date Range</label>
+                                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+                                        <option>Last 30 days</option>
+                                        <option>Last 3 months</option>
+                                        <option>Last 6 months</option>
+                                        <option>Last year</option>
+                                        <option>Custom range</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-end">
+                                <button class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                                    <i class="fas fa-download mr-2"></i> Generate Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Transaction Modal -->
+    <div id="transactionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl w-full max-w-md modal-animation">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">Add Transaction</h3>
+                    <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <!-- Transaction Type Toggle -->
+                <div class="flex rounded-lg bg-gray-100 p-1 mb-6">
+                    <button id="incomeTypeBtn" class="flex-1 py-3 rounded-md font-medium transition-all duration-300 bg-green-500 text-white">
+                        <i class="fas fa-plus-circle mr-2"></i> Income
+                    </button>
+                    <button id="expenseTypeBtn" class="flex-1 py-3 rounded-md font-medium transition-all duration-300 text-gray-700">
+                        <i class="fas fa-minus-circle mr-2"></i> Expense
+                    </button>
+                </div>
+                
+                <!-- Transaction Form -->
+                <form id="transactionForm">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Title</label>
+                        <input type="text" id="transactionTitle" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Salary, Groceries, etc." required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Amount ($)</label>
+                        <input type="number" id="transactionAmount" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="0.00" step="0.01" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Category</label>
+                        <select id="transactionCategory" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
+                            <!-- Categories will be populated based on type -->
+                        </select>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-gray-700 mb-2">Date</label>
+                        <input type="date" id="transactionDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" id="cancelBtn" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                        <button type="submit" id="saveTransactionBtn" class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-medium">
+                            <i class="fas fa-save mr-2"></i> Save Transaction
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div id="logoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl w-full max-w-md modal-animation">
+            <div class="p-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-sign-out-alt text-red-600 text-2xl"></i>
+                    </div>
+                    
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Logout Confirmation</h3>
+                    <p class="text-gray-600 mb-6">Are you sure you want to logout? Your data will be saved automatically.</p>
+                    
+                    <div class="flex justify-center space-x-4">
+                        <button id="cancelLogout" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                        <button id="confirmLogout" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium">
+                            Yes, Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="fixed top-4 right-4 z-50 hidden">
+        <div class="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide">
+            <i class="fas fa-check-circle mr-3 text-xl"></i>
+            <span id="notificationMessage">Transaction saved successfully!</span>
+        </div>
+    </div>
+
+    <script>
+        // Sample transaction data
+        let transactions = [
+            { id: 1, title: "Monthly Salary", amount: 3800, type: "income", category: "salary", date: "2023-05-01", description: "Monthly paycheck" },
+            { id: 2, title: "Grocery Shopping", amount: 145.50, type: "expense", category: "food", date: "2023-05-03", description: "Weekly groceries" },
+            { id: 3, title: "Netflix Subscription", amount: 15.99, type: "expense", category: "entertainment", date: "2023-05-05", description: "Monthly subscription" },
+            { id: 4, title: "Freelance Project", amount: 450, type: "income", category: "freelance", date: "2023-05-08", description: "Website design project" },
+            { id: 5, title: "Gas Bill", amount: 85.25, type: "expense", category: "bills", date: "2023-05-10", description: "Monthly gas bill" },
+            { id: 6, title: "Uber Rides", amount: 62.30, type: "expense", category: "transport", date: "2023-05-12", description: "Transportation for the week" },
+            { id: 7, title: "New Headphones", amount: 129.99, type: "expense", category: "shopping", date: "2023-05-15", description: "Bought new headphones" },
+            { id: 8, title: "Dividend Payment", amount: 250, type: "income", category: "investment", date: "2023-05-18", description: "Stock dividends" }
+        ];
+
+        // Categories for income and expenses
+        const incomeCategories = [
+            { value: "salary", label: "Salary", color: "category-salary" },
+            { value: "freelance", label: "Freelance", color: "category-other" },
+            { value: "investment", label: "Investment", color: "category-investment" },
+            { value: "gift", label: "Gift", color: "category-other" },
+            { value: "other-income", label: "Other Income", color: "category-other" }
+        ];
+
+        const expenseCategories = [
+            { value: "food", label: "Food & Dining", color: "category-food" },
+            { value: "transport", label: "Transportation", color: "category-transport" },
+            { value: "shopping", label: "Shopping", color: "category-shopping" },
+            { value: "bills", label: "Bills & Utilities", color: "category-bills" },
+            { value: "entertainment", label: "Entertainment", color: "category-entertainment" },
+            { value: "health", label: "Health & Fitness", color: "category-other" },
+            { value: "education", label: "Education", color: "category-other" },
+            { value: "other-expense", label: "Other Expense", color: "category-other" }
+        ];
+
+        // DOM Elements
+        const transactionModal = document.getElementById('transactionModal');
+        const logoutModal = document.getElementById('logoutModal');
+        const openAddModalBtn = document.getElementById('openAddModal');
+        const closeModalBtn = document.getElementById('closeModal');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const incomeTypeBtn = document.getElementById('incomeTypeBtn');
+        const expenseTypeBtn = document.getElementById('expenseTypeBtn');
+        const transactionForm = document.getElementById('transactionForm');
+        const transactionCategory = document.getElementById('transactionCategory');
+        const transactionsList = document.getElementById('transactionsList');
+        const allTransactionsTable = document.getElementById('allTransactionsTable');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const cancelLogoutBtn = document.getElementById('cancelLogout');
+        const confirmLogoutBtn = document.getElementById('confirmLogout');
+        const toggleSidebarBtn = document.getElementById('toggleSidebar');
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+        
+        // Tab elements
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Chart variables
+        let incomeExpenseChart, categoryChart, trendChart, ratioChart;
+        
+        // Current transaction type (income or expense)
+        let currentTransactionType = 'income';
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date as default in the form
+            document.getElementById('transactionDate').valueAsDate = new Date();
+            
+            // Initialize with income categories
+            updateCategoryOptions('income');
+            
+            // Load transactions
+            renderTransactions();
+            renderAllTransactionsTable();
+            updateSummary();
+            initializeCharts();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Activate first tab
+            switchTab('overview');
+        });
+        
+        function setupEventListeners() {
+            // Open modal
+            openAddModalBtn.addEventListener('click', () => {
+                transactionModal.classList.remove('hidden');
+            });
+            
+            // Close modal
+            closeModalBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', closeModal);
+            
+            // Close modal when clicking outside
+            transactionModal.addEventListener('click', (e) => {
+                if (e.target === transactionModal) {
+                    closeModal();
+                }
+            });
+            
+            // Transaction type toggle
+            incomeTypeBtn.addEventListener('click', () => {
+                setTransactionType('income');
+            });
+            
+            expenseTypeBtn.addEventListener('click', () => {
+                setTransactionType('expense');
+            });
+            
+            // Form submission
+            transactionForm.addEventListener('submit', saveTransaction);
+            
+            // Filter transactions
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Update active button
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('active', 'bg-blue-600', 'text-white');
+                        btn.classList.add('bg-gray-100', 'text-gray-800');
+                    });
+                    
+                    button.classList.add('active', 'bg-blue-600', 'text-white');
+                    button.classList.remove('bg-gray-100', 'text-gray-800');
+                    
+                    // Filter transactions
+                    const filter = button.getAttribute('data-filter');
+                    renderTransactions(filter);
+                });
+            });
+            
+            // View all transactions
+            document.getElementById('viewAllBtn').addEventListener('click', () => {
+                switchTab('transactions');
+            });
+            
+            // Logout functionality
+            logoutBtn.addEventListener('click', () => {
+                logoutModal.classList.remove('hidden');
+            });
+            
+            cancelLogoutBtn.addEventListener('click', () => {
+                logoutModal.classList.add('hidden');
+            });
+            
+            confirmLogoutBtn.addEventListener('click', () => {
+                showNotification('Logged out successfully!', 'info');
+                logoutModal.classList.add('hidden');
+                
+                // In a real app, you would redirect to login page
+                setTimeout(() => {
+                    alert('Redirecting to login page... (This is a demo)');
+                }, 1000);
+            });
+            
+            // Tab switching
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.id.replace('Tab', '');
+                    switchTab(tabId);
+                });
+            });
+            
+            // Toggle sidebar
+            toggleSidebarBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+                mainContent.classList.toggle('ml-64');
+            });
+        }
+        
+        function switchTab(tabName) {
+            // Update tab buttons
+            tabButtons.forEach(button => {
+                const buttonTab = button.id.replace('Tab', '');
+                if (buttonTab === tabName) {
+                    button.classList.remove('tab-inactive');
+                    button.classList.add('tab-active');
+                } else {
+                    button.classList.remove('tab-active');
+                    button.classList.add('tab-inactive');
+                }
+            });
+            
+            // Update tab content
+            tabContents.forEach(content => {
+                const contentTab = content.id.replace('Content', '');
+                if (contentTab === tabName) {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
+                }
+            });
+            
+            // If switching to transactions tab, update the table
+            if (tabName === 'transactions') {
+                renderAllTransactionsTable();
+            }
+            
+            // If switching to analytics tab, initialize charts if needed
+            if (tabName === 'analytics') {
+                initializeAnalyticsCharts();
+            }
+        }
+        
+        function setTransactionType(type) {
+            currentTransactionType = type;
+            
+            if (type === 'income') {
+                incomeTypeBtn.classList.add('bg-green-500', 'text-white');
+                incomeTypeBtn.classList.remove('text-gray-700');
+                expenseTypeBtn.classList.add('text-gray-700');
+                expenseTypeBtn.classList.remove('bg-red-500', 'text-white');
+                updateCategoryOptions('income');
+            } else {
+                expenseTypeBtn.classList.add('bg-red-500', 'text-white');
+                expenseTypeBtn.classList.remove('text-gray-700');
+                incomeTypeBtn.classList.add('text-gray-700');
+                incomeTypeBtn.classList.remove('bg-green-500', 'text-white');
+                updateCategoryOptions('expense');
+            }
+        }
+        
+        function updateCategoryOptions(type) {
+            // Clear current options
+            transactionCategory.innerHTML = '';
+            
+            // Add new options based on type
+            const categories = type === 'income' ? incomeCategories : expenseCategories;
+            
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.value;
+                option.textContent = category.label;
+                transactionCategory.appendChild(option);
+            });
+        }
+        
+        function closeModal() {
+            transactionModal.classList.add('hidden');
+            transactionForm.reset();
+            document.getElementById('transactionDate').valueAsDate = new Date();
+            setTransactionType('income');
+        }
+        
+        function saveTransaction(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const title = document.getElementById('transactionTitle').value;
+            const amount = parseFloat(document.getElementById('transactionAmount').value);
+            const category = document.getElementById('transactionCategory').value;
+            const date = document.getElementById('transactionDate').value;
+            
+            if (!title || !amount || !category || !date) {
+                showNotification('Please fill in all fields', 'error');
+                return;
+            }
+            
+            // Create new transaction object
+            const newTransaction = {
+                id: transactions.length > 0 ? Math.max(...transactions.map(t => t.id)) + 1 : 1,
+                title: title,
+                amount: amount,
+                type: currentTransactionType,
+                category: category,
+                date: date,
+                description: "Added via form"
+            };
+            
+            // Add to transactions array
+            transactions.push(newTransaction);
+            
+            // Update UI
+            renderTransactions();
+            renderAllTransactionsTable();
+            updateSummary();
+            updateCharts();
+            
+            // Close modal and reset form
+            closeModal();
+            
+            // Show success message
+            showNotification(`${currentTransactionType === 'income' ? 'Income' : 'Expense'} added successfully!`, 'success');
+        }
+        
+        function renderTransactions(filter = 'all') {
+            // Clear current transactions
+            transactionsList.innerHTML = '';
+            
+            // Filter transactions if needed
+            let filteredTransactions = transactions;
+            if (filter !== 'all') {
+                filteredTransactions = transactions.filter(t => t.type === filter);
+            }
+            
+            // Sort by date (newest first)
+            filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Take only the last 5 transactions for the recent list
+            const recentTransactions = filteredTransactions.slice(0, 5);
+            
+            // Render each transaction
+            recentTransactions.forEach(transaction => {
+                const transactionElement = document.createElement('div');
+                transactionElement.className = `p-4 rounded-lg ${transaction.type === 'income' ? 'transaction-income bg-green-50' : 'transaction-expense bg-red-50'}`;
+                
+                // Find category label
+                const categoryList = transaction.type === 'income' ? incomeCategories : expenseCategories;
+                const categoryInfo = categoryList.find(c => c.value === transaction.category) || { label: transaction.category, color: 'category-other' };
+                
+                // Format date
+                const dateObj = new Date(transaction.date);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                
+                transactionElement.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-medium text-gray-800">${transaction.title}</h4>
+                            <div class="flex items-center mt-1">
+                                <span class="text-xs px-2 py-1 rounded-full ${categoryInfo.color} mr-3">${categoryInfo.label}</span>
+                                <span class="text-gray-500 text-sm">${formattedDate}</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}">
+                                ${transaction.type === 'income' ? '+' : '-'}$${transaction.amount.toFixed(2)}
+                            </p>
+                            <button class="delete-btn text-gray-400 hover:text-red-500 text-sm mt-1" data-id="${transaction.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                transactionsList.appendChild(transactionElement);
+            });
+            
+            // Add delete event listeners
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const transactionId = parseInt(this.getAttribute('data-id'));
+                    deleteTransaction(transactionId);
+                });
+            });
+        }
+        
+        function renderAllTransactionsTable() {
+            // Clear current table
+            allTransactionsTable.innerHTML = '';
+            
+            // Sort by date (newest first)
+            const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Render each transaction
+            sortedTransactions.forEach(transaction => {
+                // Find category label
+                const categoryList = transaction.type === 'income' ? incomeCategories : expenseCategories;
+                const categoryInfo = categoryList.find(c => c.value === transaction.category) || { label: transaction.category, color: 'category-other' };
+                
+                // Format date
+                const dateObj = new Date(transaction.date);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-100 hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="py-4 px-4">${formattedDate}</td>
+                    <td class="py-4 px-4 font-medium">${transaction.title}</td>
+                    <td class="py-4 px-4">
+                        <span class="text-xs px-2 py-1 rounded-full ${categoryInfo.color}">${categoryInfo.label}</span>
+                    </td>
+                    <td class="py-4 px-4">
+                        <span class="px-2 py-1 rounded text-xs font-medium ${transaction.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${transaction.type === 'income' ? 'Income' : 'Expense'}
+                        </span>
+                    </td>
+                    <td class="py-4 px-4 font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}">
+                        ${transaction.type === 'income' ? '+' : '-'}$${transaction.amount.toFixed(2)}
+                    </td>
+                    <td class="py-4 px-4">
+                        <button class="edit-btn text-blue-600 hover:text-blue-800 mr-3" data-id="${transaction.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="delete-btn-table text-red-600 hover:text-red-800" data-id="${transaction.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                
+                allTransactionsTable.appendChild(row);
+            });
+            
+            // Add delete event listeners
+            document.querySelectorAll('.delete-btn-table').forEach(button => {
+                button.addEventListener('click', function() {
+                    const transactionId = parseInt(this.getAttribute('data-id'));
+                    deleteTransaction(transactionId);
+                });
+            });
+            
+            // Add edit event listeners
+            document.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const transactionId = parseInt(this.getAttribute('data-id'));
+                    editTransaction(transactionId);
+                });
+            });
+        }
+        
+        function deleteTransaction(id) {
+            if (confirm('Are you sure you want to delete this transaction?')) {
+                // Remove transaction from array
+                transactions = transactions.filter(t => t.id !== id);
+                
+                // Update UI
+                renderTransactions();
+                renderAllTransactionsTable();
+                updateSummary();
+                updateCharts();
+                
+                // Show notification
+                showNotification('Transaction deleted successfully!', 'warning');
+            }
+        }
+        
+        function editTransaction(id) {
+            // Find transaction
+            const transaction = transactions.find(t => t.id === id);
+            if (!transaction) return;
+            
+            // Open modal with transaction data
+            transactionModal.classList.remove('hidden');
+            setTransactionType(transaction.type);
+            
+            document.getElementById('transactionTitle').value = transaction.title;
+            document.getElementById('transactionAmount').value = transaction.amount;
+            document.getElementById('transactionCategory').value = transaction.category;
+            document.getElementById('transactionDate').value = transaction.date;
+            
+            // Update form to edit mode
+            const saveBtn = document.getElementById('saveTransactionBtn');
+            saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i> Update Transaction';
+            saveBtn.dataset.editingId = id;
+            
+            // Change form submit behavior
+            transactionForm.onsubmit = function(e) {
+                e.preventDefault();
+                
+                // Update transaction
+                const updatedTransaction = {
+                    ...transaction,
+                    title: document.getElementById('transactionTitle').value,
+                    amount: parseFloat(document.getElementById('transactionAmount').value),
+                    category: document.getElementById('transactionCategory').value,
+                    date: document.getElementById('transactionDate').value
+                };
+                
+                // Update in array
+                const index = transactions.findIndex(t => t.id === id);
+                transactions[index] = updatedTransaction;
+                
+                // Update UI
+                renderTransactions();
+                renderAllTransactionsTable();
+                updateSummary();
+                updateCharts();
+                
+                // Close modal
+                closeModal();
+                
+                // Reset form
+                saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i> Save Transaction';
+                delete saveBtn.dataset.editingId;
+                transactionForm.onsubmit = saveTransaction;
+                
+                // Show notification
+                showNotification('Transaction updated successfully!', 'success');
+            };
+        }
+        
+        function updateSummary() {
+            // Calculate totals
+            let totalIncome = 0;
+            let totalExpenses = 0;
+            
+            transactions.forEach(transaction => {
+                if (transaction.type === 'income') {
+                    totalIncome += transaction.amount;
+                } else {
+                    totalExpenses += transaction.amount;
+                }
+            });
+            
+            const totalBalance = totalIncome - totalExpenses;
+            const savingsRate = totalIncome > 0 ? ((totalBalance / totalIncome) * 100).toFixed(0) : 0;
+            
+            // Update UI
+            document.getElementById('totalIncome').textContent = `$${totalIncome.toFixed(2)}`;
+            document.getElementById('totalExpenses').textContent = `$${totalExpenses.toFixed(2)}`;
+            
+            // Update all balance displays
+            document.querySelectorAll('#totalBalance').forEach(el => {
+                el.textContent = `$${totalBalance.toFixed(2)}`;
+            });
+            
+            // Update savings rate card
+            document.querySelector('.savings-bg h3').textContent = `${savingsRate}%`;
+            document.querySelector('.savings-bg p:nth-child(3)').textContent = `$${totalBalance.toFixed(0)} saved this month`;
+        }
+        
+        function initializeCharts() {
+            // Income vs Expense Chart
+            const incomeExpenseCtx = document.getElementById('incomeExpenseChart').getContext('2d');
+            incomeExpenseChart = new Chart(incomeExpenseCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+                    datasets: [
+                        {
+                            label: 'Income',
+                            data: [3200, 3500, 3800, 4000, 4250],
+                            backgroundColor: '#10b981',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Expenses',
+                            data: [1850, 2200, 1950, 2400, 1845],
+                            backgroundColor: '#ef4444',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Category Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Other'],
+                    datasets: [{
+                        data: [35, 20, 25, 15, 5, 10],
+                        backgroundColor: [
+                            '#fbbf24', // Food - amber
+                            '#3b82f6', // Transport - blue
+                            '#8b5cf6', // Shopping - purple
+                            '#10b981', // Bills - green
+                            '#ef4444', // Entertainment - red
+                            '#6b7280'  // Other - gray
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        }
+        
+        function initializeAnalyticsCharts() {
+            // Only initialize if charts don't exist yet
+            if (!trendChart) {
+                const trendCtx = document.getElementById('trendChart').getContext('2d');
+                trendChart = new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        datasets: [
+                            {
+                                label: 'Spending',
+                                data: [450, 520, 480, 395],
+                                borderColor: '#ef4444',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            if (!ratioChart) {
+                const ratioCtx = document.getElementById('ratioChart').getContext('2d');
+                ratioChart = new Chart(ratioCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Income', 'Expenses'],
+                        datasets: [{
+                            data: [4250, 1845],
+                            backgroundColor: ['#10b981', '#ef4444'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function updateCharts() {
+            // In a real app, you would recalculate chart data from transactions
+            // For this demo, we'll just update the current month's data
+            
+            // Calculate current month's income and expenses
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            
+            let monthIncome = 0;
+            let monthExpenses = 0;
+            
+            transactions.forEach(transaction => {
+                const transactionDate = new Date(transaction.date);
+                if (transactionDate.getMonth() === currentMonth && transactionDate.getFullYear() === currentYear) {
+                    if (transaction.type === 'income') {
+                        monthIncome += transaction.amount;
+                    } else {
+                        monthExpenses += transaction.amount;
+                    }
+                }
+            });
+            
+            // Update income vs expense chart
+            incomeExpenseChart.data.datasets[0].data[4] = monthIncome;
+            incomeExpenseChart.data.datasets[1].data[4] = monthExpenses;
+            incomeExpenseChart.update();
+            
+            // Update ratio chart if it exists
+            if (ratioChart) {
+                ratioChart.data.datasets[0].data = [monthIncome, monthExpenses];
+                ratioChart.update();
+            }
+        }
+        
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notificationToast');
+            const notificationMessage = document.getElementById('notificationMessage');
+            
+            // Set message and color based on type
+            notificationMessage.textContent = message;
+            
+            if (type === 'success') {
+                notification.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide';
+                notification.innerHTML = '<i class="fas fa-check-circle mr-3 text-xl"></i>' + `<span id="notificationMessage">${message}</span>`;
+            } else if (type === 'error') {
+                notification.className = 'fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide';
+                notification.innerHTML = '<i class="fas fa-exclamation-circle mr-3 text-xl"></i>' + `<span id="notificationMessage">${message}</span>`;
+            } else if (type === 'warning') {
+                notification.className = 'fixed top-4 right-4 z-50 bg-yellow-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide';
+                notification.innerHTML = '<i class="fas fa-exclamation-triangle mr-3 text-xl"></i>' + `<span id="notificationMessage">${message}</span>`;
+            } else {
+                notification.className = 'fixed top-4 right-4 z-50 bg-blue-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide';
+                notification.innerHTML = '<i class="fas fa-info-circle mr-3 text-xl"></i>' + `<span id="notificationMessage">${message}</span>`;
+            }
+            
+            // Show notification
+            notification.classList.remove('hidden');
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

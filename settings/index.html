@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - MoneyFlow Pro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            width: 70px;
+        }
+        
+        .sidebar.collapsed .sidebar-text,
+        .sidebar.collapsed .logo-text {
+            display: none;
+        }
+        
+        .sidebar.collapsed .user-name {
+            display: none;
+        }
+        
+        .main-content {
+            transition: all 0.3s ease;
+        }
+        
+        .settings-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+        
+        .settings-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .tab-active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .tab-inactive {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .tab-inactive:hover {
+            background-color: #e5e7eb;
+        }
+        
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .notification-slide {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .settings-tab-active {
+            background-color: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+        }
+        
+        .settings-tab-inactive {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .settings-tab-inactive:hover {
+            background-color: #e5e7eb;
+        }
+        
+        /* Toggle switch styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #3b82f6;
+        }
+        
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #3b82f6;
+        }
+        
+        .toggle-checkbox {
+            display: none;
+        }
+        
+        .toggle-label {
+            display: block;
+            width: 48px;
+            height: 24px;
+            background-color: #d1d5db;
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-label::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-checkbox:checked + .toggle-label::after {
+            transform: translateX(24px);
+        }
+        
+        /* Theme color options */
+        .theme-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+        
+        .theme-option:hover {
+            transform: scale(1.05);
+        }
+        
+        .theme-option.selected {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Profile avatar upload */
+        .avatar-upload {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+        
+        .avatar-upload input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .avatar-upload:hover .avatar-overlay {
+            opacity: 1;
+        }
+        
+        /* Danger zone styling */
+        .danger-zone {
+            border-left: 4px solid #ef4444;
+            background-color: rgba(239, 68, 68, 0.05);
+        }
+        
+        /* Accordion styling */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .accordion-content.open {
+            max-height: 500px;
+        }
+        
+        .accordion-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .accordion-icon.open {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Main Container -->
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <div class="sidebar bg-gray-900 text-white w-64 fixed h-full overflow-y-auto z-30">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-10">
+                    <div class="flex items-center">
+                        <i class="fas fa-wallet text-blue-400 text-2xl"></i>
+                        <h1 class="logo-text text-xl font-bold ml-3">MoneyFlow Pro</h1>
+                    </div>
+                    <button id="toggleSidebar" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                
+                <!-- User Profile -->
+                <div class="flex items-center mb-8 p-3 bg-gray-800 rounded-lg">
+                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                        <span class="font-bold">JD</span>
+                    </div>
+                    <div class="ml-3 sidebar-text">
+                        <p class="font-medium user-name">John Doe</p>
+                        <p class="text-gray-400 text-sm">Premium User</p>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <nav class="mb-8">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" id="dashboardNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-chart-pie w-6"></i>
+                                <span class="sidebar-text ml-3 font-medium">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="transactionsNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-exchange-alt w-6"></i>
+                                <span class="sidebar-text ml-3">Transactions</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="analyticsNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-chart-line w-6"></i>
+                                <span class="sidebar-text ml-3">Analytics</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="budgetNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-calendar-alt w-6"></i>
+                                <span class="sidebar-text ml-3">Budget Planner</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="categoriesNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                                <i class="fas fa-tags w-6"></i>
+                                <span class="sidebar-text ml-3">Categories</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" id="settingsNav" class="flex items-center p-3 rounded-lg bg-blue-900 text-white">
+                                <i class="fas fa-cog w-6"></i>
+                                <span class="sidebar-text ml-3">Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <!-- Logout Button -->
+                <div class="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-800">
+                    <button id="logoutBtn" class="flex items-center justify-center w-full p-3 rounded-lg bg-gray-800 hover:bg-red-900 text-gray-300 hover:text-white transition-all">
+                        <i class="fas fa-sign-out-alt w-6"></i>
+                        <span class="sidebar-text ml-3 font-medium">Logout</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content ml-64 flex-1 transition-all">
+            <!-- Top Header -->
+            <header class="bg-white shadow-sm">
+                <div class="px-8 py-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800" id="pageTitle">Settings</h2>
+                            <p class="text-gray-600" id="pageSubtitle">Configure your account and preferences</p>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <!-- Notifications -->
+                            <button class="relative p-2 text-gray-600 hover:text-blue-600">
+                                <i class="fas fa-bell text-xl"></i>
+                                <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
+                            </button>
+                            
+                            <!-- Save Settings Button -->
+                            <button id="saveSettingsBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg flex items-center transition duration-300 shadow-md">
+                                <i class="fas fa-save mr-2"></i> Save Changes
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings Tabs -->
+                    <div class="mt-6">
+                        <div class="flex space-x-2 overflow-x-auto">
+                            <button id="profileTab" class="settings-tab-btn py-3 px-6 rounded-lg font-medium transition-all whitespace-nowrap settings-tab-active" data-tab="profile">
+                                <i class="fas fa-user mr-2"></i> Profile
+                            </button>
+                            <button id="preferencesTab" class="settings-tab-btn py-3 px-6 rounded-lg font-medium transition-all whitespace-nowrap settings-tab-inactive" data-tab="preferences">
+                                <i class="fas fa-sliders-h mr-2"></i> Preferences
+                            </button>
+                            <button id="notificationsTab" class="settings-tab-btn py-3 px-6 rounded-lg font-medium transition-all whitespace-nowrap settings-tab-inactive" data-tab="notifications">
+                                <i class="fas fa-bell mr-2"></i> Notifications
+                            </button>
+                            <button id="securityTab" class="settings-tab-btn py-3 px-6 rounded-lg font-medium transition-all whitespace-nowrap settings-tab-inactive" data-tab="security">
+                                <i class="fas fa-shield-alt mr-2"></i> Security
+                            </button>
+                            <button id="dataTab" class="settings-tab-btn py-3 px-6 rounded-lg font-medium transition-all whitespace-nowrap settings-tab-inactive" data-tab="data">
+                                <i class="fas fa-database mr-2"></i> Data Management
+                            </button>
+                            <button id="billingTab" class="settings-tab-btn py-3 px-6 rounded-lg font-medium transition-all whitespace-nowrap settings-tab-inactive" data-tab="billing">
+                                <i class="fas fa-credit-card mr-2"></i> Billing
+                            </button>
+                            <button id="aboutTab" class="settings-tab-btn py-3 px-6 rounded-lg font-medium transition-all whitespace-nowrap settings-tab-inactive" data-tab="about">
+                                <i class="fas fa-info-circle mr-2"></i> About
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Settings Content -->
+            <div class="p-8">
+                <!-- Profile Tab Content -->
+                <div id="profileContent" class="settings-tab-content">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <!-- Left Column -->
+                        <div class="lg:col-span-2">
+                            <div class="settings-card p-6 mb-6">
+                                <h3 class="text-xl font-bold text-gray-800 mb-6">Personal Information</h3>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <label class="block text-gray-700 mb-2">First Name</label>
+                                        <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" value="John">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 mb-2">Last Name</label>
+                                        <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" value="Doe">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 mb-2">Email Address</label>
+                                        <input type="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" value="john.doe@example.com">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 mb-2">Phone Number</label>
+                                        <input type="tel" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" value="+1 (555) 123-4567">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <label class="block text-gray-700 mb-2">Bio</label>
+                                    <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" rows="3" placeholder="Tell us about yourself...">Financial enthusiast focused on budgeting and investment strategies. Love tracking expenses and optimizing savings.</textarea>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Location</label>
+                                    <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" value="San Francisco, CA">
+                                </div>
+                            </div>
+                            
+                            <div class="settings-card p-6">
+                                <h3 class="text-xl font-bold text-gray-800 mb-6">Financial Preferences</h3>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                        <label class="block text-gray-700 mb-2">Default Currency</label>
+                                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                            <option value="USD" selected>US Dollar (USD)</option>
+                                            <option value="EUR">Euro (EUR)</option>
+                                            <option value="GBP">British Pound (GBP)</option>
+                                            <option value="JPY">Japanese Yen (JPY)</option>
+                                            <option value="CAD">Canadian Dollar (CAD)</option>
+                                            <option value="AUD">Australian Dollar (AUD)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 mb-2">Date Format</label>
+                                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                            <option value="MM/DD/YYYY" selected>MM/DD/YYYY</option>
+                                            <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                            <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 mb-2">First Day of Week</label>
+                                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                            <option value="sunday">Sunday</option>
+                                            <option value="monday" selected>Monday</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 mb-2">Tax Rate (%)</label>
+                                        <input type="number" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" value="7.5" step="0.1" min="0" max="100">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Financial Goals</label>
+                                    <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" rows="2" placeholder="Your financial goals...">Save $50,000 for down payment, Invest 15% of income monthly, Build emergency fund of 6 months expenses</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column -->
+                        <div>
+                            <div class="settings-card p-6 mb-6">
+                                <h3 class="text-xl font-bold text-gray-800 mb-6">Profile Picture</h3>
+                                
+                                <div class="flex flex-col items-center">
+                                    <div class="relative mb-4">
+                                        <div class="w-32 h-32 rounded-full bg-blue-500 flex items-center justify-center text-white text-4xl font-bold">
+                                            JD
+                                        </div>
+                                        <div class="avatar-upload">
+                                            <div class="avatar-overlay">
+                                                <i class="fas fa-camera text-white text-2xl"></i>
+                                            </div>
+                                            <input type="file" accept="image/*">
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-gray-600 text-sm text-center mb-6">
+                                        Click on the avatar to upload a custom profile picture. Recommended size: 256x256px
+                                    </p>
+                                    
+                                    <div class="flex space-x-3">
+                                        <button class="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
+                                            <i class="fas fa-undo mr-2"></i> Reset
+                                        </button>
+                                        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                            <i class="fas fa-upload mr-2"></i> Upload
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-card p-6">
+                                <h3 class="text-xl font-bold text-gray-800 mb-6">Account Status</h3>
+                                
+                                <div class="space-y-4">
+                                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <p class="font-medium text-gray-800">Account Type</p>
+                                            <p class="text-gray-600 text-sm">Premium User</p>
+                                        </div>
+                                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                                            Active
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <p class="font-medium text-gray-800">Member Since</p>
+                                            <p class="text-gray-600 text-sm">January 15, 2022</p>
+                                        </div>
+                                        <i class="fas fa-calendar-check text-blue-600"></i>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <p class="font-medium text-gray-800">Last Login</p>
+                                            <p class="text-gray-600 text-sm">Today, 9:42 AM</p>
+                                        </div>
+                                        <i class="fas fa-sign-in-alt text-green-600"></i>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                        <div>
+                                            <p class="font-medium text-gray-800">Data Storage</p>
+                                            <p class="text-gray-600 text-sm">2.4 GB of 10 GB used</p>
+                                        </div>
+                                        <div class="w-16">
+                                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                                <div class="bg-blue-500 h-2 rounded-full" style="width: 24%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6 pt-6 border-t border-gray-200">
+                                    <button class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                        <i class="fas fa-chart-line mr-2"></i> View Usage Statistics
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Preferences Tab Content -->
+                <div id="preferencesContent" class="settings-tab-content hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Left Column -->
+                        <div>
+                            <div class="settings-card p-6 mb-6">
+                                <h3 class="text-xl font-bold text-gray-800 mb-6">Appearance</h3>
+                                
+                                <div class="mb-6">
+                                    <label class="block text-gray-700 mb-3">Theme</label>
+                                    <div class="flex space-x-4">
+                                        <div class="theme-option bg-white border border-gray-300 selected" data-theme="light">
+                                            <div class="w-full h-full rounded flex items-center justify-center">
+                                                <i class="fas fa-sun text-yellow-500"></i>
+                                            </div>
+                                        </div>
+                                        <div class="theme-option bg-gray-900" data-theme="dark">
+                                            <div class="w-full h-full rounded flex items-center justify-center">
+                                                <i class="fas fa-moon text-white"></i>
+                                            </div>
+                                        </div>
+                                        <div class="theme-option bg-blue-600" data-theme="blue">
+                                            <div class="w-full h-full rounded flex items-center justify-center">
+                                                <i class="fas fa-palette text-white"></i>
+                                            </div>
+                                        </div>
+                                        <div class="theme-option bg-gray-800" data-theme="auto">
+                                            <div class="w-full h-full rounded flex flex-col items-center justify-center p-1">
+                                                <div class="w-full h-1/2 bg-white rounded-t"></div>
+                                                <div class="w-full h-1/2 bg-gray-900 rounded-b"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <label class="block text-gray-700 mb-3">Accent Color</label>
+                                    <div class="flex flex-wrap gap-3">
+                                        <div class="theme-option bg-blue-500 selected" data-color="blue"></div>
+                                        <div class="theme-option bg-green-500" data-color="green"></div>
+                                        <div class="theme-option bg-purple-500" data-color="purple"></div>
+                                        <div class="theme-option bg-red-500" data-color="red"></div>
+                                        <div class="theme-option bg-yellow-500" data-color="yellow"></div>
+                                        <div class="theme-option bg-pink-500" data-color="pink"></div>
+                                        <div class="theme-option bg-indigo-500" data-color="indigo"></div>
+                                        <div class="theme-option bg-teal-500" data-color="teal"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div>
+                                            <label class="block text-gray-700">Compact Mode</label>
+                                            <p class="text-gray-500 text-sm">Use compact spacing for lists and tables</p>
+                                        </div>
+                                        <input type="checkbox" id="compactMode" class="toggle-checkbox" checked>
+                                        <label for="compactMode" class="toggle-label"></label>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div>
+                                            <label class="block text-gray-700">Show Animations</label>
+                                            <p class="text-gray-500 text-sm">Enable transitions and animations</p>
+                                        </div>
+                                        <input type="checkbox" id="showAnimations" class="toggle-checkbox" checked>
+                                        <label for="showAnimations" class="toggle-label"></label>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <label class="block text-gray-700">Reduce Motion</label>
+                                            <p class="text-gray-500 text-sm">Minimize animations for accessibility</p>
+                                        </div>
+                                        <input type="checkbox" id="reduceMotion" class="toggle-checkbox">
+                                        <label for="reduceMotion" class="toggle-label"></label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-card p-6">
+                                <h3 class="text-xl font-bold text-gray-800 mb-6">Dashboard Preferences</h3>
+                                
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <label class="block text-gray-700">Default Dashboard View</label>
+                                            <p class="text-gray-500 text-sm">Which tab to show on startup</p>
+                                        </div>
+                                        <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                            <option value="overview">Overview</option>
+                                            <option value="transactions" selected>Transactions</option>
+                                            <option value="analytics">Analytics</option>
+                                            <option value="budget">Budget</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <label class="block text-gray-700">Recent Transactions Count</label>
+                                            <p class="text-gray-500 text-sm">Number of recent transactions to show</p>
+                                        </div>
+                                        <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                            <option value="5">5</option>
+                                            <option value="10" selected>10</option>
+                                            <option value="15">15</option>
+                                            <option value="20">20</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <label class="block text-gray-700">Chart Animation Speed</label>
+                                            <p class="text-gray-500 text-sm">Speed of chart animations</p>
+                                        </div>
+                                        <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                            <option value="slow">Slow</option>
+                                            <option value="medium" selected>Medium</option>
+                                            <option value="fast">Fast</option>
+                                            <option value="none">None</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column -->
+                        <div>
+                            <div class="settings-card p-6 mb-6">
+                                <h3 class="text-xl font-bold text-gray-800 mb-6">Data & Privacy</h3>
+                                
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <label class="block text-gray-700">Auto-sync Data</label>
+                                            <p class="text-gray-500 text-sm">Automatically sync data across devices</p>
+                                        </div>
+                                        <input type="checkbox" id="autoSync" class="toggle-checkbox" checked>
+                                        <label for="autoSync" class="toggle-label"></label>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <label class="block text-gray-700">Backup to Cloud</label>
+                                            <p class="text-gray-500 text-sm">Automatically backup data daily</p>
+                                        </div>
+                                        <input type="checkbox" id="cloudBackup" class="toggle-checkbox" checked>
+                                        <label for="cloudBackup" class="toggle-label"></label>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <label class="block text-gray-700">Data Analytics</label>
+                                            <p class="text-gray-500 text-sm">Share anonymous usage data to improve app</p>
+                                        </div>
+                                        <input type="checkbox" id="dataAnalytics" class="toggle-checkbox" checked>
+                                        <label for="dataAnalytics" class="toggle-label"></label>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <label class="block text-gray-700">Auto-categorization</label>
+                                            <p class="text-gray-500 text-sm">Use AI to automatically categorize transactions</p>
+                                        </div>
+                                        <input type="checkbox" id="autoCategorization" class="toggle-checkbox" checked>
+                                        <label for="autoCategorization" class="toggle-label"></label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6 pt-6 border-t border-gray-200">
+                                    <h4 class="font-medium text-gray-700 mb-3">Data Retention</h4>
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-gray-700">Keep transaction history for</p>
+                                            <p class="text-gray-500 text-sm">How long to keep transaction data</p>
+                                        </div>
+                                        <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                            <option value="1">1 year</option>
+                                            <option value="3">3 years</option>
+                                            <option value="5" selected>5 years</option>
+                                            <option value="forever">Forever</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-card p-6">
+                                <h3 class="text-xl font-bold text-gray-800 mb-6">Export & Import</h3>
+                                
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-gray-700 mb-2">Export Format</label>
+                                        <div class="flex space-x-3">
+                                            <label class="flex items-center">
+                                                <input type="radio" name="exportFormat" class="mr-2" checked>
+                                                <span>CSV</span>
+                                            </label>
+                                            <label class="flex items-center">
+                                                <input type="radio" name="exportFormat" class="mr-2">
+                                                <span>Excel</span>
+                                            </label>
+                                            <label class="flex items-center">
+                                                <input type="radio" name="exportFormat" class="mr-2">
+                                                <span>JSON</span>
+                                            </label>
+                                            <label class="flex items-center">
+                                                <input type="radio" name="exportFormat" class="mr-2">
+                                                <span>PDF</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-gray-700 mb-2">Auto-export Schedule</label>
+                                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                            <option value="never">Never</option>
+                                            <option value="weekly" selected>Weekly (Every Sunday)</option>
+                                            <option value="monthly">Monthly (1st of each month)</option>
+                                            <option value="quarterly">Quarterly</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <button class="w-full flex items-center justify-center px-4 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
+                                            <i class="fas fa-download mr-2"></i> Export Data
+                                        </button>
+                                        <button class="w-full flex items-center justify-center px-4 py-3 border border-green-600 text-green-600 rounded-lg hover:bg-green-50">
+                                            <i class="fas fa-upload mr-2"></i> Import Data
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="mt-4 pt-4 border-t border-gray-200">
+                                        <button class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                            <i class="fas fa-sync-alt mr-2"></i> Sync with Bank
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notifications Tab Content -->
+                <div id="notificationsContent" class="settings-tab-content hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Left Column -->
+                        <div>
+                            <div class="settings-card p-6 mb-6">
+                                <h3 class="text-xl font-bold text-gray-800 mb-6">Notification Preferences</h3>
+                                
+                                <div class="space-y-6">
+                                    <div class="accordion-item">
+                                        <div class="flex items-center justify-between cursor-pointer accordion-header" data-target="emailNotifications">
+                                            <div>
+                                                <h4 class="font-medium text-gray-800">Email Notifications</h4>
+                                                                                        <p class="text-gray-500 text-sm">Manage email notifications</p>
+                                        </div>
+                                        <i class="fas fa-chevron-down accordion-icon"></i>
+                                    </div>
+                                    <div class="accordion-content mt-4" id="emailNotifications">
+                                        <div class="space-y-4 pl-4">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <label class="block text-gray-700">Transaction Alerts</label>
+                                                    <p class="text-gray-500 text-sm">Get notified for large transactions</p>
+                                                </div>
+                                                <input type="checkbox" id="emailTransactions" class="toggle-checkbox" checked>
+                                                <label for="emailTransactions" class="toggle-label"></label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <label class="block text-gray-700">Budget Updates</label>
+                                                    <p class="text-gray-500 text-sm">Weekly budget summaries</p>
+                                                </div>
+                                                <input type="checkbox" id="emailBudget" class="toggle-checkbox" checked>
+                                                <label for="emailBudget" class="toggle-label"></label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <label class="block text-gray-700">Security Alerts</label>
+                                                    <p class="text-gray-500 text-sm">Login attempts, password changes</p>
+                                                </div>
+                                                <input type="checkbox" id="emailSecurity" class="toggle-checkbox" checked>
+                                                <label for="emailSecurity" class="toggle-label"></label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <label class="block text-gray-700">Product Updates</label>
+                                                    <p class="text-gray-500 text-sm">New features and improvements</p>
+                                                </div>
+                                                <input type="checkbox" id="emailUpdates" class="toggle-checkbox">
+                                                <label for="emailUpdates" class="toggle-label"></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="accordion-item">
+                                    <div class="flex items-center justify-between cursor-pointer accordion-header" data-target="pushNotifications">
+                                        <div>
+                                            <h4 class="font-medium text-gray-800">Push Notifications</h4>
+                                            <p class="text-gray-500 text-sm">In-app and browser notifications</p>
+                                        </div>
+                                        <i class="fas fa-chevron-down accordion-icon"></i>
+                                    </div>
+                                    <div class="accordion-content mt-4" id="pushNotifications">
+                                        <div class="space-y-4 pl-4">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <label class="block text-gray-700">Bill Reminders</label>
+                                                    <p class="text-gray-500 text-sm">Upcoming bill notifications</p>
+                                                </div>
+                                                <input type="checkbox" id="pushBills" class="toggle-checkbox" checked>
+                                                <label for="pushBills" class="toggle-label"></label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <label class="block text-gray-700">Goal Progress</label>
+                                                    <p class="text-gray-500 text-sm">Savings goal updates</p>
+                                                </div>
+                                                <input type="checkbox" id="pushGoals" class="toggle-checkbox" checked>
+                                                <label for="pushGoals" class="toggle-label"></label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <label class="block text-gray-700">Budget Warnings</label>
+                                                    <p class="text-gray-500 text-sm">When approaching budget limits</p>
+                                                </div>
+                                                <input type="checkbox" id="pushBudgetWarnings" class="toggle-checkbox" checked>
+                                                <label for="pushBudgetWarnings" class="toggle-label"></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="accordion-item">
+                                    <div class="flex items-center justify-between cursor-pointer accordion-header" data-target="smsNotifications">
+                                        <div>
+                                            <h4 class="font-medium text-gray-800">SMS Notifications</h4>
+                                            <p class="text-gray-500 text-sm">Text message alerts</p>
+                                        </div>
+                                        <i class="fas fa-chevron-down accordion-icon"></i>
+                                    </div>
+                                    <div class="accordion-content mt-4" id="smsNotifications">
+                                        <div class="space-y-4 pl-4">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <label class="block text-gray-700">Critical Alerts</label>
+                                                    <p class="text-gray-500 text-sm">High importance notifications only</p>
+                                                </div>
+                                                <input type="checkbox" id="smsCritical" class="toggle-checkbox">
+                                                <label for="smsCritical" class="toggle-label"></label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <label class="block text-gray-700">Monthly Summaries</label>
+                                                    <p class="text-gray-500 text-sm">Monthly financial summary</p>
+                                                </div>
+                                                <input type="checkbox" id="smsMonthly" class="toggle-checkbox">
+                                                <label for="smsMonthly" class="toggle-label"></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Notification Schedule</h3>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Quiet Hours</label>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-gray-500 text-sm mb-1">Start Time</label>
+                                            <input type="time" class="w-full px-4 py-2 border border-gray-300 rounded-lg" value="22:00">
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-500 text-sm mb-1">End Time</label>
+                                            <input type="time" class="w-full px-4 py-2 border border-gray-300 rounded-lg" value="07:00">
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-500 text-sm mt-2">Notifications will be muted during these hours</p>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="block text-gray-700">Weekend Notifications</label>
+                                        <p class="text-gray-500 text-sm">Receive notifications on weekends</p>
+                                    </div>
+                                    <input type="checkbox" id="weekendNotifications" class="toggle-checkbox" checked>
+                                    <label for="weekendNotifications" class="toggle-label"></label>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Notification Sound</label>
+                                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                        <option value="default">Default</option>
+                                        <option value="gentle">Gentle Chime</option>
+                                        <option value="digital">Digital Beep</option>
+                                        <option value="none">None</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div>
+                        <div class="settings-card p-6 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Alert Thresholds</h3>
+                            
+                            <div class="space-y-6">
+                                <div>
+                                    <div class="flex justify-between mb-2">
+                                        <label class="block text-gray-700">Large Transaction Alert</label>
+                                        <span class="text-blue-600 font-medium">$500</span>
+                                    </div>
+                                    <input type="range" min="100" max="2000" step="50" value="500" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    <p class="text-gray-500 text-sm mt-2">Get notified for transactions above this amount</p>
+                                </div>
+                                
+                                <div>
+                                    <div class="flex justify-between mb-2">
+                                        <label class="block text-gray-700">Budget Warning Threshold</label>
+                                        <span class="text-blue-600 font-medium">80%</span>
+                                    </div>
+                                    <input type="range" min="50" max="100" step="5" value="80" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    <p class="text-gray-500 text-sm mt-2">Receive warning when budget reaches this percentage</p>
+                                </div>
+                                
+                                <div>
+                                    <div class="flex justify-between mb-2">
+                                        <label class="block text-gray-700">Low Balance Alert</label>
+                                        <span class="text-blue-600 font-medium">$200</span>
+                                    </div>
+                                    <input type="range" min="50" max="1000" step="50" value="200" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    <p class="text-gray-500 text-sm mt-2">Alert when account balance drops below this amount</p>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="block text-gray-700">Urgent Alerts</label>
+                                        <p class="text-gray-500 text-sm">Always show critical alerts</p>
+                                    </div>
+                                    <input type="checkbox" id="urgentAlerts" class="toggle-checkbox" checked>
+                                    <label for="urgentAlerts" class="toggle-label"></label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Notification History</h3>
+                            
+                            <div class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                                <div class="flex items-start p-3 bg-blue-50 rounded-lg">
+                                    <i class="fas fa-bell text-blue-500 mt-1 mr-3"></i>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800">Budget Warning</p>
+                                        <p class="text-gray-600 text-sm">You've spent 85% of your Food budget</p>
+                                        <p class="text-gray-500 text-xs mt-1">Today, 10:30 AM</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start p-3 bg-gray-50 rounded-lg">
+                                    <i class="fas fa-credit-card text-green-500 mt-1 mr-3"></i>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800">Transaction Added</p>
+                                        <p class="text-gray-600 text-sm">Salary payment of $3,800.00 added</p>
+                                        <p class="text-gray-500 text-xs mt-1">Yesterday, 9:15 AM</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start p-3 bg-gray-50 rounded-lg">
+                                    <i class="fas fa-chart-line text-purple-500 mt-1 mr-3"></i>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800">Weekly Report</p>
+                                        <p class="text-gray-600 text-sm">Your weekly spending summary is ready</p>
+                                        <p class="text-gray-500 text-xs mt-1">Monday, 8:00 AM</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start p-3 bg-gray-50 rounded-lg">
+                                    <i class="fas fa-bullhorn text-yellow-500 mt-1 mr-3"></i>
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-800">Bill Due Soon</p>
+                                        <p class="text-gray-600 text-sm">Netflix subscription due in 2 days</p>
+                                        <p class="text-gray-500 text-xs mt-1">Friday, 3:45 PM</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <button class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                    <i class="fas fa-history mr-2"></i> View All Notifications
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Security Tab Content -->
+            <div id="securityContent" class="settings-tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Left Column -->
+                    <div>
+                        <div class="settings-card p-6 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Password & Authentication</h3>
+                            
+                            <div class="space-y-6">
+                                <div>
+                                    <h4 class="font-medium text-gray-700 mb-4">Change Password</h4>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-gray-700 mb-1">Current Password</label>
+                                            <input type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Enter current password">
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-700 mb-1">New Password</label>
+                                            <input type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Enter new password">
+                                            <p class="text-gray-500 text-sm mt-1">Must be at least 8 characters with numbers and symbols</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-gray-700 mb-1">Confirm New Password</label>
+                                            <input type="password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Confirm new password">
+                                        </div>
+                                        <button class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                            Update Password
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-6 border-t border-gray-200">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div>
+                                            <h4 class="font-medium text-gray-700">Two-Factor Authentication</h4>
+                                            <p class="text-gray-500 text-sm">Add an extra layer of security</p>
+                                        </div>
+                                        <input type="checkbox" id="twoFactor" class="toggle-checkbox" checked>
+                                        <label for="twoFactor" class="toggle-label"></label>
+                                    </div>
+                                    <div class="flex items-center p-4 bg-blue-50 rounded-lg">
+                                        <i class="fas fa-mobile-alt text-blue-500 text-xl mr-3"></i>
+                                        <div>
+                                            <p class="font-medium text-gray-800">Authenticator App</p>
+                                            <p class="text-gray-600 text-sm">Currently using Google Authenticator</p>
+                                        </div>
+                                    </div>
+                                    <button class="w-full mt-4 px-4 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
+                                        <i class="fas fa-qrcode mr-2"></i> Setup New Device
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Session Management</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <p class="font-medium text-gray-800">Current Session</p>
+                                        <p class="text-gray-600 text-sm">Chrome on Windows • San Francisco, CA</p>
+                                        <p class="text-gray-500 text-xs mt-1">Active now</p>
+                                    </div>
+                                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                                        Current
+                                    </span>
+                                </div>
+                                
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <p class="font-medium text-gray-800">Mobile App</p>
+                                        <p class="text-gray-600 text-sm">iOS 16.2 • iPhone 14 Pro</p>
+                                        <p class="text-gray-500 text-xs mt-1">2 hours ago</p>
+                                    </div>
+                                    <button class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <p class="font-medium text-gray-800">Safari Browser</p>
+                                        <p class="text-gray-600 text-sm">MacOS • New York, NY</p>
+                                        <p class="text-gray-500 text-xs mt-1">3 days ago</p>
+                                    </div>
+                                    <button class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <button class="w-full flex items-center justify-center px-4 py-3 border border-red-600 text-red-600 rounded-lg hover:bg-red-50">
+                                    <i class="fas fa-sign-out-alt mr-2"></i> Logout All Other Devices
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div>
+                        <div class="settings-card p-6 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Security Settings</h3>
+                            
+                            <div class="space-y-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="block text-gray-700">Auto-logout Timer</label>
+                                        <p class="text-gray-500 text-sm">Automatically logout after inactivity</p>
+                                    </div>
+                                    <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                                        <option value="5">5 minutes</option>
+                                        <option value="15">15 minutes</option>
+                                        <option value="30" selected>30 minutes</option>
+                                        <option value="60">1 hour</option>
+                                        <option value="never">Never</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="block text-gray-700">Login Notifications</label>
+                                        <p class="text-gray-500 text-sm">Email me when new device logs in</p>
+                                    </div>
+                                    <input type="checkbox" id="loginNotifications" class="toggle-checkbox" checked>
+                                    <label for="loginNotifications" class="toggle-label"></label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="block text-gray-700">Biometric Login</label>
+                                        <p class="text-gray-500 text-sm">Use fingerprint or face recognition</p>
+                                    </div>
+                                    <input type="checkbox" id="biometricLogin" class="toggle-checkbox">
+                                    <label for="biometricLogin" class="toggle-label"></label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="block text-gray-700">Show Last Login</label>
+                                        <p class="text-gray-500 text-sm">Display last login info on dashboard</p>
+                                    </div>
+                                    <input type="checkbox" id="showLastLogin" class="toggle-checkbox" checked>
+                                    <label for="showLastLogin" class="toggle-label"></label>
+                                </div>
+                                
+                                <div class="pt-6 border-t border-gray-200">
+                                    <h4 class="font-medium text-gray-700 mb-3">Security Questions</h4>
+                                    <div class="space-y-3">
+                                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                            <option>What was your first pet's name?</option>
+                                            <option>What city were you born in?</option>
+                                            <option>What is your mother's maiden name?</option>
+                                        </select>
+                                        <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="Your answer">
+                                        <button class="w-full px-4 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
+                                            Update Security Question
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card p-6 danger-zone">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Danger Zone</h3>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <p class="font-medium text-gray-800 mb-2">Delete Account</p>
+                                    <p class="text-gray-600 text-sm mb-4">Permanently delete your account and all data. This action cannot be undone.</p>
+                                    <button class="px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                        <i class="fas fa-trash mr-2"></i> Delete Account
+                                    </button>
+                                </div>
+                                
+                                <div class="pt-4 border-t border-red-200">
+                                    <p class="font-medium text-gray-800 mb-2">Export All Data</p>
+                                    <p class="text-gray-600 text-sm mb-4">Download a copy of all your data before deletion</p>
+                                    <button class="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                        <i class="fas fa-download mr-2"></i> Export All Data
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Data Management Tab Content -->
+            <div id="dataContent" class="settings-tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Left Column -->
+                    <div>
+                        <div class="settings-card p-6 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Data Usage & Storage</h3>
+                            
+                            <div class="space-y-6">
+                                <div>
+                                    <div class="flex justify-between mb-2">
+                                        <label class="block text-gray-700">Storage Usage</label>
+                                        <span class="text-blue-600 font-medium">2.4 GB / 10 GB</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-3">
+                                        <div class="bg-blue-500 h-3 rounded-full" style="width: 24%"></div>
+                                    </div>
+                                    <div class="flex justify-between text-gray-600 text-sm mt-2">
+                                        <span>Transactions: 1.2 GB</span>
+                                        <span>Attachments: 0.8 GB</span>
+                                        <span>Other: 0.4 GB</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="p-4 bg-gray-50 rounded-lg">
+                                        <p class="text-gray-500 text-sm">Total Transactions</p>
+                                        <p class="text-2xl font-bold text-gray-800">1,247</p>
+                                    </div>
+                                    <div class="p-4 bg-gray-50 rounded-lg">
+                                        <p class="text-gray-500 text-sm">Categories</p>
+                                        <p class="text-2xl font-bold text-gray-800">24</p>
+                                    </div>
+                                    <div class="p-4 bg-gray-50 rounded-lg">
+                                        <p class="text-gray-500 text-sm">Budgets</p>
+                                        <p class="text-2xl font-bold text-gray-800">12</p>
+                                    </div>
+                                    <div class="p-4 bg-gray-50 rounded-lg">
+                                        <p class="text-gray-500 text-sm">Reports</p>
+                                        <p class="text-2xl font-bold text-gray-800">8</p>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Auto-cleanup Old Data</label>
+                                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                        <option value="keep">Keep all data</option>
+                                        <option value="1year">Delete data older than 1 year</option>
+                                        <option value="2years">Delete data older than 2 years</option>
+                                        <option value="5years" selected>Delete data older than 5 years</option>
+                                    </select>
+                                </div>
+                                
+                                <button class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                    <i class="fas fa-broom mr-2"></i> Clean Up Old Data
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Data Backup</h3>
+                            
+                            <div class="space-y-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="font-medium text-gray-700">Auto-backup</p>
+                                        <p class="text-gray-500 text-sm">Automatically backup data daily</p>
+                                    </div>
+                                    <input type="checkbox" id="autoBackup" class="toggle-checkbox" checked>
+                                    <label for="autoBackup" class="toggle-label"></label>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Backup Frequency</label>
+                                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly" selected>Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Backup Location</label>
+                                    <div class="space-y-3">
+                                        <label class="flex items-center">
+                                            <input type="radio" name="backupLocation" class="mr-2" checked>
+                                            <span>MoneyFlow Cloud</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="radio" name="backupLocation" class="mr-2">
+                                            <span>Google Drive</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="radio" name="backupLocation" class="mr-2">
+                                            <span>Dropbox</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="radio" name="backupLocation" class="mr-2">
+                                            <span>Local Device</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <p class="font-medium text-gray-800">Last Backup</p>
+                                        <p class="text-gray-600 text-sm">May 25, 2023 at 2:30 AM</p>
+                                    </div>
+                                    <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                        <i class="fas fa-sync-alt mr-2"></i> Backup Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div>
+                        <div class="settings-card p-6 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Import & Export</h3>
+                            
+                            <div class="space-y-6">
+                                <div>
+                                    <h4 class="font-medium text-gray-700 mb-3">Import Data</h4>
+                                    <div class="space-y-3">
+                                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                            <option>CSV File</option>
+                                            <option>Excel File</option>
+                                            <option>JSON File</option>
+                                            <option>Other Apps (Mint, YNAB)</option>
+                                        </select>
+                                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                            <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-3"></i>
+                                            <p class="text-gray-600 mb-2">Drag & drop your file here</p>
+                                            <p class="text-gray-500 text-sm mb-4">or</p>
+                                            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                                Browse Files
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-6 border-t border-gray-200">
+                                    <h4 class="font-medium text-gray-700 mb-3">Export Data</h4>
+                                    <div class="space-y-3">
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                            <div>
+                                                <p class="font-medium text-gray-800">All Transactions</p>
+                                                <p class="text-gray-600 text-sm">Includes all transaction history</p>
+                                            </div>
+                                            <button class="px-3 py-1 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
+                                                Export
+                                            </button>
+                                        </div>
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                            <div>
+                                                <p class="font-medium text-gray-800">Budget Data</p>
+                                                <p class="text-gray-600 text-sm">All budgets and categories</p>
+                                            </div>
+                                            <button class="px-3 py-1 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
+                                                Export
+                                            </button>
+                                        </div>
+                                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                            <div>
+                                                <p class="font-medium text-gray-800">Reports</p>
+                                                <p class="text-gray-600 text-sm">Generated reports and analytics</p>
+                                            </div>
+                                            <button class="px-3 py-1 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
+                                                Export
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Data Privacy</h3>
+                            
+                            <div class="space-y-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="font-medium text-gray-700">Share Anonymous Data</p>
+                                        <p class="text-gray-500 text-sm">Help improve the app by sharing usage data</p>
+                                    </div>
+                                    <input type="checkbox" id="shareData" class="toggle-checkbox" checked>
+                                    <label for="shareData" class="toggle-label"></label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="font-medium text-gray-700">Personalized Recommendations</p>
+                                        <p class="text-gray-500 text-sm">Get personalized budgeting tips</p>
+                                    </div>
+                                    <input type="checkbox" id="personalizedRecs" class="toggle-checkbox" checked>
+                                    <label for="personalizedRecs" class="toggle-label"></label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="font-medium text-gray-700">Third-party Integrations</p>
+                                        <p class="text-gray-500 text-sm">Allow connections to other financial apps</p>
+                                    </div>
+                                    <input type="checkbox" id="thirdParty" class="toggle-checkbox">
+                                    <label for="thirdParty" class="toggle-label"></label>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Data Retention Period</label>
+                                    <select class="w-full px-4 py-3 border border-gray-300 rounded-lg">
+                                        <option value="1year">1 year</option>
+                                        <option value="3years">3 years</option>
+                                        <option value="5years" selected>5 years</option>
+                                        <option value="indefinite">Indefinitely</option>
+                                    </select>
+                                </div>
+                                
+                                <button class="w-full px-4 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
+                                    <i class="fas fa-file-contract mr-2"></i> View Privacy Policy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Billing Tab Content -->
+            <div id="billingContent" class="settings-tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Left Column -->
+                    <div>
+                        <div class="settings-card p-6 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Subscription Plan</h3>
+                            
+                            <div class="p-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white mb-6">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h4 class="text-xl font-bold">Premium Plan</h4>
+                                        <p class="text-blue-100">All features unlocked</p>
+                                    </div>
+                                    <span class="px-3 py-1 bg-white/30 rounded-full text-sm font-medium">
+                                        Active
+                                    </span>
+                                </div>
+                                <div class="flex items-end mb-4">
+                                    <span class="text-3xl font-bold">$9.99</span>
+                                    <span class="text-blue-100 ml-2">/ month</span>
+                                </div>
+                                <p class="text-blue-100">Billed annually • Next billing date: June 15, 2023</p>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                                        <span class="text-gray-700">Unlimited Transactions</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                                        <span class="text-gray-700">Advanced Analytics</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                                        <span class="text-gray-700">Budget Planning</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                                        <span class="text-gray-700">Cloud Backup</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                                        <span class="text-gray-700">Priority Support</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <button class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mb-3">
+                                    <i class="fas fa-sync-alt mr-2"></i> Change Plan
+                                </button>
+                                <button class="w-full px-4 py-3 border border-red-600 text-red-600 rounded-lg hover:bg-red-50">
+                                    <i class="fas fa-times-circle mr-2"></i> Cancel Subscription
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Payment History</h3>
+                            
+                            <div class="space-y-4 max-h-80 overflow-y-auto pr-2">
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <p class="font-medium text-gray-800">Premium Plan</p>
+                                        <p class="text-gray-600 text-sm">May 15, 2023</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-medium text-gray-800">$9.99</p>
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Paid</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <p class="font-medium text-gray-800">Premium Plan</p>
+                                        <p class="text-gray-600 text-sm">April 15, 2023</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-medium text-gray-800">$9.99</p>
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Paid</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <p class="font-medium text-gray-800">Premium Plan</p>
+                                        <p class="text-gray-600 text-sm">March 15, 2023</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-medium text-gray-800">$9.99</p>
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Paid</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <p class="font-medium text-gray-800">Premium Plan</p>
+                                        <p class="text-gray-600 text-sm">February 15, 2023</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-medium text-gray-800">$9.99</p>
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Paid</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <button class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                    <i class="fas fa-receipt mr-2"></i> View All Invoices
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div>
+                        <div class="settings-card p-6 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Payment Method</h3>
+                            
+                            <div class="space-y-6">
+                                <div class="p-4 bg-gray-50 rounded-lg border-2 border-blue-500">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center">
+                                            <i class="fab fa-cc-visa text-blue-600 text-2xl mr-3"></i>
+                                            <div>
+                                                <p class="font-medium text-gray-800">Visa ending in 4242</p>
+                                                <p class="text-gray-600 text-sm">Expires 08/25</p>
+                                            </div>
+                                        </div>
+                                        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                                            Primary
+                                        </span>
+                                    </div>
+                                    <div class="flex space-x-3">
+                                        <button class="px-3 py-1 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm">
+                                            Edit
+                                        </button>
+                                        <button class="px-3 py-1 text-red-600 hover:text-red-800 text-sm">
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-4 bg-gray-50 rounded-lg">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center">
+                                            <i class="fab fa-paypal text-blue-500 text-2xl mr-3"></i>
+                                            <div>
+                                                <p class="font-medium text-gray-800">PayPal</p>
+                                                <p class="text-gray-600 text-sm">john.doe@example.com</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-3">
+                                        <button class="px-3 py-1 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm">
+                                            Make Primary
+                                        </button>
+                                        <button class="px-3 py-1 text-red-600 hover:text-red-800 text-sm">
+                                            Remove
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-6 border-t border-gray-200">
+                                    <h4 class="font-medium text-gray-700 mb-4">Add Payment Method</h4>
+                                    <button class="w-full px-4 py-3 border-2 border-dashed border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50">
+                                        <i class="fas fa-plus mr-2"></i> Add New Payment Method
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Billing Information</h3>
+                            
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Billing Email</label>
+                                    <input type="email" class="w-full px-4 py-3 border border-gray-300 rounded-lg" value="billing.john@example.com">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Tax ID / VAT Number</label>
+                                    <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="Enter tax ID if applicable">
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="font-medium text-gray-700">Paperless Billing</p>
+                                        <p class="text-gray-500 text-sm">Receive invoices via email only</p>
+                                    </div>
+                                    <input type="checkbox" id="paperlessBilling" class="toggle-checkbox" checked>
+                                    <label for="paperlessBilling" class="toggle-label"></label>
+                                </div>
+                                
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="font-medium text-gray-700">Auto-renewal</p>
+                                        <p class="text-gray-500 text-sm">Automatically renew subscription</p>
+                                    </div>
+                                    <input type="checkbox" id="autoRenewal" class="toggle-checkbox" checked>
+                                    <label for="autoRenewal" class="toggle-label"></label>
+                                </div>
+                                
+                                <div class="pt-6 border-t border-gray-200">
+                                    <button class="w-full px-4 py-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
+                                        <i class="fas fa-download mr-2"></i> Download Tax Documents
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- About Tab Content -->
+            <div id="aboutContent" class="settings-tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Left Column -->
+                    <div class="lg:col-span-2">
+                        <div class="settings-card p-6 mb-6">
+                            <div class="flex items-center mb-6">
+                                <div class="w-16 h-16 bg-blue-500 rounded-xl flex items-center justify-center mr-4">
+                                    <i class="fas fa-wallet text-white text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-gray-800">MoneyFlow Pro</h3>
+                                    <p class="text-gray-600">Version 2.4.1 • Premium Edition</p>
+                                </div>
+                            </div>
+                            
+                            <p class="text-gray-700 mb-6">
+                                MoneyFlow Pro is a comprehensive personal finance management tool designed to help you take control of your financial life. Track expenses, create budgets, analyze spending patterns, and achieve your financial goals with ease.
+                            </p>
+                            
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <div class="p-4 bg-gray-50 rounded-lg">
+                                    <p class="text-gray-500 text-sm">Release Date</p>
+                                    <p class="font-medium text-gray-800">May 15, 2023</p>
+                                </div>
+                                <div class="p-4 bg-gray-50 rounded-lg">
+                                    <p class="text-gray-500 text-sm">Database Version</p>
+                                    <p class="font-medium text-gray-800">Schema v3.2</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex space-x-3">
+                                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                    <i class="fas fa-sync-alt mr-2"></i> Check for Updates
+                                </button>
+                                <button class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                    <i class="fas fa-file-alt mr-2"></i> Release Notes
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">System Information</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <p class="font-medium text-gray-800">Browser</p>
+                                        <p class="text-gray-600 text-sm">Chrome 112.0.5615.138</p>
+                                    </div>
+                                    <i class="fab fa-chrome text-blue-500 text-xl"></i>
+                                </div>
+                                
+                                <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <p class="font-medium text-gray-800">Screen Resolution</p>
+                                        <p class="text-gray-600 text-sm">1920 x 1080 pixels</p>
+                                    </div>
+                                    <i class="fas fa-desktop text-gray-500 text-xl"></i>
+                                </div>
+                                
+                                <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <p class="font-medium text-gray-800">Local Storage</p>
+                                        <p class="text-gray-600 text-sm">4.2 MB used</p>
+                                    </div>
+                                    <i class="fas fa-database text-green-500 text-xl"></i>
+                                </div>
+                                
+                                <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <p class="font-medium text-gray-800">Last Data Sync</p>
+                                        <p class="text-gray-600 text-sm">Today, 9:15 AM</p>
+                                    </div>
+                                    <i class="fas fa-cloud text-blue-500 text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div>
+                        <div class="settings-card p-6 mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Support & Resources</h3>
+                            
+                            <div class="space-y-4">
+                                <button class="w-full flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-question-circle text-blue-500 text-xl mr-3"></i>
+                                        <span class="font-medium text-gray-800">Help Center</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </button>
+                                
+                                <button class="w-full flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-book text-green-500 text-xl mr-3"></i>
+                                        <span class="font-medium text-gray-800">Documentation</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </button>
+                                
+                                <button class="w-full flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-comments text-purple-500 text-xl mr-3"></i>
+                                        <span class="font-medium text-gray-800">Community Forum</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </button>
+                                
+                                <button class="w-full flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-bug text-red-500 text-xl mr-3"></i>
+                                        <span class="font-medium text-gray-800">Report a Bug</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </button>
+                                
+                                <button class="w-full flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-lightbulb text-yellow-500 text-xl mr-3"></i>
+                                        <span class="font-medium text-gray-800">Feature Request</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-6">Legal</h3>
+                            
+                            <div class="space-y-3">
+                                <button class="w-full text-left text-gray-700 hover:text-blue-600 py-2">
+                                    Terms of Service
+                                </button>
+                                <button class="w-full text-left text-gray-700 hover:text-blue-600 py-2">
+                                    Privacy Policy
+                                </button>
+                                <button class="w-full text-left text-gray-700 hover:text-blue-600 py-2">
+                                    Cookie Policy
+                                </button>
+                                <button class="w-full text-left text-gray-700 hover:text-blue-600 py-2">
+                                    License Agreement
+                                </button>
+                                <button class="w-full text-left text-gray-700 hover:text-blue-600 py-2">
+                                    Third-party Notices
+                                </button>
+                            </div>
+                            
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <p class="text-gray-600 text-sm">
+                                    © 2023 MoneyFlow Pro. All rights reserved.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Toast -->
+<div id="notificationToast" class="fixed top-4 right-4 z-50 hidden">
+    <div class="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide">
+        <i class="fas fa-check-circle mr-3 text-xl"></i>
+        <span id="notificationMessage">Settings saved successfully!</span>
+    </div>
+</div>
+
+<!-- Modal for Confirmation -->
+<div id="confirmationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-xl w-full max-w-md">
+        <div class="p-6">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-check text-blue-600 text-2xl"></i>
+                </div>
+                
+                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="modalTitle">Settings Saved</h3>
+                <p class="text-gray-600 mb-6" id="modalMessage">Your changes have been saved successfully.</p>
+                
+                <div class="flex justify-center">
+                    <button id="modalConfirmBtn" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                        Okay
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // DOM Elements
+    const toggleSidebarBtn = document.getElementById('toggleSidebar');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+    const settingsTabButtons = document.querySelectorAll('.settings-tab-btn');
+    const settingsTabContents = document.querySelectorAll('.settings-tab-content');
+    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const notificationToast = document.getElementById('notificationToast');
+    const notificationMessage = document.getElementById('notificationMessage');
+    const confirmationModal = document.getElementById('confirmationModal');
+    const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+    
+    // Navigation buttons
+    const dashboardNav = document.getElementById('dashboardNav');
+    const transactionsNav = document.getElementById('transactionsNav');
+    const analyticsNav = document.getElementById('analyticsNav');
+    const budgetNav = document.getElementById('budgetNav');
+    const categoriesNav = document.getElementById('categoriesNav');
+    const settingsNav = document.getElementById('settingsNav');
+
+    // Initialize the settings page
+    document.addEventListener('DOMContentLoaded', function() {
+        setupEventListeners();
+        initializeThemeOptions();
+        initializeAccordions();
+    });
+
+    function setupEventListeners() {
+        // Toggle sidebar
+        toggleSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('ml-64');
+            mainContent.classList.toggle('ml-20');
+        });
+
+        // Settings tab switching
+        settingsTabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const tabId = this.getAttribute('data-tab');
+                switchSettingsTab(tabId);
+            });
+        });
+
+        // Save settings button
+        saveSettingsBtn.addEventListener('click', saveSettings);
+
+        // Logout button
+        logoutBtn.addEventListener('click', () => {
+            showConfirmationModal('Confirm Logout', 'Are you sure you want to logout?', () => {
+                showNotification('Logged out successfully!');
+                // In a real app, redirect to login page
+                setTimeout(() => {
+                    window.location.href = '../login.html';
+                }, 1500);
+            });
+        });
+
+        // Modal confirm button
+        modalConfirmBtn.addEventListener('click', () => {
+            confirmationModal.classList.add('hidden');
+        });
+
+        // Theme option selection
+        document.querySelectorAll('.theme-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const theme = this.getAttribute('data-theme') || this.getAttribute('data-color');
+                selectThemeOption(this);
+                
+                // In a real app, you would save this preference
+                console.log('Selected theme:', theme);
+            });
+        });
+
+        // Navigation links
+        const navLinks = [dashboardNav, transactionsNav, analyticsNav, budgetNav, categoriesNav, settingsNav];
+        navLinks.forEach(link => {
+            if (link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.id.replace('Nav', '').toLowerCase();
+                    // In a real app, navigate to the page
+                    console.log('Navigate to:', page);
+                    if (page !== 'settings') {
+                        window.location.href = `../${page}/${page}.html`;
+                    }
+                });
+            }
+        });
+
+        // Range sliders
+        document.querySelectorAll('input[type="range"]').forEach(slider => {
+            slider.addEventListener('input', function() {
+                const valueSpan = this.nextElementSibling || this.parentElement.querySelector('span');
+                if (valueSpan) {
+                    valueSpan.textContent = this.value + (this.id.includes('percent') ? '%' : '$');
+                }
+            });
+        });
+    }
+
+    function switchSettingsTab(tabName) {
+        // Update tab buttons
+        settingsTabButtons.forEach(button => {
+            if (button.getAttribute('data-tab') === tabName) {
+                button.classList.remove('settings-tab-inactive');
+                button.classList.add('settings-tab-active');
+            } else {
+                button.classList.remove('settings-tab-active');
+                button.classList.add('settings-tab-inactive');
+            }
+        });
+
+        // Update tab content
+        settingsTabContents.forEach(content => {
+            if (content.id === tabName + 'Content') {
+                content.classList.remove('hidden');
+            } else {
+                content.classList.add('hidden');
+            }
+        });
+
+        // Update page title and subtitle
+        const pageTitle = document.getElementById('pageTitle');
+        const pageSubtitle = document.getElementById('pageSubtitle');
+        
+        const titles = {
+            profile: { main: 'Profile Settings', sub: 'Manage your personal information' },
+            preferences: { main: 'Preferences', sub: 'Customize your app experience' },
+            notifications: { main: 'Notifications', sub: 'Configure alerts and reminders' },
+            security: { main: 'Security', sub: 'Manage account security settings' },
+            data: { main: 'Data Management', sub: 'Handle your data and backups' },
+            billing: { main: 'Billing', sub: 'Manage subscription and payments' },
+            about: { main: 'About', sub: 'App information and resources' }
+        };
+
+        if (titles[tabName]) {
+            pageTitle.textContent = titles[tabName].main;
+            pageSubtitle.textContent = titles[tabName].sub;
+        }
+    }
+
+    function initializeThemeOptions() {
+        // Set initial selected theme
+        const themeOptions = document.querySelectorAll('.theme-option[data-theme]');
+        const colorOptions = document.querySelectorAll('.theme-option[data-color]');
+        
+        // Select first theme option by default
+        if (themeOptions.length > 0) {
+            selectThemeOption(themeOptions[0]);
+        }
+        
+        // Select first color option by default
+        if (colorOptions.length > 0) {
+            selectThemeOption(colorOptions[0]);
+        }
+    }
+
+    function selectThemeOption(selectedOption) {
+        // Remove selected class from all options in the same group
+        const group = selectedOption.hasAttribute('data-theme') ? '[data-theme]' : '[data-color]';
+        selectedOption.parentElement.querySelectorAll(group).forEach(option => {
+            option.classList.remove('selected');
+        });
+        
+        // Add selected class to clicked option
+        selectedOption.classList.add('selected');
+    }
+
+    function initializeAccordions() {
+        const accordionHeaders = document.querySelectorAll('.accordion-header');
+        
+        accordionHeaders.forEach(header => {
+            header.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const content = document.getElementById(targetId);
+                const icon = this.querySelector('.accordion-icon');
+                
+                // Toggle content
+                content.classList.toggle('open');
+                icon.classList.toggle('open');
+                
+                // Close other accordions in the same section
+                const parentSection = this.closest('.accordion-item').parentElement;
+                parentSection.querySelectorAll('.accordion-content').forEach(accContent => {
+                    if (accContent.id !== targetId) {
+                        accContent.classList.remove('open');
+                    }
+                });
+                
+                // Reset other icons
+                parentSection.querySelectorAll('.accordion-icon').forEach(accIcon => {
+                    if (!accIcon.isEqualNode(icon)) {
+                        accIcon.classList.remove('open');
+                    }
+                });
+            });
+        });
+    }
+
+    function saveSettings() {
+        // In a real app, you would collect all form data and send to server
+        // For this demo, just show a success message
+        
+        // Simulate API call delay
+        saveSettingsBtn.disabled = true;
+        saveSettingsBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+        
+        setTimeout(() => {
+            showNotification('All settings have been saved successfully!');
+            saveSettingsBtn.disabled = false;
+            saveSettingsBtn.innerHTML = '<i class="fas fa-save mr-2"></i> Save Changes';
+        }, 1500);
+    }
+
+    function showNotification(message) {
+        notificationMessage.textContent = message;
+        notificationToast.classList.remove('hidden');
+        
+        setTimeout(() => {
+            notificationToast.classList.add('hidden');
+        }, 3000);
+    }
+
+    function showConfirmationModal(title, message, confirmCallback) {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalMessage').textContent = message;
+        confirmationModal.classList.remove('hidden');
+        
+        // Update confirm button to call the callback
+        modalConfirmBtn.onclick = () => {
+            confirmationModal.classList.add('hidden');
+            if (confirmCallback) confirmCallback();
+        };
+    }
+
+    // Delete account button functionality
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.danger-zone button.bg-red-600')) {
+            showConfirmationModal(
+                'Delete Account',
+                'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.',
+                () => {
+                    showNotification('Account deletion request submitted.');
+                }
+            );
+        }
+    });
+</script>
+</body>
+</html>

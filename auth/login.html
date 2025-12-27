@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MoneyFlow Pro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-shadow {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(107, 114, 128, 0.3);
+        }
+        
+        .btn-google {
+            background: white;
+            border: 1px solid #d1d5db;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-google:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .animate-pulse-slow {
+            animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+    
+    <!-- Background decoration -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style="animation-delay: 2s;"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style="animation-delay: 4s;"></div>
+    </div>
+    
+    <div class="relative w-full max-w-6xl flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
+        <!-- Left side - Branding & Features -->
+        <div class="w-full lg:w-1/2 text-center lg:text-left fade-in">
+            <div class="mb-8 lg:mb-12">
+                <div class="flex items-center justify-center lg:justify-start space-x-3 mb-6">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <i class="fas fa-wallet text-white text-xl"></i>
+                    </div>
+                    <h1 class="text-3xl lg:text-4xl font-bold text-gray-800">MoneyFlow Pro</h1>
+                </div>
+                <p class="text-gray-600 text-lg mb-8">
+                    Take control of your finances with our powerful expense manager. Track, analyze, and optimize your money flow.
+                </p>
+            </div>
+            
+            <!-- Features List -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 lg:mb-12">
+                <div class="flex items-start space-x-3 p-4 bg-white/50 backdrop-blur-sm rounded-xl border border-gray-100">
+                    <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-chart-pie text-green-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-1">Smart Analytics</h3>
+                        <p class="text-gray-600 text-sm">Visualize your spending patterns with interactive charts</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3 p-4 bg-white/50 backdrop-blur-sm rounded-xl border border-gray-100">
+                    <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-bullseye text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-1">Goal Tracking</h3>
+                        <p class="text-gray-600 text-sm">Set and achieve your financial goals with ease</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3 p-4 bg-white/50 backdrop-blur-sm rounded-xl border border-gray-100">
+                    <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-shield-alt text-purple-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-1">Bank-level Security</h3>
+                        <p class="text-gray-600 text-sm">Your financial data is encrypted and protected</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start space-x-3 p-4 bg-white/50 backdrop-blur-sm rounded-xl border border-gray-100">
+                    <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-sync-alt text-orange-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 mb-1">Real-time Sync</h3>
+                        <p class="text-gray-600 text-sm">Access your data across all devices instantly</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Testimonial -->
+            <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
+                        JD
+                    </div>
+                    <div class="ml-4">
+                        <h4 class="font-bold text-gray-800">John Doe</h4>
+                        <p class="text-gray-600 text-sm">Premium User</p>
+                    </div>
+                </div>
+                <p class="text-gray-700 italic">
+                    "MoneyFlow Pro helped me save 30% on unnecessary expenses in just 3 months. The dashboard gives me complete control over my finances!"
+                </p>
+            </div>
+        </div>
+        
+        <!-- Right side - Login Form -->
+        <div class="w-full lg:w-1/2 max-w-md slide-in">
+            <div class="bg-white rounded-2xl card-shadow p-8 lg:p-10">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>
+                    <p class="text-gray-600">Sign in to your account to continue</p>
+                </div>
+                
+                <!-- Login Form -->
+                <form id="loginForm" class="space-y-6">
+                    <div>
+                        <label for="email" class="block text-gray-700 mb-2">Email Address</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </div>
+                            <input type="email" id="email" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent input-focus transition" placeholder="you@example.com" required>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label for="password" class="block text-gray-700">Password</label>
+                            <a href="#" id="forgotPassword" class="text-sm text-blue-600 hover:text-blue-800">Forgot password?</a>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input type="password" id="password" class="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent input-focus transition" placeholder="••••••••" required>
+                            <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <i class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <input type="checkbox" id="rememberMe" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="rememberMe" class="ml-2 block text-gray-700">Remember me for 30 days</label>
+                    </div>
+                    
+                    <div>
+                        <button type="submit" class="w-full btn-primary text-white font-bold py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            <i class="fas fa-sign-in-alt mr-2"></i> Sign In
+                        </button>
+                    </div>
+                    
+                    <div class="relative my-6">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-4 bg-white text-gray-500">Or continue with</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <button type="button" class="btn-google flex items-center justify-center py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            <i class="fab fa-google text-red-500 mr-2"></i>
+                            <span>Google</span>
+                        </button>
+                        <button type="button" class="btn-google flex items-center justify-center py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            <i class="fab fa-apple text-gray-800 mr-2"></i>
+                            <span>Apple</span>
+                        </button>
+                    </div>
+                    
+                    <div class="text-center pt-4">
+                        <p class="text-gray-600">
+                            Don't have an account?
+                            <a href="signup.html" class="text-blue-600 hover:text-blue-800 font-medium ml-1">Sign up for free</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Demo Account Info -->
+            <div class="mt-6 text-center">
+                <div class="inline-flex items-center p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                    <i class="fas fa-lightbulb text-yellow-500 mr-3"></i>
+                    <p class="text-yellow-800 text-sm">
+                        <span class="font-medium">Demo Account:</span> demo@moneyflow.com / demo123
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="fixed top-4 right-4 z-50 hidden">
+        <div class="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center slide-in">
+            <i class="fas fa-check-circle mr-3 text-xl"></i>
+            <span id="notificationMessage">Login successful!</span>
+        </div>
+    </div>
+    
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">Reset Password</h3>
+                    <button id="closeForgotModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <form id="forgotPasswordForm">
+                    <div class="mb-6">
+                        <p class="text-gray-600 mb-4">
+                            Enter your email address and we'll send you a link to reset your password.
+                        </p>
+                        <label for="resetEmail" class="block text-gray-700 mb-2">Email Address</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope text-gray-400"></i>
+                            </div>
+                            <input type="email" id="resetEmail" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent input-focus transition" placeholder="you@example.com" required>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" id="cancelForgot" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition">Cancel</button>
+                        <button type="submit" class="px-6 py-3 btn-primary text-white rounded-xl hover:shadow-lg transition">
+                            <i class="fas fa-paper-plane mr-2"></i> Send Reset Link
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const togglePasswordBtn = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        const forgotPasswordBtn = document.getElementById('forgotPassword');
+        const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+        const closeForgotModalBtn = document.getElementById('closeForgotModal');
+        const cancelForgotBtn = document.getElementById('cancelForgot');
+        const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+        const notificationToast = document.getElementById('notificationToast');
+        const notificationMessage = document.getElementById('notificationMessage');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is already logged in (for demo purposes)
+            const isLoggedIn = localStorage.getItem('moneyflow_logged_in');
+            if (isLoggedIn === 'true') {
+                // Redirect to dashboard
+                setTimeout(() => {
+                    window.location.href = '../dashboard/dashboard.html';
+                }, 100);
+            }
+            
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Toggle password visibility
+            togglePasswordBtn.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.innerHTML = type === 'password' ? '<i class="fas fa-eye text-gray-400 hover:text-gray-600"></i>' : '<i class="fas fa-eye-slash text-gray-400 hover:text-gray-600"></i>';
+            });
+
+            // Login form submission
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const rememberMe = document.getElementById('rememberMe').checked;
+                
+                // Simple validation
+                if (!email || !password) {
+                    showNotification('Please fill in all fields', 'error');
+                    return;
+                }
+                
+                // Demo login logic
+                if (email === 'demo@moneyflow.com' && password === 'demo123') {
+                    // Simulate API call
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Signing in...';
+                    submitBtn.disabled = true;
+                    
+                    setTimeout(() => {
+                        // Store login state
+                        localStorage.setItem('moneyflow_logged_in', 'true');
+                        localStorage.setItem('moneyflow_user_email', email);
+                        
+                        showNotification('Login successful! Redirecting...', 'success');
+                        
+                        // Redirect to dashboard
+                        setTimeout(() => {
+                            window.location.href = '../dashboard/dashboard.html';
+                        }, 1500);
+                    }, 1500);
+                } else {
+                    // For demo purposes, any other credentials will "work"
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Signing in...';
+                    submitBtn.disabled = true;
+                    
+                    setTimeout(() => {
+                        // Store login state
+                        localStorage.setItem('moneyflow_logged_in', 'true');
+                        localStorage.setItem('moneyflow_user_email', email);
+                        
+                        showNotification('Login successful! Redirecting...', 'success');
+                        
+                        // Redirect to dashboard
+                        setTimeout(() => {
+                            window.location.href = '../dashboard/dashboard.html';
+                        }, 1500);
+                    }, 1500);
+                }
+            });
+
+            // Forgot password modal
+            forgotPasswordBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                forgotPasswordModal.classList.remove('hidden');
+            });
+
+            closeForgotModalBtn.addEventListener('click', closeForgotModal);
+            cancelForgotBtn.addEventListener('click', closeForgotModal);
+
+            // Close modal when clicking outside
+            forgotPasswordModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeForgotModal();
+                }
+            });
+
+            // Forgot password form submission
+            forgotPasswordForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('resetEmail').value;
+                
+                if (!email) {
+                    showNotification('Please enter your email address', 'error');
+                    return;
+                }
+                
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Sending...';
+                submitBtn.disabled = true;
+                
+                // Simulate API call
+                setTimeout(() => {
+                    showNotification('Password reset link sent to your email!', 'success');
+                    closeForgotModal();
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }, 1500);
+            });
+
+            // Google login button
+            document.querySelector('.btn-google i.fa-google').closest('button').addEventListener('click', function() {
+                showNotification('Google login would be implemented here', 'info');
+            });
+
+            // Apple login button
+            document.querySelector('.btn-google i.fa-apple').closest('button').addEventListener('click', function() {
+                showNotification('Apple login would be implemented here', 'info');
+            });
+        }
+
+        function closeForgotModal() {
+            forgotPasswordModal.classList.add('hidden');
+            forgotPasswordForm.reset();
+        }
+
+        function showNotification(message, type = 'success') {
+            notificationMessage.textContent = message;
+            
+            // Set color based on type
+            if (type === 'success') {
+                notificationToast.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center slide-in';
+                notificationToast.innerHTML = '<i class="fas fa-check-circle mr-3 text-xl"></i>' + `<span id="notificationMessage">${message}</span>`;
+            } else if (type === 'error') {
+                notificationToast.className = 'fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center slide-in';
+                notificationToast.innerHTML = '<i class="fas fa-exclamation-circle mr-3 text-xl"></i>' + `<span id="notificationMessage">${message}</span>`;
+            } else if (type === 'info') {
+                notificationToast.className = 'fixed top-4 right-4 z-50 bg-blue-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center slide-in';
+                notificationToast.innerHTML = '<i class="fas fa-info-circle mr-3 text-xl"></i>' + `<span id="notificationMessage">${message}</span>`;
+            }
+            
+            // Show notification
+            notificationToast.classList.remove('hidden');
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                notificationToast.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
