@@ -1896,7 +1896,7 @@
 
 // Add this custom confirmation function to avoid browser's default confirm
     async function showCustomConfirm(message) { 
-    return new Promise((resolve) => {
+        return new Promise((resolve) => {
         // Create a custom confirmation modal
         const confirmModal = document.createElement('div');
         confirmModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50';

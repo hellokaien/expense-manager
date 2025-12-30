@@ -1541,7 +1541,7 @@
             
             // Remove from selected categories
             selectedCategories.delete(categoryId);
-            
+            deleteCategoryFromServerid(categoryId);
             // Update UI
             renderCategories();
             
@@ -1557,6 +1557,25 @@
             
             // Close modal
             deleteCategoryModal.classList.add('hidden');
+        }
+
+        async function deleteCategoryFromServerid(id){
+            try {
+                const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) throw new Error('Failed to delete categorie');
+                
+                // Remove from local array
+                //categories = categories.filter(c => c.id !== id);
+                //selectedcategories.delete(id);
+                
+                return true;
+            } catch (error) {
+                console.error('Error deleting categories:', error);
+                throw error;
+            }
         }
         
         function toggleSelectAll() {
