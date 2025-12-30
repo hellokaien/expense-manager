@@ -522,10 +522,8 @@
         </div>
     </div>
 
+    <script src="../auth/auth.js"></script>
     <script>
-    // API Base URL - Change this to your JSON Server URL
-    const API_BASE_URL = 'http://localhost:3000';
-    
     // DOM Elements
     const signupForm = document.getElementById('signupForm');
     const toggleSignupPasswordBtn = document.getElementById('toggleSignupPassword');
@@ -540,7 +538,7 @@
     const notificationMessage = document.getElementById('notificationMessage');
     const welcomeModal = document.getElementById('welcomeModal');
     const goToDashboardBtn = document.getElementById('goToDashboard');
-    
+
     // Step navigation elements
     const step1 = document.getElementById('step1');
     const step2 = document.getElementById('step2');
@@ -550,28 +548,34 @@
     const backToStep1Btn = document.getElementById('backToStep1');
     const backToStep2Btn = document.getElementById('backToStep2');
     const createAccountBtn = document.getElementById('createAccountBtn');
-    
+
     // Step indicators
     const step1Indicator = document.querySelector('.step-indicator:first-child');
     const step2Indicator = document.querySelectorAll('.step-indicator')[1];
     const step3Indicator = document.querySelectorAll('.step-indicator')[2];
-    
+
     // Current step
     let currentStep = 1;
-    
+
     // User data object to collect all form data
     let userData = {
         account: {},
         profile: {},
         preferences: {}
     };
-    
+
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
+        // Check if already logged in
+        authManager.checkAuthStatus().then(isAuthenticated => {
+            if (isAuthenticated) {
+                window.location.href = '../dashboard/dashboard.html';
+            }
+        });
         setupEventListeners();
         updateAvatarPreview();
     });
-    
+
     function setupEventListeners() {
         // Toggle password visibility
         toggleSignupPasswordBtn.addEventListener('click', function() {
@@ -613,24 +617,15 @@
         backToStep2Btn.addEventListener('click', () => goToStep(2));
         
         // Form submission
-        signupForm.addEventListener('submit', createAccount);
+        signupForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await createAccount();
+        });
         
         // Go to dashboard button
         goToDashboardBtn.addEventListener('click', function() {
-            // Store user data in localStorage for demo
-            localStorage.setItem('moneyflow_user', JSON.stringify({
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                email: document.getElementById('signupEmail').value,
-                phone: document.getElementById('phone').value,
-                country: document.getElementById('country').value,
-                currency: document.getElementById('currency').value
-            }));
-            localStorage.setItem('moneyflow_logged_in', 'true');
-            
-            /// Redirect to dashboard - FIXED PATH
-            const basePath = window.location.pathname.includes('/auth/') ? '../' : './';
-            window.location.href = basePath + 'dashboard/dashboard.html';
+            // Redirect to dashboard
+            window.location.href = '../dashboard/dashboard.html';
         });
         
         // Google signup button
@@ -643,7 +638,7 @@
             showNotification('Apple signup would be implemented here', 'info');
         });
     }
-    
+
     function validateStep1() {
         const firstName = document.getElementById('firstName').value;
         const lastName = document.getElementById('lastName').value;
@@ -693,10 +688,8 @@
             firstName,
             lastName,
             email,
-            password: btoa(password), // Simple encoding (not secure for production)
-            termsAccepted: terms,
-            createdAt: new Date().toISOString(),
-            accountId: 'MF' + Date.now() + Math.floor(Math.random() * 1000)
+            password: password, // Store plain password - authManager will encode it
+            termsAccepted: terms
         };
         
         // Update avatar preview with initials
@@ -705,7 +698,7 @@
         // Go to step 2
         goToStep(2);
     }
-    
+
     function validateStep2() {
         const phone = document.getElementById('phone').value;
         const country = document.getElementById('country').value;
@@ -717,13 +710,12 @@
             phone,
             country,
             currency,
-            initials: getInitials(),
-            profileCompleted: !!phone && !!country && !!currency
+            initials: getInitials()
         };
         
         goToStep(3);
     }
-    
+
     function goToStep(step) {
         // Hide all steps
         step1.classList.remove('active');
@@ -768,10 +760,8 @@
         
         currentStep = step;
     }
-    
-    async function createAccount(e) {
-        e.preventDefault();
-        
+
+    async function createAccount() {
         // Collect preferences data
         const goals = Array.from(document.querySelectorAll('input[name="goals"]:checked'))
             .map(checkbox => checkbox.value);
@@ -781,10 +771,7 @@
         userData.preferences = {
             goals,
             newsletter,
-            experience,
-            premiumTrial: true,
-            trialStartDate: new Date().toISOString(),
-            trialEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+            experience
         };
         
         // Show loading state
@@ -792,74 +779,39 @@
         createAccountBtn.disabled = true;
         
         try {
-            // Check if user already exists
-            const checkResponse = await fetch(`${API_BASE_URL}/users?email=${encodeURIComponent(userData.account.email)}`);
-            const existingUsers = await checkResponse.json();
-            
-            if (existingUsers.length > 0) {
-                showNotification('An account with this email already exists', 'error');
-                createAccountBtn.innerHTML = '<i class="fas fa-user-plus mr-2"></i> Create Account';
-                createAccountBtn.disabled = false;
-                return;
-            }
-            
-            // Create the complete user object
+            // Combine all user data
             const completeUserData = {
                 ...userData.account,
                 ...userData.profile,
-                ...userData.preferences,
-                id: Date.now(), // Generate unique ID
-                status: 'active',
-                lastLogin: null
+                ...userData.preferences
             };
             
-            // Save to JSON Server
-            const response = await fetch(`${API_BASE_URL}/users`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(completeUserData)
-            });
+            // Use authManager to register the user
+            const result = await authManager.register(completeUserData);
             
-            if (response.ok) {
-                const savedUser = await response.json();
-                
-                // Store minimal user data in localStorage for session management
-                localStorage.setItem('moneyflow_user', JSON.stringify({
-                    id: savedUser.id,
-                    firstName: savedUser.firstName,
-                    lastName: savedUser.lastName,
-                    email: savedUser.email,
-                    accountId: savedUser.accountId,
-                    initials: savedUser.initials,
-                    premiumTrial: savedUser.premiumTrial
-                }));
-                localStorage.setItem('moneyflow_logged_in', 'true');
-                localStorage.setItem('moneyflow_user_id', savedUser.id);
-                
+            if (result.success) {
                 // Show success message
                 showNotification('Account created successfully!', 'success');
                 
-                // Show welcome modal
+                // Show welcome modal after a short delay
                 setTimeout(() => {
                     welcomeModal.classList.remove('hidden');
-                }, 1000);
+                }, 800);
                 
             } else {
-                throw new Error('Failed to create account');
+                throw new Error(result.error);
             }
             
         } catch (error) {
             console.error('Error creating account:', error);
-            showNotification('Failed to create account. Please try again.', 'error');
+            showNotification(error.message || 'Failed to create account. Please try again.', 'error');
         } finally {
             // Reset button
             createAccountBtn.innerHTML = '<i class="fas fa-user-plus mr-2"></i> Create Account';
             createAccountBtn.disabled = false;
         }
     }
-    
+
     function checkPasswordStrength() {
         const password = signupPasswordInput.value;
         let strength = 0;
@@ -885,7 +837,7 @@
         passwordStrengthMeter.className = `password-strength-meter ${className}`;
         strengthText.textContent = text;
     }
-    
+
     function checkPasswordMatch() {
         const password = signupPasswordInput.value;
         const confirmPassword = confirmPasswordInput.value;
@@ -896,7 +848,7 @@
             passwordMatchDiv.classList.add('hidden');
         }
     }
-    
+
     function updateAvatarPreview() {
         const firstName = document.getElementById('firstName').value;
         const lastName = document.getElementById('lastName').value;
@@ -906,18 +858,18 @@
             avatarPreview.textContent = initials;
         }
     }
-    
+
     function getInitials() {
         const firstName = document.getElementById('firstName').value;
         const lastName = document.getElementById('lastName').value;
         return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
     }
-    
+
     function isValidEmail(email) {
         const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return re.test(email.toLowerCase());
     }
-    
+
     function showNotification(message, type = 'success') {
         notificationMessage.textContent = message;
         
@@ -941,6 +893,6 @@
             notificationToast.classList.add('hidden');
         }, 3000);
     }
-</script>
+    </script>
 </body>
 </html>

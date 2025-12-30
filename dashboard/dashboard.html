@@ -806,9 +806,9 @@
         </div>
     </div>
 
+    <script src="../auth/auth.js"></script>
     <script>
     // API Base URL - Same as login/signup
-    const API_BASE_URL = 'http://localhost:3000';
     
     // DOM Elements
     const transactionModal = document.getElementById('transactionModal');
@@ -867,14 +867,20 @@
     // Initialize the application
     document.addEventListener('DOMContentLoaded', async function() {
         // Check if user is logged in
-        await checkAuthentication();
+        // Check authentication
+        const isAuthenticated = await authManager.checkAuthStatus();
         
-        if (!currentUser) {
-            // Redirect to login if not authenticated
+        if (!isAuthenticated) {
             window.location.href = '../auth/login.html';
             return;
         }
-        
+
+        const currentUser = authManager.getCurrentUser();
+        console.log('Current user:', currentUser);
+
+        // Update UI with user info
+        updateUserInfo(currentUser);
+
         // Set today's date as default in the form
         document.getElementById('transactionDate').valueAsDate = new Date();
         

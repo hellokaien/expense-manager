@@ -307,9 +307,11 @@
         </div>
     </div>
 
+    <script src="../auth/auth.js"></script>
+
     <script>
     // API Base URL - Same as signup page
-    const API_BASE_URL = 'http://localhost:3000';
+   
     
     // DOM Elements
     const loginForm = document.getElementById('loginForm');
@@ -325,14 +327,12 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
-        // Check if user is already logged in
-        const isLoggedIn = localStorage.getItem('moneyflow_logged_in');
-        if (isLoggedIn === 'true') {
-            // Redirect to dashboard
-            setTimeout(() => {
+        // Check if already logged in
+        authManager.checkAuthStatus().then(isAuthenticated => {
+            if (isAuthenticated) {
                 window.location.href = '../dashboard/dashboard.html';
-            }, 100);
-        }
+            }
+        });
         
         setupEventListeners();
     });
