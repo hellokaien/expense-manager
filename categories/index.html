@@ -434,6 +434,12 @@
                                     <i class="fas fa-plus mr-2"></i> Add Your First Category
                                 </button>
                             </div>
+
+                            <!-- Loading State -->
+                            <div id="loadingState" class="hidden py-16 text-center">
+                                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                                <p class="text-gray-600">Loading transactions...</p>
+                            </div>
                         </div>
                         
                         <!-- Bulk Actions -->
@@ -870,145 +876,43 @@
     </div>
 
     <!-- Toast Notification -->
-    <div id="toastNotification" class="fixed bottom-4 right-4 z-50 hidden">
+    <div id="notificationToast" class="fixed top-4 right-4 z-50 hidden">
         <div class="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide">
             <i class="fas fa-check-circle mr-3 text-xl"></i>
-            <span id="toastMessage">Category saved successfully!</span>
+            <span id="notificationMessage">Transaction saved successfully!</span>
         </div>
     </div>
 
+    <script src="../auth/auth.js"></script>
+    <script src="../app.js"></script>
+
     <script>
         // Sample categories data
-        let categories = [
-            { 
-                id: 1, 
-                name: 'Food & Dining', 
-                type: 'expense', 
-                subtype: 'essential',
-                icon: 'utensils',
-                color: '#f59e0b',
-                transactions: 142,
-                totalAmount: 3845.50,
-                lastUsed: '2023-05-20',
-                monthlyAverage: 645.00,
-                description: 'Groceries, restaurants, coffee shops',
-                budget: 700,
-                isCustom: false,
-                order: 1
-            },
-            { 
-                id: 2, 
-                name: 'Salary', 
-                type: 'income', 
-                subtype: 'essential',
-                icon: 'money-bill-wave',
-                color: '#10b981',
-                transactions: 24,
-                totalAmount: 45600.00,
-                lastUsed: '2023-05-15',
-                monthlyAverage: 3800.00,
-                description: 'Monthly salary income',
-                budget: null,
-                isCustom: false,
-                order: 2
-            },
-            { 
-                id: 3, 
-                name: 'Transportation', 
-                type: 'expense', 
-                subtype: 'essential',
-                icon: 'car',
-                color: '#3b82f6',
-                transactions: 86,
-                totalAmount: 1245.30,
-                lastUsed: '2023-05-19',
-                monthlyAverage: 248.00,
-                description: 'Fuel, public transport, rideshare',
-                budget: 250,
-                isCustom: false,
-                order: 3
-            },
-            { 
-                id: 4, 
-                name: 'Shopping', 
-                type: 'expense', 
-                subtype: 'discretionary',
-                icon: 'shopping-bag',
-                color: '#8b5cf6',
-                transactions: 42,
-                totalAmount: 1680.75,
-                lastUsed: '2023-05-18',
-                monthlyAverage: 336.00,
-                description: 'Clothing, electronics, household items',
-                budget: 500,
-                isCustom: false,
-                order: 4
-            },
-            { 
-                id: 5, 
-                name: 'Entertainment', 
-                type: 'expense', 
-                subtype: 'discretionary',
-                icon: 'film',
-                color: '#ec4899',
-                transactions: 28,
-                totalAmount: 420.50,
-                lastUsed: '2023-05-17',
-                monthlyAverage: 84.00,
-                description: 'Movies, concerts, subscriptions',
-                budget: 200,
-                isCustom: false,
-                order: 5
-            },
-            { 
-                id: 6, 
-                name: 'Bills & Utilities', 
-                type: 'expense', 
-                subtype: 'essential',
-                icon: 'home',
-                color: '#22c55e',
-                transactions: 36,
-                totalAmount: 1820.25,
-                lastUsed: '2023-05-16',
-                monthlyAverage: 364.00,
-                description: 'Electricity, water, internet, phone',
-                budget: 350,
-                isCustom: false,
-                order: 6
-            },
-            { 
-                id: 7, 
-                name: 'Freelance Income', 
-                type: 'income', 
-                subtype: 'other',
-                icon: 'laptop',
-                color: '#6366f1',
-                transactions: 18,
-                totalAmount: 5400.00,
-                lastUsed: '2023-05-14',
-                monthlyAverage: 450.00,
-                description: 'Freelance project payments',
-                budget: null,
-                isCustom: true,
-                order: 7
-            },
-            { 
-                id: 8, 
-                name: 'Health & Fitness', 
-                type: 'expense', 
-                subtype: 'essential',
-                icon: 'heartbeat',
-                color: '#ef4444',
-                transactions: 15,
-                totalAmount: 320.00,
-                lastUsed: '2023-05-12',
-                monthlyAverage: 64.00,
-                description: 'Gym membership, supplements, medical',
-                budget: 150,
-                isCustom: true,
-                order: 8
+        let categories = [];
+    const loadingState = document.getElementById('loadingState');
+
+        async function fetchCategories() {
+            try {
+                loadingState.classList.remove('hidden');
+                const response = await fetch(`${API_BASE_URL}/categories`);
+                if (!response.ok) throw new Error('Failed to fetch categories');
+                
+                categories = await response.json();
+                return categories;
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+                showNotification('Failed to load categories', 'error');
+                return [];
+            } finally {
+                 loadingState.classList.add('hidden');
             }
-        ];
+        }
+
+        async function loadCategories() {
+            await fetchCategories();
+            renderCategories();
+        //    updateStats();
+        }
 
         // DOM Elements
         const toggleSidebarBtn = document.getElementById('toggleSidebar');
@@ -1060,7 +964,7 @@
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             // Populate categories table
-            renderCategories();
+            loadCategories();
             
             // Set up event listeners
             setupEventListeners();
@@ -1206,12 +1110,12 @@
             // Sorting
             sortByNameBtn.addEventListener('click', () => {
                 sortCategories('name');
-                showToast('Categories sorted by name', 'info');
+                showNotification('Categories sorted by name', 'info');
             });
             
             sortByUsageBtn.addEventListener('click', () => {
                 sortCategories('usage');
-                showToast('Categories sorted by usage', 'info');
+                showNotification('Categories sorted by usage', 'info');
             });
             
             // Logout functionality
@@ -1224,13 +1128,7 @@
             });
             
             confirmLogoutBtn.addEventListener('click', () => {
-                showToast('Logged out successfully!', 'info');
-                document.getElementById('logoutModal').classList.add('hidden');
-                
-                // In a real app, you would redirect to login page
-                setTimeout(() => {
-                    alert('Redirecting to login page... (This is a demo)');
-                }, 1000);
+                logout();
             });
             
             // Edit and delete preview buttons
@@ -1384,7 +1282,7 @@
                             </div>
                         </td>
                         <td class="py-4 text-gray-700">
-                            <div class="font-medium">${category.transactions}</div>
+                            <div class="font-medium">${category.transactions_count}</div>
                             <div class="text-gray-500 text-sm">$${category.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
                         </td>
                         <td class="py-4">
@@ -1412,21 +1310,21 @@
                 // Add event listeners to action buttons
                 document.querySelectorAll('.view-category').forEach(button => {
                     button.addEventListener('click', function() {
-                        const categoryId = parseInt(this.getAttribute('data-id'));
+                        const categoryId = this.getAttribute('data-id');
                         viewCategory(categoryId);
                     });
                 });
                 
                 document.querySelectorAll('.edit-category').forEach(button => {
                     button.addEventListener('click', function() {
-                        const categoryId = parseInt(this.getAttribute('data-id'));
+                        const categoryId = this.getAttribute('data-id');
                         editCategory(categoryId);
                     });
                 });
                 
                 document.querySelectorAll('.delete-category').forEach(button => {
                     button.addEventListener('click', function() {
-                        const categoryId = parseInt(this.getAttribute('data-id'));
+                        const categoryId = this.getAttribute('data-id');
                         showDeleteConfirmation(categoryId);
                     });
                 });
@@ -1434,7 +1332,7 @@
                 // Add event listeners to checkboxes
                 document.querySelectorAll('.category-checkbox').forEach(checkbox => {
                     checkbox.addEventListener('change', function() {
-                        const categoryId = parseInt(this.getAttribute('data-id'));
+                        const categoryId = this.getAttribute('data-id');
                         
                         if (this.checked) {
                             selectedCategories.add(categoryId);
@@ -1485,7 +1383,7 @@
             subtypeBadge.className = `category-badge ${subtypeClass}`;
             
             // Update stats
-            document.getElementById('previewTransactions').textContent = `${category.transactions} transactions`;
+            document.getElementById('previewTransactions').textContent = `${category.transactions_count} transactions`;
             document.getElementById('previewAmount').textContent = `$${category.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
             
             const lastUsed = new Date(category.lastUsed);
@@ -1556,7 +1454,7 @@
             const icon = document.getElementById('selectedIcon').value;
             
             if (!name || !type || !subtype) {
-                showToast('Please fill in all required fields', 'error');
+                showNotification('Please fill in all required fields', 'error');
                 return;
             }
             
@@ -1576,7 +1474,7 @@
                         isCustom: true // Mark as custom when edited
                     };
                     
-                    showToast('Category updated successfully!', 'success');
+                    showNotification('Category updated successfully!', 'success');
                 }
             } else {
                 // Create new category
@@ -1598,7 +1496,7 @@
                 };
                 
                 categories.push(newCategory);
-                showToast('Category created successfully!', 'success');
+                showNotification('Category created successfully!', 'success');
             }
             
             // Update UI
@@ -1636,7 +1534,7 @@
         }
         
         function deleteCategory() {
-            const categoryId = parseInt(confirmDeleteBtn.dataset.categoryId);
+            const categoryId = confirmDeleteBtn.dataset.categoryId;
             
             // Remove category from array
             categories = categories.filter(c => c.id !== categoryId);
@@ -1655,7 +1553,7 @@
             }
             
             // Show notification
-            showToast('Category deleted successfully!', 'warning');
+            showNotification('Category deleted successfully!', 'warning');
             
             // Close modal
             deleteCategoryModal.classList.add('hidden');
@@ -1667,7 +1565,7 @@
             
             checkboxes.forEach(checkbox => {
                 checkbox.checked = isChecked;
-                const categoryId = parseInt(checkbox.getAttribute('data-id'));
+                const categoryId = checkbox.getAttribute('data-id');
                 
                 if (isChecked) {
                     selectedCategories.add(categoryId);
@@ -1720,7 +1618,7 @@
                 }
                 
                 // Show notification
-                showToast(`${selectedCategories.size} categor${selectedCategories.size === 1 ? 'y' : 'ies'} deleted successfully!`, 'warning');
+                showNotification(`${selectedCategories.size} categor${selectedCategories.size === 1 ? 'y' : 'ies'} deleted successfully!`, 'warning');
             }
         }
         
@@ -1734,7 +1632,7 @@
             }
             
             // In a real app, this would export to CSV or JSON
-            showToast(`Exported ${categoriesToExport.length} categories`, 'success');
+            showNotification(`Exported ${categoriesToExport.length} categories`, 'success');
         }
         
         function sortCategories(sortBy) {
@@ -1852,14 +1750,14 @@
                 // Update category order based on new position
                 const items = Array.from(this.querySelectorAll('.draggable-item'));
                 items.forEach((item, index) => {
-                    const categoryId = parseInt(item.dataset.id);
+                    const categoryId = item.dataset.id;
                     const category = categories.find(c => c.id === categoryId);
                     if (category) {
                         category.order = index + 1;
                     }
                 });
                 
-                showToast('Category order updated', 'info');
+                showNotification('Category order updated', 'info');
             });
         }
         
@@ -1876,37 +1774,6 @@
                     return closest;
                 }
             }, { offset: Number.NEGATIVE_INFINITY }).element;
-        }
-        
-        function showToast(message, type = 'success') {
-            const toastIcon = document.getElementById('toastIcon');
-            const toastMessage = document.getElementById('toastMessage');
-            const toast = document.getElementById('toastNotification');
-            
-            // Set icon and color based on type
-            if (type === 'success') {
-                toastIcon.className = 'fas fa-check-circle mr-3 text-xl';
-                toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
-            } else if (type === 'error') {
-                toastIcon.className = 'fas fa-exclamation-circle mr-3 text-xl';
-                toast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
-            } else if (type === 'warning') {
-                toastIcon.className = 'fas fa-exclamation-triangle mr-3 text-xl';
-                toast.className = 'fixed bottom-4 right-4 bg-amber-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
-            } else {
-                toastIcon.className = 'fas fa-info-circle mr-3 text-xl';
-                toast.className = 'fixed bottom-4 right-4 bg-blue-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
-            }
-            
-            toastMessage.textContent = message;
-            
-            // Show toast
-            toast.classList.remove('hidden');
-            
-            // Hide after 3 seconds
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
         }
         
         // Utility function for debouncing

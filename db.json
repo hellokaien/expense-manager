@@ -1,137 +1,47 @@
 {
   "transactions": [
     {
-      "userId": 1,
-      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b3",
-      "title": "Monthly Salary",
-      "amount": 3800,
+      "title": "Test Income",
+      "amount": 123,
       "type": "income",
       "category": "salary",
-      "date": "2023-05-01",
-      "paymentMethod": "bank_transfer",
+      "date": "2025-11-30",
+      "paymentMethod": "credit_card",
       "status": "completed",
-      "notes": "Monthly paycheck from Company Inc.",
-      "tags": [
-        "essential",
-        "recurring"
-      ]
+      "notes": "123",
+      "tags": [],
+      "id": "txn-eb9221b5-c2be-401b-9b45-b2b058e46d60"
     },
     {
-      "userId": 1,
-      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b6",
-      "title": "Grocery Shopping",
-      "amount": 145.5,
+      "id": "txn-9669419e-f2cd-4c11-a4e0-d22cf65c34a6",
+      "title": "Mcdo",
+      "amount": 490,
       "type": "expense",
       "category": "food",
-      "date": "2023-05-03",
-      "paymentMethod": "credit_card",
+      "date": "2025-12-30",
+      "paymentMethod": "cash",
       "status": "completed",
-      "notes": "Weekly groceries at Walmart",
-      "tags": [
-        "essential",
-        "food"
-      ]
+      "notes": "With Joan",
+      "tags": [],
+      "userId": 1
     },
     {
-      "userId": 1,
-      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b8",
-      "title": "Netflix Subscription",
-      "amount": 15.99,
+      "id": "txn-a789e59d-325b-4f4b-90a6-d4bb1bc5f936",
+      "title": "TEst",
+      "amount": 22,
       "type": "expense",
-      "category": "entertainment",
-      "date": "2023-05-05",
-      "paymentMethod": "debit_card",
+      "category": "food",
+      "date": "2025-12-30",
+      "paymentMethod": "cash",
       "status": "completed",
-      "notes": "Monthly subscription",
-      "tags": [
-        "subscription",
-        "entertainment"
-      ]
-    },
-    {
-      "userId": 1,
-      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b1",
-      "title": "Freelance Project",
-      "amount": 450,
-      "type": "income",
-      "category": "freelance",
-      "date": "2023-05-08",
-      "paymentMethod": "bank_transfer",
-      "status": "completed",
-      "notes": "Website design project for client",
-      "tags": [
-        "business",
-        "freelance"
-      ]
-    },
-    {
-      "userId": 1,
-      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2c3",
-      "title": "Electricity Bill",
-      "amount": 85.25,
-      "type": "expense",
-      "category": "bills",
-      "date": "2023-05-10",
-      "paymentMethod": "bank_transfer",
-      "status": "completed",
-      "notes": "Monthly electricity bill",
-      "tags": [
-        "essential",
-        "bills"
-      ]
-    },
-    {
-      "userId": 1,
-      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b9",
-      "title": "Uber Rides",
-      "amount": 62.3,
-      "type": "expense",
-      "category": "transport",
-      "date": "2023-05-12",
-      "paymentMethod": "digital_wallet",
-      "status": "completed",
-      "notes": "Transportation for the week",
-      "tags": [
-        "transport",
-        "personal"
-      ]
-    },
-    {
-      "userId": 1,
-      "id": "7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a1b3",
-      "title": "New Headphones",
-      "amount": 129.99,
-      "type": "expense",
-      "category": "shopping",
-      "date": "2023-05-15",
-      "paymentMethod": "credit_card",
-      "status": "completed",
-      "notes": "Bought new wireless headphones",
-      "tags": [
-        "shopping",
-        "personal"
-      ]
-    },
-    {
-      "userId": 1,
-      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b3",
-      "title": "Dividend Payment",
-      "amount": 250,
-      "type": "income",
-      "category": "investment",
-      "date": "2023-05-18",
-      "paymentMethod": "bank_transfer",
-      "status": "completed",
-      "notes": "Stock dividends from investments",
-      "tags": [
-        "investment",
-        "passive income"
-      ]
+      "notes": "asd",
+      "tags": [],
+      "userId": 1
     }
   ],
   "users": [
     {
-      "id": 1766944218991,
+      "id": "1766944218991",
       "firstName": "test",
       "lastName": "test",
       "email": "test@c.cc",
@@ -154,7 +64,137 @@
       "trialStartDate": "2025-12-28T17:50:18.949Z",
       "trialEndDate": "2026-01-27T17:50:18.949Z",
       "status": "active",
-      "lastLogin": null
+      "lastLogin": "2025-12-30T17:40:29.512Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": 1,
+      "name": "Food & Dining",
+      "type": "expense",
+      "subtype": "essential",
+      "icon": "utensils",
+      "color": "#f59e0b",
+      "transactions_count": 142,
+      "totalAmount": 3845.5,
+      "lastUsed": "2023-05-20",
+      "monthlyAverage": 645,
+      "description": "Groceries, restaurants, coffee shops",
+      "budget": 700,
+      "isCustom": false,
+      "order": 9
+    },
+    {
+      "id": "2",
+      "name": "Salary",
+      "type": "income",
+      "subtype": "essential",
+      "icon": "money-bill-wave",
+      "color": "#10b981",
+      "transactions_count": 24,
+      "totalAmount": 45600,
+      "lastUsed": "2023-05-15",
+      "monthlyAverage": 3800,
+      "description": "Monthly salary income",
+      "budget": null,
+      "isCustom": false,
+      "order": 2
+    },
+    {
+      "id": "3",
+      "name": "Transportation",
+      "type": "expense",
+      "subtype": "essential",
+      "icon": "car",
+      "color": "#3b82f6",
+      "transactions_count": 86,
+      "totalAmount": 1245.3,
+      "lastUsed": "2023-05-19",
+      "monthlyAverage": 248,
+      "description": "Fuel, public transport, rideshare",
+      "budget": 250,
+      "isCustom": false,
+      "order": 3
+    },
+    {
+      "id": "4",
+      "name": "Shopping",
+      "type": "expense",
+      "subtype": "discretionary",
+      "icon": "shopping-bag",
+      "color": "#8b5cf6",
+      "transactions_count": 42,
+      "totalAmount": 1680.75,
+      "lastUsed": "2023-05-18",
+      "monthlyAverage": 336,
+      "description": "Clothing, electronics, household items",
+      "budget": 500,
+      "isCustom": false,
+      "order": 4
+    },
+    {
+      "id": "5",
+      "name": "Entertainment",
+      "type": "expense",
+      "subtype": "discretionary",
+      "icon": "film",
+      "color": "#ec4899",
+      "transactions_count": 28,
+      "totalAmount": 420.5,
+      "lastUsed": "2023-05-17",
+      "monthlyAverage": 84,
+      "description": "Movies, concerts, subscriptions",
+      "budget": 200,
+      "isCustom": false,
+      "order": 5
+    },
+    {
+      "id": "6",
+      "name": "Bills & Utilities",
+      "type": "expense",
+      "subtype": "essential",
+      "icon": "home",
+      "color": "#22c55e",
+      "transactions_count": 36,
+      "totalAmount": 1820.25,
+      "lastUsed": "2023-05-16",
+      "monthlyAverage": 364,
+      "description": "Electricity, water, internet, phone",
+      "budget": 350,
+      "isCustom": false,
+      "order": 6
+    },
+    {
+      "id": "7",
+      "name": "Freelance Income",
+      "type": "income",
+      "subtype": "other",
+      "icon": "laptop",
+      "color": "#6366f1",
+      "transactions_count": 18,
+      "totalAmount": 5400,
+      "lastUsed": "2023-05-14",
+      "monthlyAverage": 450,
+      "description": "Freelance project payments",
+      "budget": null,
+      "isCustom": true,
+      "order": 7
+    },
+    {
+      "id": "8",
+      "name": "Health & Fitness",
+      "type": "expense",
+      "subtype": "essential",
+      "icon": "heartbeat",
+      "color": "#ef4444",
+      "transactions_count": 15,
+      "totalAmount": 320,
+      "lastUsed": "2023-05-12",
+      "monthlyAverage": 64,
+      "description": "Gym membership, supplements, medical",
+      "budget": 150,
+      "isCustom": true,
+      "order": 8
     }
   ]
 }
