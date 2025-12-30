@@ -189,37 +189,37 @@
                 <nav class="mb-8">
                     <ul class="space-y-2">
                         <li>
-                            <a href="../dashboard/dashboard.html" id="dashboardNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                            <a href="../dashboard/dashboard.html" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300"> <!-- id="dashboardNav" -->
                                 <i class="fas fa-chart-pie w-6"></i>
                                 <span class="sidebar-text ml-3 font-medium">Dashboard</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" id="transactionsNav" class="flex items-center p-3 rounded-lg bg-blue-900 text-white">
+                            <a href="../transactions/transactions.html" class="flex items-center p-3 rounded-lg bg-blue-900 text-white"> <!-- id="transactionsNav" -->
                                 <i class="fas fa-exchange-alt w-6"></i>
                                 <span class="sidebar-text ml-3">Transactions</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" id="analyticsNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                            <a href="../analytics/analytics.html" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300"> <!--id="analyticsNav"-->
                                 <i class="fas fa-chart-line w-6"></i>
                                 <span class="sidebar-text ml-3">Analytics</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" id="budgetNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                            <a href="../budget-planner/index.html" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300"> <!-- id="budgetNav"-->
                                 <i class="fas fa-calendar-alt w-6"></i>
                                 <span class="sidebar-text ml-3">Budget Planner</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" id="categoriesNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                            <a href="../categories/index.html" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300"> <!-- id="categoriesNav"-->
                                 <i class="fas fa-tags w-6"></i>
                                 <span class="sidebar-text ml-3">Categories</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" id="settingsNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                            <a href="../settings/index.html"  class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300"> <!--id="settingsNav"-->
                                 <i class="fas fa-cog w-6"></i>
                                 <span class="sidebar-text ml-3">Settings</span>
                             </a>
@@ -1632,13 +1632,13 @@
         if (currentPage !== 'transactions') return;
         
         // First hide both states
-    emptyState.classList.add('hidden');
-    loadingState.classList.add('hidden');
-    
-    // If loading state is active, don't show empty state
-    if (!loadingState.classList.contains('hidden')) {
-        return; // Still loading, don't show anything else
-    }
+        emptyState.classList.add('hidden');
+        loadingState.classList.add('hidden');
+        
+        // If loading state is active, don't show empty state
+        if (!loadingState.classList.contains('hidden')) {
+            return; // Still loading, don't show anything else
+        }
         transactionsTableBody.innerHTML = '';
         
         // Get search term
