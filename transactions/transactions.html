@@ -560,7 +560,7 @@
                         </div>
                         
                         <!-- Loading State -->
-                        <div id="loadingState" class="hidden py-16 text-center">
+                        <div id="loadingState" class="py-16 text-center">
                             <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
                             <p class="text-gray-600">Loading transactions...</p>
                         </div>
@@ -1267,35 +1267,35 @@
 
     function setupEventListeners() {
         // Navigation
-        dashboardNav.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigateTo('dashboard');
-        });
+        //dashboardNav.addEventListener('click', (e) => {
+           // e.preventDefault();
+           // navigateTo('dashboard');
+        //});
         
-        transactionsNav.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigateTo('transactions');
-        });
+        //transactionsNav.addEventListener('click', (e) => {
+          //  e.preventDefault();
+          //  navigateTo('transactions');
+        //});
         
-        analyticsNav.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigateTo('analytics');
-        });
+       // analyticsNav.addEventListener('click', (e) => {
+     //       e.preventDefault();
+      //      navigateTo('analytics');
+    //    });
         
-        budgetNav.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigateTo('budget');
-        });
+     //   budgetNav.addEventListener('click', (e) => {
+      //      e.preventDefault();
+     //       navigateTo('budget');
+     //   });
         
-        categoriesNav.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigateTo('categories');
-        });
+      //  categoriesNav.addEventListener('click', (e) => {
+      //      e.preventDefault();
+     //       navigateTo('categories');
+      //  });
         
-        settingsNav.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigateTo('settings');
-        });
+      //  settingsNav.addEventListener('click', (e) => {
+      //      e.preventDefault();
+       //     navigateTo('settings');
+      //  });
         
         // Open add transaction modal
         addTransactionBtn.addEventListener('click', () => {
@@ -1453,9 +1453,7 @@
         } else {
             dashboardTabs.classList.add('hidden');
         }
-        
-        // Update active navigation item
-        updateActiveNav(page);
+    
         
         // Show the correct page content
         if (page === 'transactions') {
@@ -1476,43 +1474,6 @@
             // Update other page content
             document.getElementById('otherPageTitle').textContent = pages[page].title;
             document.getElementById('otherPageDescription').textContent = pages[page].subtitle;
-        }
-    }
-
-    function updateActiveNav(activePage) {
-        // Remove active class from all nav items
-        const navItems = [dashboardNav, transactionsNav, analyticsNav, budgetNav, categoriesNav, settingsNav];
-        navItems.forEach(nav => {
-            nav.classList.remove('bg-blue-900', 'text-white');
-            nav.classList.add('hover:bg-gray-800', 'text-gray-300');
-        });
-        
-        // Add active class to current nav item
-        switch(activePage) {
-            case 'dashboard':
-                dashboardNav.classList.add('bg-blue-900', 'text-white');
-                dashboardNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
-                break;
-            case 'transactions':
-                transactionsNav.classList.add('bg-blue-900', 'text-white');
-                transactionsNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
-                break;
-            case 'analytics':
-                analyticsNav.classList.add('bg-blue-900', 'text-white');
-                analyticsNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
-                break;
-            case 'budget':
-                budgetNav.classList.add('bg-blue-900', 'text-white');
-                budgetNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
-                break;
-            case 'categories':
-                categoriesNav.classList.add('bg-blue-900', 'text-white');
-                categoriesNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
-                break;
-            case 'settings':
-                settingsNav.classList.add('bg-blue-900', 'text-white');
-                settingsNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
-                break;
         }
     }
 

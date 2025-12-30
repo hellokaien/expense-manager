@@ -1,44 +1,5 @@
 {
-  "transactions": [
-    {
-      "title": "Test Income",
-      "amount": 123,
-      "type": "income",
-      "category": "salary",
-      "date": "2025-11-30",
-      "paymentMethod": "credit_card",
-      "status": "completed",
-      "notes": "123",
-      "tags": [],
-      "id": "txn-eb9221b5-c2be-401b-9b45-b2b058e46d60"
-    },
-    {
-      "id": "txn-9669419e-f2cd-4c11-a4e0-d22cf65c34a6",
-      "title": "Mcdo",
-      "amount": 490,
-      "type": "expense",
-      "category": "food",
-      "date": "2025-12-30",
-      "paymentMethod": "cash",
-      "status": "completed",
-      "notes": "With Joan",
-      "tags": [],
-      "userId": 1
-    },
-    {
-      "id": "txn-a789e59d-325b-4f4b-90a6-d4bb1bc5f936",
-      "title": "TEst",
-      "amount": 22,
-      "type": "expense",
-      "category": "food",
-      "date": "2025-12-30",
-      "paymentMethod": "cash",
-      "status": "completed",
-      "notes": "asd",
-      "tags": [],
-      "userId": 1
-    }
-  ],
+  "transactions": [],
   "users": [
     {
       "id": "1766944218991",
@@ -69,7 +30,7 @@
   ],
   "categories": [
     {
-      "id": 1,
+      "id": "1",
       "name": "Food & Dining",
       "type": "expense",
       "subtype": "essential",
@@ -83,22 +44,6 @@
       "budget": 700,
       "isCustom": false,
       "order": 9
-    },
-    {
-      "id": "5",
-      "name": "Entertainment",
-      "type": "expense",
-      "subtype": "discretionary",
-      "icon": "film",
-      "color": "#ec4899",
-      "transactions_count": 28,
-      "totalAmount": 420.5,
-      "lastUsed": "2023-05-17",
-      "monthlyAverage": 84,
-      "description": "Movies, concerts, subscriptions",
-      "budget": 200,
-      "isCustom": false,
-      "order": 5
     },
     {
       "id": "6",
