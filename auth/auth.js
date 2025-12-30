@@ -135,7 +135,7 @@ class AuthManager {
             // Create complete user object
             const completeUserData = {
                 ...userData,
-                id: Date.now(),
+                id: String(Date.now()),
                 status: 'active',
                 lastLogin: null,
                 password: btoa(userData.password), // Encode password

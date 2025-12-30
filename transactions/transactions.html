@@ -13,6 +13,15 @@
         .sidebar {
             transition: all 0.3s ease;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-animation {
+            animation: fadeIn 0.3s ease-out;
+        }
         
         .sidebar.collapsed {
             width: 70px;
@@ -130,9 +139,23 @@
             background-color: #e5e7eb;
         }
         
-        .notification-slide {
-            animation: slideIn 0.3s ease-out;
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        .notification-slide-in {
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        .notification-slide-out {
+            animation: slideOut 0.3s ease-out forwards;
+        }                                                                                                                       
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
@@ -944,7 +967,7 @@
 
     <!-- Logout Confirmation Modal -->
     <div id="logoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-white rounded-xl w-full max-w-md">
+        <div class="bg-white rounded-xl w-full max-w-md modal-animation">
             <div class="p-6">
                 <div class="text-center">
                     <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -965,17 +988,19 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toastNotification" class="fixed bottom-4 right-4 z-50 hidden">
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="fixed top-4 right-4 z-50 hidden">
         <div class="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide">
-            <i id="toastIcon" class="fas fa-check-circle mr-3 text-xl"></i>
-            <span id="toastMessage">Transaction saved successfully!</span>
+            <i class="fas fa-check-circle mr-3 text-xl"></i>
+            <span id="notificationMessage">Transaction saved successfully!</span>
         </div>
     </div>
 
+    <script src="../auth/auth.js"></script>
+    <script src="../app.js"></script>
     <script>
     // Base URL for your JSON Server
-    const API_BASE_URL = 'http://localhost:3000';
+    //const API_BASE_URL = 'http://localhost:3000';
     
     // Categories for income and expenses
     const incomeCategories = [
@@ -1113,7 +1138,7 @@
             return transactions;
         } catch (error) {
             console.error('Error fetching transactions:', error);
-            showToast('Failed to load transactions', 'error');
+            showNotification('Failed to load transactions', 'error');
             return [];
         } finally {
             loadingState.classList.add('hidden');
@@ -1394,13 +1419,7 @@
         });
         
         confirmLogoutBtn.addEventListener('click', () => {
-            showToast('Logged out successfully!', 'info');
-            document.getElementById('logoutModal').classList.add('hidden');
-            
-            // In a real app, you would redirect to login page
-            setTimeout(() => {
-                alert('Redirecting to login page... (This is a demo)');
-            }, 1000);
+           logout();
         });
         
         // Toggle sidebar
@@ -1570,7 +1589,7 @@
         const notes = document.getElementById('transactionNotes').value;
         
         if (!title || !amount || !category || !date || !paymentMethod) {
-            showToast('Please fill in all required fields', 'error');
+            showNotification('Please fill in all required fields', 'error');
             return;
         }
         
@@ -1590,11 +1609,11 @@
             if (isEditing && editingTransactionId) {
                 // Update existing transaction
                 await updateTransaction(editingTransactionId, transactionData);
-                showToast('Transaction updated successfully!', 'success');
+                showNotification('Transaction updated successfully!', 'success');
             } else {
                 // Create new transaction
                 await addTransaction(transactionData);
-                showToast('Transaction added successfully!', 'success');
+                showNotification('Transaction added successfully!', 'success');
             }
             
             // Update UI
@@ -1604,7 +1623,7 @@
             // Close modal and reset form
             closeTransactionModal();
         } catch (error) {
-            showToast('Failed to save transaction', 'error');
+            showNotification('Failed to save transaction', 'error');
         }
     }
 
@@ -1866,12 +1885,12 @@
             updateSelectedCount();
             
             // Show notification
-            showToast('Transaction deleted successfully!', 'warning');
+            showNotification('Transaction deleted successfully!', 'warning');
             
             // Close detail modal if open
             transactionDetailModal.classList.add('hidden');
         } catch (error) {
-            showToast('Failed to delete transaction', 'error');
+            showNotification('Failed to delete transaction', 'error');
         }
     }
 
@@ -1980,9 +1999,9 @@
                 updateSelectedCount();
                 
                 // Show notification
-                showToast(`${ids.length} transaction(s) deleted successfully!`, 'warning');
+                showNotification(`${ids.length} transaction(s) deleted successfully!`, 'warning');
             } catch (error) {
-                showToast('Failed to delete transactions', 'error');
+                showNotification('Failed to delete transactions', 'error');
             }
         }
     }
@@ -1994,36 +2013,21 @@
         editTransaction(transactionId);
     }
 
-    function showToast(message, type = 'success') {
-        const toastIcon = document.getElementById('toastIcon');
-        const toastMessage = document.getElementById('toastMessage');
-        const toast = document.getElementById('toastNotification');
+    
+
+    document.getElementById('notificationToast').addEventListener('click', function() {
+        this.classList.remove('notification-slide-in');
+        this.classList.add('notification-slide-out');
         
-        // Set icon and color based on type
-        if (type === 'success') {
-            toastIcon.className = 'fas fa-check-circle mr-3 text-xl';
-            toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
-        } else if (type === 'error') {
-            toastIcon.className = 'fas fa-exclamation-circle mr-3 text-xl';
-            toast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
-        } else if (type === 'warning') {
-            toastIcon.className = 'fas fa-exclamation-triangle mr-3 text-xl';
-            toast.className = 'fixed bottom-4 right-4 bg-amber-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
-        } else {
-            toastIcon.className = 'fas fa-info-circle mr-3 text-xl';
-            toast.className = 'fixed bottom-4 right-4 bg-blue-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide z-50';
-        }
-        
-        toastMessage.textContent = message;
-        
-        // Show toast
-        toast.classList.remove('hidden');
-        
-        // Hide after 3 seconds
         setTimeout(() => {
-            toast.classList.add('hidden');
-        }, 3000);
-    }
+            this.classList.add('hidden');
+            this.classList.remove('notification-slide-out');
+            // Clear the timeout if notification was manually dismissed
+            if (window.notificationTimeout) {
+                clearTimeout(window.notificationTimeout);
+            }
+        }, 300);
+    });
     
     // Utility function for debouncing
     function debounce(func, wait) {
