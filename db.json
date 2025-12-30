@@ -2,67 +2,35 @@
   "transactions": [
     {
       "userId": 1,
-      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b6",
-      "title": "Grocery Shopping",
-      "amount": 145.5,
-      "type": "expense",
-      "category": "food",
-      "date": "2023-05-03",
-      "paymentMethod": "credit_card",
-      "status": "completed",
-      "notes": "Weekly groceries at Walmart",
-      "tags": [
-        "essential",
-        "food"
-      ]
-    },
-    {
-      "userId": 1,
-      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b8",
-      "title": "Netflix Subscription",
-      "amount": 15.99,
-      "type": "expense",
-      "category": "entertainment",
-      "date": "2023-05-05",
-      "paymentMethod": "debit_card",
-      "status": "completed",
-      "notes": "Monthly subscription",
-      "tags": [
-        "subscription",
-        "entertainment"
-      ]
-    },
-    {
-      "userId": 1,
-      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b1",
-      "title": "Freelance Project",
-      "amount": 450,
+      "id": "txn-7f41c2a8-9d3b-4e5f-a6c7-b8d9e0f1a2b3",
+      "title": "Dividend Payment",
+      "amount": 250,
       "type": "income",
-      "category": "freelance",
-      "date": "2023-05-08",
+      "category": "investment",
+      "date": "2023-05-18",
       "paymentMethod": "bank_transfer",
       "status": "completed",
-      "notes": "Website design project for client",
+      "notes": "Stock dividends from investments",
       "tags": [
-        "business",
-        "freelance"
+        "investment",
+        "passive income"
       ]
     }
   ],
   "users": [
     {
-      "id": "1767079236648",
-      "firstName": "Karl Lewis",
-      "lastName": "Doctolero",
-      "email": "kd@gmail.com",
+      "id": "1766944218991",
+      "firstName": "test",
+      "lastName": "test",
+      "email": "test@c.cc",
       "password": "MTIzMTIzMTIz",
       "termsAccepted": true,
-      "createdAt": "2025-12-30T07:20:35.436Z",
-      "accountId": "MF1767079235436673",
+      "createdAt": "2025-12-28T17:50:17.843Z",
+      "accountId": "MF176694421784318",
       "phone": "",
       "country": "US",
       "currency": "USD",
-      "initials": "KD",
+      "initials": "TT",
       "profileCompleted": false,
       "goals": [
         "track_spending",
@@ -71,36 +39,10 @@
       "newsletter": true,
       "experience": "intermediate",
       "premiumTrial": true,
-      "trialStartDate": "2025-12-30T07:20:36.567Z",
-      "trialEndDate": "2026-01-29T07:20:36.567Z",
+      "trialStartDate": "2025-12-28T17:50:18.949Z",
+      "trialEndDate": "2026-01-27T17:50:18.949Z",
       "status": "active",
-      "lastLogin": "2025-12-30T07:21:33.780Z"
-    },
-    {
-      "id": "1767079366722",
-      "firstName": "Dawn",
-      "lastName": "Wyatt",
-      "email": "rybebevyd@mailinator.com",
-      "password": "UGEkJHcwcmQh",
-      "termsAccepted": true,
-      "createdAt": "2025-12-30T07:22:42.275Z",
-      "accountId": "MF176707936227562",
-      "phone": "",
-      "country": "US",
-      "currency": "USD",
-      "initials": "DW",
-      "profileCompleted": false,
-      "goals": [
-        "track_spending",
-        "budget_better"
-      ],
-      "newsletter": true,
-      "experience": "intermediate",
-      "premiumTrial": true,
-      "trialStartDate": "2025-12-30T07:22:46.645Z",
-      "trialEndDate": "2026-01-29T07:22:46.645Z",
-      "status": "active",
-      "lastLogin": "2025-12-30T07:33:25.784Z"
+      "lastLogin": null
     }
   ]
 }
