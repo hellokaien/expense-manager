@@ -220,37 +220,37 @@
                 <nav class="mb-8">
                     <ul class="space-y-2">
                         <li>
-                            <a href="#" id="dashboardNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                            <a href="../dashboard/dashboard.html" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300"> <!--id="dashboardNav" -->
                                 <i class="fas fa-chart-pie w-6"></i>
                                 <span class="sidebar-text ml-3 font-medium">Dashboard</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" id="transactionsNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                            <a href="../transactions/transactions.html" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300"> <!-- id="transactionsNav"-->
                                 <i class="fas fa-exchange-alt w-6"></i>
                                 <span class="sidebar-text ml-3">Transactions</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" id="analyticsNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                            <a href="../analytics/analytics.html" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300"> <!--id="analyticsNav" -->
                                 <i class="fas fa-chart-line w-6"></i>
                                 <span class="sidebar-text ml-3">Analytics</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" id="budgetNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                            <a href="../budget-planner/index.html" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300"> <!--id="budgetNav" -->
                                 <i class="fas fa-calendar-alt w-6"></i>
                                 <span class="sidebar-text ml-3">Budget Planner</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" id="categoriesNav" class="flex items-center p-3 rounded-lg bg-blue-900 text-white">
+                            <a href="../categories/index.html" class="flex items-center p-3 rounded-lg bg-blue-900 text-white"> <!-- id="categoriesNav" -->
                                 <i class="fas fa-tags w-6"></i>
                                 <span class="sidebar-text ml-3">Categories</span>
                             </a>
                         </li>
                         <li>
-                            <a href="#" id="settingsNav" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300">
+                            <a href="../settings/index.html" class="flex items-center p-3 rounded-lg hover:bg-gray-800 text-gray-300"> <!-- id="settingsNav" -->
                                 <i class="fas fa-cog w-6"></i>
                                 <span class="sidebar-text ml-3">Settings</span>
                             </a>
@@ -436,7 +436,7 @@
                             </div>
 
                             <!-- Loading State -->
-                            <div id="loadingState" class="hidden py-16 text-center">
+                            <div id="loadingState" class="py-16 text-center">
                                 <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
                                 <p class="text-gray-600">Loading transactions...</p>
                             </div>
@@ -889,7 +889,7 @@
     <script>
         // Sample categories data
         let categories = [];
-    const loadingState = document.getElementById('loadingState');
+        const loadingState = document.getElementById('loadingState');
 
         async function fetchCategories() {
             try {
@@ -962,7 +962,18 @@
         let currentFilter = 'all';
         
         // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+
+            const isAuthenticated = await authManager.checkAuthStatus();
+        
+            if (!isAuthenticated) {
+                window.location.href = '../auth/login.html';
+                return;
+            }
+
+            const currentUser = authManager.getCurrentUser();
+            console.log('Current user:', currentUser);
+
             // Populate categories table
             loadCategories();
             
@@ -985,55 +996,55 @@
             });
             
             // Navigation
-            dashboardNav.addEventListener('click', (e) => {
-                e.preventDefault();
-                navigateTo('dashboard');
-            });
+            //dashboardNav.addEventListener('click', (e) => {
+            //    e.preventDefault();
+            //    navigateTo('dashboard');
+            //});
             
-            transactionsNav.addEventListener('click', (e) => {
-                e.preventDefault();
-                navigateTo('transactions');
-            });
+            //transactionsNav.addEventListener('click', (e) => {
+            //    e.preventDefault();
+            //    navigateTo('transactions');
+            //});
             
-            analyticsNav.addEventListener('click', (e) => {
-                e.preventDefault();
-                navigateTo('analytics');
-            });
+            //analyticsNav.addEventListener('click', (e) => {
+            //    e.preventDefault();
+            //    navigateTo('analytics');
+            //});
             
-            budgetNav.addEventListener('click', (e) => {
-                e.preventDefault();
-                navigateTo('budget');
-            });
+            //budgetNav.addEventListener('click', (e) => {
+            //    e.preventDefault();
+            //    navigateTo('budget');
+            //});
             
-            categoriesNav.addEventListener('click', (e) => {
-                e.preventDefault();
-                navigateTo('categories');
-            });
+            //categoriesNav.addEventListener('click', (e) => {
+            //    e.preventDefault();
+            //    navigateTo('categories');
+            //});
             
-            settingsNav.addEventListener('click', (e) => {
-                e.preventDefault();
-                navigateTo('settings');
-            });
+            //settingsNav.addEventListener('click', (e) => {
+            //    e.preventDefault();
+            //    navigateTo('settings');
+            //});
             
             // Category tabs
-            categoryTabBtns.forEach(button => {
-                button.addEventListener('click', function() {
-                    const tab = this.getAttribute('data-tab');
+            //categoryTabBtns.forEach(button => {
+            //    button.addEventListener('click', function() {
+            //        const tab = this.getAttribute('data-tab');
                     
                     // Update active button
-                    categoryTabBtns.forEach(btn => {
-                        btn.classList.remove('tab-active');
-                        btn.classList.add('tab-inactive');
-                    });
+            //        categoryTabBtns.forEach(btn => {
+            //            btn.classList.remove('tab-active');
+            //            btn.classList.add('tab-inactive');
+            //        });
                     
-                    this.classList.remove('tab-inactive');
-                    this.classList.add('tab-active');
+             //       this.classList.remove('tab-inactive');
+            //        this.classList.add('tab-active');
                     
                     // Update current filter and re-render
-                    currentFilter = tab;
-                    renderCategories();
-                });
-            });
+            //        currentFilter = tab;
+            //        renderCategories();
+            //    });
+            //});
             
             // Search functionality
             categorySearch.addEventListener('input', debounce(() => {
@@ -1152,43 +1163,6 @@
             
             // Update active navigation
             updateActiveNav(page);
-        }
-        
-        function updateActiveNav(activePage) {
-            // Remove active class from all nav items
-            const navItems = [dashboardNav, transactionsNav, analyticsNav, budgetNav, categoriesNav, settingsNav];
-            navItems.forEach(nav => {
-                nav.classList.remove('bg-blue-900', 'text-white');
-                nav.classList.add('hover:bg-gray-800', 'text-gray-300');
-            });
-            
-            // Add active class to current nav item
-            switch(activePage) {
-                case 'dashboard':
-                    dashboardNav.classList.add('bg-blue-900', 'text-white');
-                    dashboardNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
-                    break;
-                case 'transactions':
-                    transactionsNav.classList.add('bg-blue-900', 'text-white');
-                    transactionsNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
-                    break;
-                case 'analytics':
-                    analyticsNav.classList.add('bg-blue-900', 'text-white');
-                    analyticsNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
-                    break;
-                case 'budget':
-                    budgetNav.classList.add('bg-blue-900', 'text-white');
-                    budgetNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
-                    break;
-                case 'categories':
-                    categoriesNav.classList.add('bg-blue-900', 'text-white');
-                    categoriesNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
-                    break;
-                case 'settings':
-                    settingsNav.classList.add('bg-blue-900', 'text-white');
-                    settingsNav.classList.remove('hover:bg-gray-800', 'text-gray-300');
-                    break;
-            }
         }
         
         function renderCategories() {
@@ -1541,7 +1515,7 @@
             
             // Remove from selected categories
             selectedCategories.delete(categoryId);
-            
+            deleteCategoryFromServerid(categoryId);
             // Update UI
             renderCategories();
             
@@ -1557,6 +1531,25 @@
             
             // Close modal
             deleteCategoryModal.classList.add('hidden');
+        }
+
+        async function deleteCategoryFromServerid(id){
+            try {
+                const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) throw new Error('Failed to delete categorie');
+                
+                // Remove from local array
+                //categories = categories.filter(c => c.id !== id);
+                //selectedcategories.delete(id);
+                
+                return true;
+            } catch (error) {
+                console.error('Error deleting categories:', error);
+                throw error;
+            }
         }
         
         function toggleSelectAll() {
