@@ -1242,7 +1242,18 @@
     }
 
     // Initialize the application
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
+
+        const isAuthenticated = await authManager.checkAuthStatus();
+        
+        if (!isAuthenticated) {
+            window.location.href = '../auth/login.html';
+            return;
+        }
+
+        const currentUser = authManager.getCurrentUser();
+        console.log('Current user:', currentUser);
+
         // Set today's date as default in the form
         document.getElementById('transactionDate').valueAsDate = new Date();
         

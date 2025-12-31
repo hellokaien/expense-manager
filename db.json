@@ -1,5 +1,44 @@
 {
-  "transactions": [],
+  "transactions": [
+    {
+      "title": "Test Income",
+      "amount": 123,
+      "type": "income",
+      "category": "salary",
+      "date": "2025-11-30",
+      "paymentMethod": "credit_card",
+      "status": "completed",
+      "notes": "123",
+      "tags": [],
+      "id": "txn-eb9221b5-c2be-401b-9b45-b2b058e46d60"
+    },
+    {
+      "id": "txn-9669419e-f2cd-4c11-a4e0-d22cf65c34a6",
+      "title": "Mcdo",
+      "amount": 490,
+      "type": "expense",
+      "category": "food",
+      "date": "2025-12-30",
+      "paymentMethod": "cash",
+      "status": "completed",
+      "notes": "With Joan",
+      "tags": [],
+      "userId": 1
+    },
+    {
+      "id": "txn-a789e59d-325b-4f4b-90a6-d4bb1bc5f936",
+      "title": "TEst",
+      "amount": 22,
+      "type": "expense",
+      "category": "food",
+      "date": "2025-12-30",
+      "paymentMethod": "cash",
+      "status": "completed",
+      "notes": "asd",
+      "tags": [],
+      "userId": 1
+    }
+  ],
   "users": [
     {
       "id": "1766944218991",
@@ -25,7 +64,7 @@
       "trialStartDate": "2025-12-28T17:50:18.949Z",
       "trialEndDate": "2026-01-27T17:50:18.949Z",
       "status": "active",
-      "lastLogin": "2025-12-30T17:40:29.512Z"
+      "lastLogin": "2025-12-31T08:52:46.092Z"
     }
   ],
   "categories": [
@@ -44,54 +83,6 @@
       "budget": 700,
       "isCustom": false,
       "order": 9
-    },
-    {
-      "id": "6",
-      "name": "Bills & Utilities",
-      "type": "expense",
-      "subtype": "essential",
-      "icon": "home",
-      "color": "#22c55e",
-      "transactions_count": 36,
-      "totalAmount": 1820.25,
-      "lastUsed": "2023-05-16",
-      "monthlyAverage": 364,
-      "description": "Electricity, water, internet, phone",
-      "budget": 350,
-      "isCustom": false,
-      "order": 6
-    },
-    {
-      "id": "7",
-      "name": "Freelance Income",
-      "type": "income",
-      "subtype": "other",
-      "icon": "laptop",
-      "color": "#6366f1",
-      "transactions_count": 18,
-      "totalAmount": 5400,
-      "lastUsed": "2023-05-14",
-      "monthlyAverage": 450,
-      "description": "Freelance project payments",
-      "budget": null,
-      "isCustom": true,
-      "order": 7
-    },
-    {
-      "id": "8",
-      "name": "Health & Fitness",
-      "type": "expense",
-      "subtype": "essential",
-      "icon": "heartbeat",
-      "color": "#ef4444",
-      "transactions_count": 15,
-      "totalAmount": 320,
-      "lastUsed": "2023-05-12",
-      "monthlyAverage": 64,
-      "description": "Gym membership, supplements, medical",
-      "budget": 150,
-      "isCustom": true,
-      "order": 8
     }
   ]
 }
