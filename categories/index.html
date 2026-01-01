@@ -980,9 +980,6 @@
             // Set up event listeners
             setupEventListeners();
             
-            // Set categories nav as active
-            updateActiveNav('categories');
-            
             // Initialize color and icon selection
             initializeColorAndIconSelection();
         });
@@ -1160,9 +1157,7 @@
             // Update page title based on navigation
             // In a real app, this would navigate to different pages
             alert(`Navigating to ${page} page... (This is a demo)`);
-            
-            // Update active navigation
-            updateActiveNav(page);
+        
         }
         
         function renderCategories() {
