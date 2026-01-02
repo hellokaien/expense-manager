@@ -980,9 +980,6 @@
             // Set up event listeners
             setupEventListeners();
             
-            // Set categories nav as active
-            updateActiveNav('categories');
-            
             // Initialize color and icon selection
             initializeColorAndIconSelection();
         });
@@ -1027,24 +1024,24 @@
             //});
             
             // Category tabs
-            //categoryTabBtns.forEach(button => {
-            //    button.addEventListener('click', function() {
-            //        const tab = this.getAttribute('data-tab');
+            categoryTabBtns.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tab = this.getAttribute('data-tab');
                     
                     // Update active button
-            //        categoryTabBtns.forEach(btn => {
-            //            btn.classList.remove('tab-active');
-            //            btn.classList.add('tab-inactive');
-            //        });
+                    categoryTabBtns.forEach(btn => {
+                        btn.classList.remove('tab-active');
+                        btn.classList.add('tab-inactive');
+                });
                     
-             //       this.classList.remove('tab-inactive');
-            //        this.classList.add('tab-active');
+                    this.classList.remove('tab-inactive');
+                    this.classList.add('tab-active');
                     
                     // Update current filter and re-render
-            //        currentFilter = tab;
-            //        renderCategories();
-            //    });
-            //});
+                    currentFilter = tab;
+                    renderCategories();
+                });
+            });
             
             // Search functionality
             categorySearch.addEventListener('input', debounce(() => {
@@ -1160,9 +1157,7 @@
             // Update page title based on navigation
             // In a real app, this would navigate to different pages
             alert(`Navigating to ${page} page... (This is a demo)`);
-            
-            // Update active navigation
-            updateActiveNav(page);
+        
         }
         
         function renderCategories() {
@@ -1415,7 +1410,7 @@
             editingCategoryId = null;
         }
         
-        function saveCategory(e) {
+        async function saveCategory(e) {
             e.preventDefault();
             
             // Get form values
@@ -1432,12 +1427,19 @@
                 return;
             }
             
-            if (isEditing && editingCategoryId) {
-                // Update existing category
-                const index = categories.findIndex(c => c.id === editingCategoryId);
-                if (index !== -1) {
-                    categories[index] = {
-                        ...categories[index],
+            try {
+                if (isEditing && editingCategoryId) {
+                    // Find the existing category
+                    const existingCategory = categories.find(c => c.id === editingCategoryId);
+                    
+                    if (!existingCategory) {
+                        showNotification('Category not found', 'error');
+                        return;
+                    }
+                    
+                    // Merge updates with existing data
+                    const categoryData = {
+                        ...existingCategory, // Keep all existing fields
                         name: name,
                         type: type,
                         subtype: subtype,
@@ -1445,44 +1447,101 @@
                         color: color,
                         description: description,
                         budget: budget ? parseFloat(budget) : null,
-                        isCustom: true // Mark as custom when edited
+                        // Preserve other fields like:
+                        // transactions_count, totalAmount, lastUsed, monthlyAverage, isCustom, order
                     };
                     
+                    await updateCategory(editingCategoryId, categoryData);
                     showNotification('Category updated successfully!', 'success');
+                } else {
+                    // For new category
+                    const categoryId = `ctg-${crypto.randomUUID()}`;
+                    const categoryData = {
+                        id: categoryId,
+                        name: name,
+                        type: type,
+                        subtype: subtype,
+                        icon: icon,
+                        color: color,
+                        transactions_count: 0,
+                        totalAmount: 0,
+                        lastUsed: new Date().toISOString().split('T')[0],
+                        monthlyAverage: 0,
+                        description: description,
+                        budget: budget ? parseFloat(budget) : null,
+                        isCustom: false,
+                        order: categories.length + 1
+                    };
+                    
+                    await addCategory(categoryData);
+                    showNotification('Category created successfully!', 'success');
                 }
-            } else {
-                // Create new category
-                const newCategory = {
-                    id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
-                    name: name,
-                    type: type,
-                    subtype: subtype,
-                    icon: icon,
-                    color: color,
-                    transactions: 0,
-                    totalAmount: 0,
-                    lastUsed: new Date().toISOString().split('T')[0],
-                    monthlyAverage: 0,
-                    description: description,
-                    budget: budget ? parseFloat(budget) : null,
-                    isCustom: true,
-                    order: categories.length + 1
-                };
                 
+                // Update UI
+                renderCategories();
+                
+                // If we were viewing this category, update the preview
+                if (isEditing && editingCategoryId === selectedCategoryId) {
+                    viewCategory(editingCategoryId);
+                }
+                
+                // Close modal and reset form
+                closeCategoryModalFunc();
+                
+                // Reset editing state
+                isEditing = false;
+                editingCategoryId = null;
+                
+            } catch (error) {
+                console.error('Error saving category:', error);
+                showNotification('Failed to save category', 'error');
+            }
+        }
+        
+        async function addCategory(categoryData){
+            try{
+                const response = await fetch(`${API_BASE_URL}/categories`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json,'
+                    },
+                    body: JSON.stringify(categoryData)
+                });
+
+                if (!response.ok) throw new Error('Failed to add category');
+                const newCategory = await response.json();
                 categories.push(newCategory);
-                showNotification('Category created successfully!', 'success');
+                return newCategory;
+            } catch (error){
+                console.error('Error adding transaction:', error);
+                throw error;
             }
-            
-            // Update UI
-            renderCategories();
-            
-            // If we were viewing this category, update the preview
-            if (isEditing && editingCategoryId === selectedCategoryId) {
-                viewCategory(editingCategoryId);
+        }
+
+        async function updateCategory(id, category){
+            try {
+                const reponse = await fetch(`${API_BASE_URL}/categories/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(category)
+                });
+
+                if (!reponse.ok) throw new Error('Failed to update Category.');
+
+                const updatedCategory = await reponse.json();
+
+                const index = categories.findIndex(c => c.id === id);
+                if(index !=+ -1){
+                    categories[index] = updatedCategory;
+                }
+
+                return updatedCategory;
+            } catch (error) {
+                console.error('Error updating category:', error);
+                throw error;
             }
-            
-            // Close modal and reset form
-            closeCategoryModalFunc();
         }
         
         function editCategory(categoryId) {
