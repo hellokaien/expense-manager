@@ -1024,24 +1024,24 @@
             //});
             
             // Category tabs
-            //categoryTabBtns.forEach(button => {
-            //    button.addEventListener('click', function() {
-            //        const tab = this.getAttribute('data-tab');
+            categoryTabBtns.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tab = this.getAttribute('data-tab');
                     
                     // Update active button
-            //        categoryTabBtns.forEach(btn => {
-            //            btn.classList.remove('tab-active');
-            //            btn.classList.add('tab-inactive');
-            //        });
+                    categoryTabBtns.forEach(btn => {
+                        btn.classList.remove('tab-active');
+                        btn.classList.add('tab-inactive');
+                });
                     
-             //       this.classList.remove('tab-inactive');
-            //        this.classList.add('tab-active');
+                    this.classList.remove('tab-inactive');
+                    this.classList.add('tab-active');
                     
                     // Update current filter and re-render
-            //        currentFilter = tab;
-            //        renderCategories();
-            //    });
-            //});
+                    currentFilter = tab;
+                    renderCategories();
+                });
+            });
             
             // Search functionality
             categorySearch.addEventListener('input', debounce(() => {
@@ -1410,7 +1410,7 @@
             editingCategoryId = null;
         }
         
-        function saveCategory(e) {
+        async function saveCategory(e) {
             e.preventDefault();
             
             // Get form values
@@ -1425,6 +1425,23 @@
             if (!name || !type || !subtype) {
                 showNotification('Please fill in all required fields', 'error');
                 return;
+            }
+
+            const categoryData = {
+                 id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
+                    name: name,
+                    type: type,
+                    subtype: subtype,
+                    icon: icon,
+                    color: color,
+                    transactions_count: 0,
+                    totalAmount: 0,
+                    lastUsed: new Date().toISOString().split('T')[0],
+                    monthlyAverage: 0,
+                    description: description,
+                    budget: budget ? parseFloat(budget) : null,
+                    isCustom: true,
+                    order: categories.length + 1
             }
             
             if (isEditing && editingCategoryId) {
@@ -1446,25 +1463,8 @@
                     showNotification('Category updated successfully!', 'success');
                 }
             } else {
-                // Create new category
-                const newCategory = {
-                    id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
-                    name: name,
-                    type: type,
-                    subtype: subtype,
-                    icon: icon,
-                    color: color,
-                    transactions: 0,
-                    totalAmount: 0,
-                    lastUsed: new Date().toISOString().split('T')[0],
-                    monthlyAverage: 0,
-                    description: description,
-                    budget: budget ? parseFloat(budget) : null,
-                    isCustom: true,
-                    order: categories.length + 1
-                };
                 
-                categories.push(newCategory);
+                await addCategory(categoryData);
                 showNotification('Category created successfully!', 'success');
             }
             
@@ -1480,6 +1480,26 @@
             closeCategoryModalFunc();
         }
         
+        async function addCategory(categoryData){
+            try{
+                const response = await fetch(`${API_BASE_URL}/categories`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json,'
+                    },
+                    body: JSON.stringify(categoryData)
+                });
+
+                if (!response.ok) throw new Error('Failed to add category');
+                const newCategory = await response.json();
+                categories.push(newCategory);
+                return newCategory;
+            } catch (error){
+                console.error('Error adding transaction:', error);
+                throw error;
+            }
+        }
+
         function editCategory(categoryId) {
             const category = categories.find(c => c.id === categoryId);
             if (!category) return;

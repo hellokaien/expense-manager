@@ -83,6 +83,22 @@
       "budget": 700,
       "isCustom": false,
       "order": 9
+    },
+    {
+      "id": 2,
+      "name": "Test",
+      "type": "income",
+      "subtype": "discretionary",
+      "icon": "utensils",
+      "color": "#ef4444",
+      "transactions_count": 0,
+      "totalAmount": 0,
+      "lastUsed": "2026-01-02",
+      "monthlyAverage": 0,
+      "description": "",
+      "budget": null,
+      "isCustom": true,
+      "order": 2
     }
   ]
 }
