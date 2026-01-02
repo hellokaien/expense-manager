@@ -69,26 +69,10 @@
   ],
   "categories": [
     {
-      "id": "1",
-      "name": "Food & Dining",
+      "id": "ctg-9e55dcd5-ae4e-4b3c-be8c-510468360287",
+      "name": "testtesdasd",
       "type": "expense",
       "subtype": "essential",
-      "icon": "utensils",
-      "color": "#f59e0b",
-      "transactions_count": 142,
-      "totalAmount": 3845.5,
-      "lastUsed": "2023-05-20",
-      "monthlyAverage": 645,
-      "description": "Groceries, restaurants, coffee shops",
-      "budget": 700,
-      "isCustom": false,
-      "order": 9
-    },
-    {
-      "id": 2,
-      "name": "Test",
-      "type": "income",
-      "subtype": "discretionary",
       "icon": "utensils",
       "color": "#ef4444",
       "transactions_count": 0,
@@ -98,7 +82,7 @@
       "description": "",
       "budget": null,
       "isCustom": true,
-      "order": 2
+      "order": 1
     }
   ]
 }
