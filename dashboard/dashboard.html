@@ -38,7 +38,8 @@
         .category-bills { background-color: #dcfce7; color: #166534; }
         .category-entertainment { background-color: #f3e8ff; color: #6b21a8; }
         .category-salary { background-color: #ccfbf1; color: #0f766e; }
-        .category-investment { background-color: #fef9c3; color: #854d0e; }
+        .category-freelance { background-color: #fef9c3; color: #854d0e; }
+        .category-investment { background-color: #f0f9ff; color: #0369a1; }
         .category-other { background-color: #f1f5f9; color: #475569; }
         
         .chart-container {
@@ -489,6 +490,24 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- Empty State -->
+                        <div id="emptyState" class="hidden py-16 text-center">
+                            <div class="mb-4">
+                                <i class="fas fa-exchange-alt text-gray-300 text-6xl"></i>
+                            </div>
+                            <h3 class="text-xl font-medium text-gray-700 mb-2">No transactions found</h3>
+                            <p class="text-gray-500 mb-6">Try adjusting your filters or add a new transaction</p>
+                            <button id="addFirstTransactionBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-lg">
+                                <i class="fas fa-plus mr-2"></i> Add Your First Transaction
+                            </button>
+                        </div>
+                        
+                        <!-- Loading State -->
+                        <div id="loadingState" class="py-16 text-center">
+                            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                            <p class="text-gray-600">Loading transactions...</p>
+                        </div>
                         
                         <!-- Pagination -->
                         <div class="flex justify-between items-center mt-6 pt-6 border-t border-gray-200">
@@ -807,6 +826,7 @@
     </div>
 
     <script src="../auth/auth.js"></script>
+    <script src="../app.js"></script>
     <script>
     // API Base URL - Same as login/signup
     
@@ -829,7 +849,8 @@
     const toggleSidebarBtn = document.getElementById('toggleSidebar');
     const sidebar = document.querySelector('.sidebar');
     const mainContent = document.querySelector('.main-content');
-    
+    const emptyState = document.getElementById('emptyState');
+    const loadingState = document.getElementById('loadingState');
     // Tab elements
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
@@ -842,27 +863,12 @@
     
     // Current user data
     let currentUser = null;
-    let userTransactions = [];
-    
-    // Categories for income and expenses
-    const incomeCategories = [
-        { value: "salary", label: "Salary", color: "category-salary" },
-        { value: "freelance", label: "Freelance", color: "category-other" },
-        { value: "investment", label: "Investment", color: "category-investment" },
-        { value: "gift", label: "Gift", color: "category-other" },
-        { value: "other-income", label: "Other Income", color: "category-other" }
-    ];
+    let transactions = [];
+    let allCategories = [];
 
-    const expenseCategories = [
-        { value: "food", label: "Food & Dining", color: "category-food" },
-        { value: "transport", label: "Transportation", color: "category-transport" },
-        { value: "shopping", label: "Shopping", color: "category-shopping" },
-        { value: "bills", label: "Bills & Utilities", color: "category-bills" },
-        { value: "entertainment", label: "Entertainment", color: "category-entertainment" },
-        { value: "health", label: "Health & Fitness", color: "category-other" },
-        { value: "education", label: "Education", color: "category-other" },
-        { value: "other-expense", label: "Other Expense", color: "category-other" }
-    ];
+    // Categories for income and expenses
+    let incomeCategories = [];
+    let expenseCategories = [];
 
     // Initialize the application
     document.addEventListener('DOMContentLoaded', async function() {
@@ -878,6 +884,8 @@
         const currentUser = authManager.getCurrentUser();
         console.log('Current user:', currentUser);
 
+        await fetchCategories();      
+          
         // Update UI with user info
         updateUserInfo(currentUser);
 
@@ -892,7 +900,7 @@
         await loadTransactions();
         
         // Update UI
-        renderTransactions();
+        
         renderAllTransactionsTable();
         updateSummary();
         initializeCharts();
@@ -952,24 +960,8 @@
     }
     
     async function loadTransactions() {
-        try {
-            if (!currentUser) return;
-            
-            // Fetch transactions for this user
-            const response = await fetch(`${API_BASE_URL}/transactions?userId=${currentUser.id}`);
-            
-            if (response.ok) {
-                userTransactions = await response.json();
-            } else {
-                // If no transactions exist yet, use sample data for demo
-                userTransactions = generateSampleTransactions();
-            }
-            
-        } catch (error) {
-            console.error('Error loading transactions:', error);
-            // Use sample data as fallback
-            userTransactions = generateSampleTransactions();
-        }
+        await fetchTransactions();
+        renderTransactions();
     }
     
     function generateSampleTransactions() {
@@ -1234,9 +1226,9 @@
                 
                 if (response.ok) {
                     // Update local array
-                    const index = userTransactions.findIndex(t => t.id === parseInt(editingId));
+                    const index = transactions.findIndex(t => t.id === parseInt(editingId));
                     if (index !== -1) {
-                        userTransactions[index] = { ...userTransactions[index], ...transactionData };
+                        transactions[index] = { ...transactions[index], ...transactionData };
                     }
                     
                     showNotification('Transaction updated successfully!', 'success');
@@ -1255,7 +1247,7 @@
                 
                 if (response.ok) {
                     const newTransaction = await response.json();
-                    userTransactions.push(newTransaction);
+                    transactions.push(newTransaction);
                     
                     showNotification(`${currentTransactionType === 'income' ? 'Income' : 'Expense'} added successfully!`, 'success');
                 } else {
@@ -1283,26 +1275,27 @@
         transactionsList.innerHTML = '';
         
         // Filter transactions if needed
-        let filteredTransactions = userTransactions;
-        if (filter !== 'all') {
-            filteredTransactions = userTransactions.filter(t => t.type === filter);
-        }
+        //let filteredTransactions = transactions;
+        //if (filter !== 'all') {
+        //    filteredTransactions = transactions.filter(t => t.type === filter);
+        //}
         
         // Sort by date (newest first)
-        filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+        //filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
         
         // Take only the last 5 transactions for the recent list
-        const recentTransactions = filteredTransactions.slice(0, 5);
+        //const recentTransactions = filteredTransactions.slice(0, 5);
         
         // Render each transaction
-        recentTransactions.forEach(transaction => {
+        transactions.forEach(transaction => {
             const transactionElement = document.createElement('div');
             transactionElement.className = `p-4 rounded-lg ${transaction.type === 'income' ? 'transaction-income bg-green-50' : 'transaction-expense bg-red-50'}`;
             
             // Find category label
             const categoryList = transaction.type === 'income' ? incomeCategories : expenseCategories;
-            const categoryInfo = categoryList.find(c => c.value === transaction.category) || { label: transaction.category, color: 'category-other' };
-            
+            const categoryInfo = getCategoryInfo(transaction.category);
+            const colorClass = getCategoryColorClass(categoryInfo.color);
+            console.log(categoryInfo);
             // Format date
             const dateObj = new Date(transaction.date);
             const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -1312,7 +1305,7 @@
                     <div>
                         <h4 class="font-medium text-gray-800">${transaction.title}</h4>
                         <div class="flex items-center mt-1">
-                            <span class="text-xs px-2 py-1 rounded-full ${categoryInfo.color} mr-3">${categoryInfo.label}</span>
+                            <span class="text-xs px-2 py-1 rounded-full mr-3 ${colorClass}">${categoryInfo}</span>
                             <span class="text-gray-500 text-sm">${formattedDate}</span>
                         </div>
                     </div>
@@ -1344,14 +1337,14 @@
         allTransactionsTable.innerHTML = '';
         
         // Sort by date (newest first)
-        const sortedTransactions = [...userTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
         
         // Render each transaction
         sortedTransactions.forEach(transaction => {
             // Find category label
             const categoryList = transaction.type === 'income' ? incomeCategories : expenseCategories;
-            const categoryInfo = categoryList.find(c => c.value === transaction.category) || { label: transaction.category, color: 'category-other' };
-            
+            const categoryInfo = getCategoryInfo(transaction.category);
+            const colorClass = getCategoryColorClass(categoryInfo.color);
             // Format date
             const dateObj = new Date(transaction.date);
             const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -1362,7 +1355,7 @@
                 <td class="py-4 px-4">${formattedDate}</td>
                 <td class="py-4 px-4 font-medium">${transaction.title}</td>
                 <td class="py-4 px-4">
-                    <span class="text-xs px-2 py-1 rounded-full ${categoryInfo.color}">${categoryInfo.label}</span>
+                    <span class="text-xs px-2 py-1 rounded-full ${colorClass}">${categoryInfo.name}</span>
                 </td>
                 <td class="py-4 px-4">
                     <span class="px-2 py-1 rounded text-xs font-medium ${transaction.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
@@ -1415,7 +1408,7 @@
             
             if (response.ok) {
                 // Remove from local array
-                userTransactions = userTransactions.filter(t => t.id !== id);
+                transactions = transactions.filter(t => t.id !== id);
                 
                 // Update UI
                 renderTransactions();
@@ -1436,7 +1429,7 @@
     
     function editTransaction(id) {
         // Find transaction
-        const transaction = userTransactions.find(t => t.id === id);
+        const transaction = transactions.find(t => t.id === id);
         if (!transaction) return;
         
         // Open modal with transaction data
@@ -1459,7 +1452,7 @@
         let totalIncome = 0;
         let totalExpenses = 0;
         
-        userTransactions.forEach(transaction => {
+        transactions.forEach(transaction => {
             if (transaction.type === 'income') {
                 totalIncome += transaction.amount;
             } else {
@@ -1643,7 +1636,7 @@
         let monthIncome = 0;
         let monthExpenses = 0;
         
-        userTransactions.forEach(transaction => {
+        transactions.forEach(transaction => {
             const transactionDate = new Date(transaction.date);
             if (transactionDate.getMonth() === currentMonth && transactionDate.getFullYear() === currentYear) {
                 if (transaction.type === 'income') {
@@ -1668,59 +1661,82 @@
         }
     }
     
-    function logout() {
-        // Clear user data from localStorage
-        localStorage.removeItem('moneyflow_user');
-        localStorage.removeItem('moneyflow_logged_in');
-        localStorage.removeItem('moneyflow_user_id');
-        localStorage.removeItem('moneyflow_remember_me');
-        localStorage.removeItem('moneyflow_session_expiry');
-        
-        // Close logout modal
-        logoutModal.classList.add('hidden');
-        
-        // Show notification
-        showNotification('Logged out successfully!', 'info');
-        
-        // Redirect to login page
-        setTimeout(() => {
-            window.location.href = '../auth/login.html';
-        }, 1500);
-    }
-    
     function getInitials(firstName, lastName) {
         if (!firstName || !lastName) return 'MF';
         return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
     }
     
-    function showNotification(message, type = 'success') {
-        const notification = document.getElementById('notificationToast');
-        const notificationMessage = document.getElementById('notificationMessage');
-        
-        // Set message and color based on type
-        notificationMessage.textContent = message;
-        
-        if (type === 'success') {
-            notification.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide';
-            notification.innerHTML = '<i class="fas fa-check-circle mr-3 text-xl"></i>' + `<span id="notificationMessage">${message}</span>`;
-        } else if (type === 'error') {
-            notification.className = 'fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide';
-            notification.innerHTML = '<i class="fas fa-exclamation-circle mr-3 text-xl"></i>' + `<span id="notificationMessage">${message}</span>`;
-        } else if (type === 'warning') {
-            notification.className = 'fixed top-4 right-4 z-50 bg-yellow-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide';
-            notification.innerHTML = '<i class="fas fa-exclamation-triangle mr-3 text-xl"></i>' + `<span id="notificationMessage">${message}</span>`;
-        } else {
-            notification.className = 'fixed top-4 right-4 z-50 bg-blue-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide';
-            notification.innerHTML = '<i class="fas fa-info-circle mr-3 text-xl"></i>' + `<span id="notificationMessage">${message}</span>`;
+    async function fetchTransactions() {
+        try {
+            loadingState.classList.remove('hidden');
+            const response = await fetch(`${API_BASE_URL}/transactions`);
+            if (!response.ok) throw new Error('Failed to fetch transactions');
+            
+            transactions = await response.json();
+           
+            return transactions;
+        } catch (error) {
+            console.error('Error fetching transactions:', error);
+            showNotification('Failed to load transactions', 'error');
+            return [];
+        } finally {
+            loadingState.classList.add('hidden');
+        }
+    }
+    
+    function getCategoryInfo(categoryValue) {
+        // Try to find by ID first
+        let category = allCategories.find(cat => cat.id === categoryValue);
+
+        // If not found by ID, try by name (for backward compatibility)
+        if (!category) {
+            const categoryName = categoryValue.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            category = allCategories.find(cat => 
+                cat.name.toLowerCase() === categoryName.toLowerCase()
+            );
         }
         
-        // Show notification
-        notification.classList.remove('hidden');
+        // If still not found, return a default
+        if (!category) {
+            return {
+                name: categoryValue.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                color: '#6b7280',
+                icon: 'tag'
+            };
+        }
         
-        // Hide after 3 seconds
-        setTimeout(() => {
-            notification.classList.add('hidden');
-        }, 3000);
+        return category;
+    }
+    function getCategoryColorClass(color) {
+        // Map colors to your existing CSS classes
+        const colorMap = {
+            '#10b981': 'category-salary',
+            '#f59e0b': 'category-freelance',
+            '#8b5cf6': 'category-shopping',
+            '#3b82f6': 'category-transport',
+            '#ef4444': 'category-food',
+            '#ec4899': 'category-entertainment',
+            '#7c3aed': 'category-other',
+            '#dc2626': 'category-other'
+        };
+        
+        return colorMap[color] || 'category-other';
+    }
+    async function fetchCategories() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/categories`);
+            if (!response.ok) throw new Error('Failed to fetch categories');
+            
+            allCategories = await response.json();
+            
+            // Filter categories by type
+            incomeCategories = allCategories.filter(category => category.type === 'income');
+            expenseCategories = allCategories.filter(category => category.type === 'expense');
+            
+            return allCategories;
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+        }
     }
     </script>
 </body>

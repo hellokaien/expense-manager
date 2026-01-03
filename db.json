@@ -13,19 +13,6 @@
       "id": "txn-233ef0c6-ea9c-4874-8e77-fc138ac4e34b"
     },
     {
-      "id": "txn-e688a5b4-aa0c-4a66-8f47-0e1c8d134a44",
-      "title": "test",
-      "amount": 23,
-      "type": "expense",
-      "category": "ctg-d0bf0ba2-9f21-4244-bc0c-54f7d07151b4",
-      "date": "2026-01-03",
-      "paymentMethod": "credit_card",
-      "status": "completed",
-      "notes": "",
-      "tags": [],
-      "userId": 1
-    },
-    {
       "title": "Bebu's Wallet Shopee",
       "amount": 95,
       "type": "expense",
@@ -35,7 +22,8 @@
       "status": "completed",
       "notes": "Money holder",
       "tags": [],
-      "id": "txn-70c8c0d6-a418-45ad-a0fc-82f43249f5b1"
+      "id": "txn-70c8c0d6-a418-45ad-a0fc-82f43249f5b1",
+      "userId": "1766944218991"
     }
   ],
   "users": [
@@ -63,7 +51,7 @@
       "trialStartDate": "2025-12-28T17:50:18.949Z",
       "trialEndDate": "2026-01-27T17:50:18.949Z",
       "status": "active",
-      "lastLogin": "2025-12-31T08:52:46.092Z"
+      "lastLogin": "2026-01-03T17:18:42.926Z"
     }
   ],
   "categories": [
