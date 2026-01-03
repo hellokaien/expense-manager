@@ -1,31 +1,41 @@
 {
   "transactions": [
     {
-      "id": "txn-53f21a7c-145d-4b22-bd7e-e1a6ac5074dd",
       "title": "Load",
       "amount": 649,
       "type": "expense",
-      "category": "other-expense",
+      "category": "ctg-d0bf0ba2-9f21-4244-bc0c-54f7d07151b4",
       "date": "2026-01-03",
       "paymentMethod": "digital_wallet",
+      "status": "completed",
+      "notes": "MAGIC DATA",
+      "tags": [],
+      "id": "txn-233ef0c6-ea9c-4874-8e77-fc138ac4e34b"
+    },
+    {
+      "id": "txn-e688a5b4-aa0c-4a66-8f47-0e1c8d134a44",
+      "title": "test",
+      "amount": 23,
+      "type": "expense",
+      "category": "ctg-d0bf0ba2-9f21-4244-bc0c-54f7d07151b4",
+      "date": "2026-01-03",
+      "paymentMethod": "credit_card",
       "status": "completed",
       "notes": "",
       "tags": [],
       "userId": 1
     },
     {
-      "id": "txn-233ef0c6-ea9c-4874-8e77-fc138ac4e34b",
-      "title": "test",
-      "amount": 12,
-      "type": "income",
-      "category": "ctg-abf1b582-092d-4322-9f1a-b9148963818d",
-      "categoryName": "Salary",
+      "title": "Bebu's Wallet Shopee",
+      "amount": 95,
+      "type": "expense",
+      "category": "ctg-31585733-0de9-4928-8346-271b64905825",
       "date": "2026-01-03",
-      "paymentMethod": "credit_card",
+      "paymentMethod": "cash",
       "status": "completed",
-      "notes": "test",
+      "notes": "Money holder",
       "tags": [],
-      "userId": 1
+      "id": "txn-70c8c0d6-a418-45ad-a0fc-82f43249f5b1"
     }
   ],
   "users": [
@@ -104,6 +114,22 @@
       "budget": null,
       "isCustom": false,
       "order": 3
+    },
+    {
+      "id": "ctg-31585733-0de9-4928-8346-271b64905825",
+      "name": "Shopee",
+      "type": "expense",
+      "subtype": "other",
+      "icon": "shopping-bag",
+      "color": "#ef4444",
+      "transactions_count": 0,
+      "totalAmount": 0,
+      "lastUsed": "2026-01-03",
+      "monthlyAverage": 0,
+      "description": "Items purchased in shoppee.",
+      "budget": null,
+      "isCustom": false,
+      "order": 4
     }
   ]
 }
