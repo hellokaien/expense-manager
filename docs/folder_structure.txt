@@ -1,0 +1,68 @@
+moneyflow-pro/
+├── public/                    # Static assets (CSS, images, fonts)
+│   ├── css/
+│   │   ├── main.css
+│   │   ├── dashboard.css
+│   │   └── auth.css
+│   ├── js/
+│   │   ├── lib/              # Third-party libraries
+│   │   ├── utils/            # Utility functions
+│   │   └── config.js         # App configuration
+│   ├── images/
+│   └── fonts/
+├── src/                       # Source code
+│   ├── auth/                  # Authentication module
+│   │   ├── auth.js
+│   │   ├── login.html
+│   │   ├── signup.html
+│   │   └── components/       # Reusable auth components
+│   ├── dashboard/             # Dashboard module
+│   │   ├── dashboard.html
+│   │   ├── dashboard.js
+│   │   └── components/       # Dashboard-specific components
+│   ├── transactions/          # Transactions module
+│   │   ├── transactions.html
+│   │   ├── transactions.js
+│   │   └── components/       # Transaction components
+│   ├── analytics/             # Analytics module
+│   │   ├── analytics.html
+│   │   ├── analytics.js
+│   │   └── charts/           # Chart components
+│   ├── budget/                # Budget module
+│   │   ├── budget.html
+│   │   ├── budget.js
+│   │   └── components/
+│   ├── categories/            # Categories module
+│   │   ├── categories.html
+│   │   ├── categories.js
+│   │   └── components/
+│   ├── settings/              # Settings module
+│   │   ├── settings.html
+│   │   ├── settings.js
+│   │   └── components/
+│   ├── shared/                # Shared components & utilities
+│   │   ├── components/
+│   │   │   ├── header.html
+│   │   │   ├── sidebar.html
+│   │   │   └── modal.html
+│   │   ├── services/
+│   │   │   ├── api.js        # API service
+│   │   │   ├── auth.js       # Auth service
+│   │   │   └── storage.js    # LocalStorage service
+│   │   └── utils/
+│   │       ├── formatters.js # Date/currency formatters
+│   │       ├── validators.js # Form validators
+│   │       └── helpers.js    # Helper functions
+│   └── app.js                 # Main application entry point
+├── data/                      # Data files
+│   └── db.json               # JSON Server database
+├── docs/                      # Documentation
+│   └── README.md
+├── tests/                     # Test files
+│   ├── unit/
+│   └── integration/
+├── .vscode/                   # VS Code settings
+│   └── settings.json
+├── package.json               # Project dependencies
+├── index.html                 # Main entry point
+└── README.md                  # Project documentation

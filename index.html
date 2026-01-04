@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyFlow Pro - Smart Expense Manager</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            transition: transform 0.3s ease;
+        }
+        
+        .cta-gradient {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+        
+        .stat-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-blur {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .animate-float-delay {
+            animation: float 6s ease-in-out infinite;
+            animation-delay: 2s;
+        }
+        
+        .animate-float-delay-2 {
+            animation: float 6s ease-in-out infinite;
+            animation-delay: 4s;
+        }
+        
+        .shadow-soft {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+        
+        .section-padding {
+            padding: 80px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .section-padding {
+                padding: 60px 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 nav-blur shadow-sm">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                        <i class="fas fa-wallet text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold text-gray-800">MoneyFlow Pro</span>
+                </div>
+                
+                <div class="hidden md:flex space-x-8">
+                    <a href="#features" class="text-gray-700 hover:text-blue-600 font-medium">Features</a>
+                    <a href="#how-it-works" class="text-gray-700 hover:text-blue-600 font-medium">How It Works</a>
+                    <a href="#testimonials" class="text-gray-700 hover:text-blue-600 font-medium">Testimonials</a>
+                    <a href="#pricing" class="text-gray-700 hover:text-blue-600 font-medium">Pricing</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="../auth/login.html" class="text-blue-600 hover:text-blue-800 font-medium">Sign In</a>
+                    <a href="../auth/signup.html" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium shadow-md transition duration-300">
+                        Get Started Free
+                    </a>
+                    <button class="md:hidden text-gray-700">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="pt-24 hero-gradient text-white overflow-hidden">
+        <div class="container mx-auto px-6 py-16 md:py-24">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-12 md:mb-0">
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+                        Take Control of Your <span class="text-yellow-300">Finances</span>
+                    </h1>
+                    <p class="text-xl text-blue-100 mb-8">
+                        MoneyFlow Pro helps you track, analyze, and optimize your spending. 
+                        Join thousands of users who've saved more and stress less about money.
+                    </p>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
+                        <a href="../auth/signup.html" class="bg-white text-blue-600 hover:bg-gray-100 font-bold py-4 px-8 rounded-xl text-lg text-center shadow-lg transition duration-300">
+                            <i class="fas fa-rocket mr-2"></i> Start Free Trial
+                        </a>
+                        <a href="#features" class="border-2 border-white text-white hover:bg-white/10 font-bold py-4 px-8 rounded-xl text-lg text-center transition duration-300">
+                            <i class="fas fa-play-circle mr-2"></i> See How It Works
+                        </a>
+                    </div>
+                    <div class="mt-8 flex items-center text-blue-100">
+                        <div class="flex -space-x-2 mr-4">
+                            <div class="w-8 h-8 rounded-full bg-blue-400 border-2 border-blue-600"></div>
+                            <div class="w-8 h-8 rounded-full bg-purple-400 border-2 border-blue-600"></div>
+                            <div class="w-8 h-8 rounded-full bg-green-400 border-2 border-blue-600"></div>
+                            <div class="w-8 h-8 rounded-full bg-yellow-400 border-2 border-blue-600"></div>
+                        </div>
+                        <p>Join <span class="font-bold">10,000+</span> satisfied users</p>
+                    </div>
+                </div>
+                <div class="md:w-1/2 relative">
+                    <div class="relative z-10">
+                        <div class="bg-white rounded-2xl shadow-2xl p-2">
+                            <div class="bg-gray-800 rounded-xl overflow-hidden">
+                                <!-- Mockup of the dashboard -->
+                                <div class="bg-gray-900 p-4 flex items-center">
+                                    <div class="flex space-x-2">
+                                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                    </div>
+                                    <div class="text-white text-sm mx-auto">dashboard.moneyflowpro.com</div>
+                                </div>
+                                <div class="p-6">
+                                    <div class="flex justify-between items-center mb-6">
+                                        <div>
+                                            <div class="text-white text-lg font-bold">Welcome back, John!</div>
+                                            <div class="text-gray-400 text-sm">Here's your financial summary</div>
+                                        </div>
+                                        <div class="text-green-400 text-2xl font-bold">$2,405</div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4 mb-6">
+                                        <div class="bg-blue-900/50 rounded-lg p-4">
+                                            <div class="text-blue-300 text-sm">Income</div>
+                                            <div class="text-white text-xl font-bold">$4,250</div>
+                                        </div>
+                                        <div class="bg-red-900/50 rounded-lg p-4">
+                                            <div class="text-red-300 text-sm">Expenses</div>
+                                            <div class="text-white text-xl font-bold">$1,845</div>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gray-800 rounded-lg p-4">
+                                        <div class="text-white font-medium mb-2">Monthly Spending</div>
+                                        <div class="space-y-3">
+                                            <div>
+                                                <div class="flex justify-between text-sm text-gray-300 mb-1">
+                                                    <span>Food & Dining</span>
+                                                    <span>$645</span>
+                                                </div>
+                                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                                    <div class="bg-red-500 h-2 rounded-full" style="width: 85%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between text-sm text-gray-300 mb-1">
+                                                    <span>Shopping</span>
+                                                    <span>$420</span>
+                                                </div>
+                                                <div class="w-full bg-gray-700 rounded-full h-2">
+                                                    <div class="bg-purple-500 h-2 rounded-full" style="width: 65%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Floating elements -->
+                    <div class="absolute -top-6 -left-6 w-24 h-24 bg-purple-400/20 rounded-full animate-float"></div>
+                    <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-blue-400/20 rounded-full animate-float-delay"></div>
+                    <div class="absolute top-1/2 -right-10 w-20 h-20 bg-yellow-400/20 rounded-full animate-float-delay-2"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Stats Section -->
+    <section class="bg-white py-12">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="text-3xl md:text-4xl font-bold text-blue-600 mb-2">10K+</div>
+                    <div class="text-gray-600">Active Users</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl md:text-4xl font-bold text-green-600 mb-2">$5.2M+</div>
+                    <div class="text-gray-600">Saved by Users</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl md:text-4xl font-bold text-purple-600 mb-2">4.9★</div>
+                    <div class="text-gray-600">Average Rating</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl md:text-4xl font-bold text-yellow-600 mb-2">24/7</div>
+                    <div class="text-gray-600">Support Available</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section id="features" class="section-padding bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+                    Powerful Features for <span class="text-blue-600">Financial Control</span>
+                </h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    Everything you need to manage your finances effectively in one beautiful dashboard
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white rounded-2xl p-8 shadow-soft feature-card">
+                    <div class="w-16 h-16 rounded-xl bg-blue-100 flex items-center justify-center mb-6">
+                        <i class="fas fa-chart-pie text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Smart Analytics</h3>
+                    <p class="text-gray-600 mb-4">
+                        Visualize your income and expenses with interactive charts and graphs. Understand your spending patterns at a glance.
+                    </p>
+                    <a href="#" class="text-blue-600 font-medium flex items-center">
+                        Learn more <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-8 shadow-soft feature-card">
+                    <div class="w-16 h-16 rounded-xl bg-green-100 flex items-center justify-center mb-6">
+                        <i class="fas fa-bullseye text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Goal Tracking</h3>
+                    <p class="text-gray-600 mb-4">
+                        Set savings goals, track your progress, and get personalized suggestions to achieve your financial targets faster.
+                    </p>
+                    <a href="#" class="text-blue-600 font-medium flex items-center">
+                        Learn more <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-8 shadow-soft feature-card">
+                    <div class="w-16 h-16 rounded-xl bg-purple-100 flex items-center justify-center mb-6">
+                        <i class="fas fa-wallet text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Budget Planning</h3>
+                    <p class="text-gray-600 mb-4">
+                        Create custom budgets by category, get alerts when you're close to limits, and optimize your spending habits.
+                    </p>
+                    <a href="#" class="text-blue-600 font-medium flex items-center">
+                        Learn more <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-8 shadow-soft feature-card">
+                    <div class="w-16 h-16 rounded-xl bg-yellow-100 flex items-center justify-center mb-6">
+                        <i class="fas fa-exchange-alt text-yellow-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Transaction Tracking</h3>
+                    <p class="text-gray-600 mb-4">
+                        Easily add, categorize, and review all your transactions. Import bank statements or add manually with our simple interface.
+                    </p>
+                    <a href="#" class="text-blue-600 font-medium flex items-center">
+                        Learn more <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-8 shadow-soft feature-card">
+                    <div class="w-16 h-16 rounded-xl bg-red-100 flex items-center justify-center mb-6">
+                        <i class="fas fa-shield-alt text-red-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Bank-Level Security</h3>
+                    <p class="text-gray-600 mb-4">
+                        Your financial data is protected with 256-bit encryption. We never store your banking credentials on our servers.
+                    </p>
+                    <a href="#" class="text-blue-600 font-medium flex items-center">
+                        Learn more <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-8 shadow-soft feature-card">
+                    <div class="w-16 h-16 rounded-xl bg-indigo-100 flex items-center justify-center mb-6">
+                        <i class="fas fa-mobile-alt text-indigo-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">Cross-Platform Sync</h3>
+                    <p class="text-gray-600 mb-4">
+                        Access your financial data anywhere, anytime. Our apps sync instantly across web, iOS, and Android devices.
+                    </p>
+                    <a href="#" class="text-blue-600 font-medium flex items-center">
+                        Learn more <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="section-padding bg-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+                    How <span class="text-blue-600">MoneyFlow Pro</span> Works
+                </h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    Get started in just a few simple steps and transform your financial management
+                </p>
+            </div>
+            
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="md:w-1/2 mb-12 md:mb-0">
+                    <div class="relative">
+                        <div class="bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl p-1 shadow-xl">
+                            <div class="bg-white rounded-2xl p-8">
+                                <div class="flex items-start mb-8">
+                                    <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-6 flex-shrink-0">
+                                        <span class="text-blue-600 font-bold text-xl">1</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-800 mb-2">Sign Up & Connect</h3>
+                                        <p class="text-gray-600">
+                                            Create your free account in less than 2 minutes. Connect your bank accounts or start manually adding transactions.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start mb-8">
+                                    <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-6 flex-shrink-0">
+                                        <span class="text-green-600 font-bold text-xl">2</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-800 mb-2">Set Your Goals</h3>
+                                        <p class="text-gray-600">
+                                            Define your financial goals - whether it's saving for a vacation, paying off debt, or building an emergency fund.
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start">
+                                    <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-6 flex-shrink-0">
+                                        <span class="text-purple-600 font-bold text-xl">3</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-800 mb-2">Track & Optimize</h3>
+                                        <p class="text-gray-600">
+                                            Monitor your spending, get insights, and receive personalized suggestions to improve your financial health.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:w-2/5">
+                    <div class="bg-gray-800 text-white rounded-2xl p-8 shadow-2xl">
+                        <h3 class="text-2xl font-bold mb-6">Ready to transform your finances?</h3>
+                        <p class="text-gray-300 mb-8">
+                            Join thousands of users who have saved an average of <span class="text-green-400 font-bold">$3,200</span> in their first year with MoneyFlow Pro.
+                        </p>
+                        <ul class="space-y-4 mb-8">
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-green-400 mr-3"></i>
+                                <span>Free 30-day premium trial</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-green-400 mr-3"></i>
+                                <span>No credit card required</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-green-400 mr-3"></i>
+                                <span>Cancel anytime</span>
+                            </li>
+                        </ul>
+                        <a href="../auth/signup.html" class="block w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-center font-bold py-4 px-6 rounded-xl text-lg transition duration-300">
+                            Start Your Free Trial
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="section-padding bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+                    What Our <span class="text-blue-600">Users Say</span>
+                </h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">
+                    Don't just take our word for it. Here's what our community has to say about MoneyFlow Pro.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-2xl p-8 shadow-soft">
+                    <div class="flex items-center mb-6">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-xl mr-4">
+                            SJ
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Sarah Johnson</h4>
+                            <p class="text-gray-600 text-sm">Freelance Designer</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic mb-6">
+                        "MoneyFlow Pro helped me save 30% on unnecessary expenses in just 3 months. The dashboard gives me complete control over my finances!"
+                    </p>
+                    <div class="text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-8 shadow-soft">
+                    <div class="flex items-center mb-6">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center text-white font-bold text-xl mr-4">
+                            MR
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Michael Roberts</h4>
+                            <p class="text-gray-600 text-sm">Small Business Owner</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic mb-6">
+                        "As a business owner, tracking expenses was always a headache. MoneyFlow Pro made it simple and actually helped me identify tax deductions I was missing."
+                    </p>
+                    <div class="text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl p-8 shadow-soft">
+                    <div class="flex items-center mb-6">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center text-white font-bold text-xl mr-4">
+                            EJ
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Emma Johnson</h4>
+                            <p class="text-gray-600 text-sm">College Student</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic mb-6">
+                        "I went from living paycheck to paycheck to saving $500/month with MoneyFlow Pro. The budgeting features are perfect for students on a tight budget."
+                    </p>
+                    <div class="text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="py-20 cta-gradient text-white">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6">
+                Ready to Take Control of Your Finances?
+            </h2>
+            <p class="text-xl text-blue-100 max-w-2xl mx-auto mb-10">
+                Join thousands of satisfied users and start your journey to financial freedom today.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <a href="../auth/signup.html" class="bg-white text-blue-600 hover:bg-gray-100 font-bold py-4 px-10 rounded-xl text-lg shadow-xl transition duration-300">
+                    Start Free Trial
+                </a>
+                <a href="../auth/login.html" class="border-2 border-white text-white hover:bg-white/10 font-bold py-4 px-10 rounded-xl text-lg transition duration-300">
+                    Sign In to Account
+                </a>
+            </div>
+            <p class="mt-8 text-blue-100">
+                No credit card required • 30-day free trial • Cancel anytime
+            </p>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-6">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                            <i class="fas fa-wallet text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold">MoneyFlow Pro</span>
+                    </div>
+                    <p class="text-gray-400">
+                        Take control of your finances with our powerful expense manager. Track, analyze, and optimize your money flow.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Product</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#features" class="text-gray-400 hover:text-white">Features</a></li>
+                        <li><a href="#how-it-works" class="text-gray-400 hover:text-white">How It Works</a></li>
+                        <li><a href="#pricing" class="text-gray-400 hover:text-white">Pricing</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">API</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Company</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Press</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-6">Support</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Help Center</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contact Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <div class="text-gray-400 mb-4 md:mb-0">
+                    © 2023 MoneyFlow Pro. All rights reserved.
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-facebook text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-instagram text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-linkedin text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-blue-600 text-white rounded-full shadow-lg hidden">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // Back to top button
+        const backToTopButton = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', function() {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.remove('hidden');
+            } else {
+                backToTopButton.classList.add('hidden');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                
+                // Skip if it's a link to another page
+                if (href.includes('.html')) return;
+                
+                e.preventDefault();
+                
+                const targetId = href.substring(1);
+                if (targetId) {
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            });
+        });
+        
+        // Mobile menu toggle
+        const mobileMenuButton = document.querySelector('button.md\\:hidden');
+        const navLinks = document.querySelector('.hidden.md\\:flex');
+        
+        mobileMenuButton.addEventListener('click', function() {
+            navLinks.classList.toggle('hidden');
+            navLinks.classList.toggle('flex');
+            navLinks.classList.toggle('flex-col');
+            navLinks.classList.toggle('absolute');
+            navLinks.classList.toggle('top-16');
+            navLinks.classList.toggle('left-0');
+            navLinks.classList.toggle('right-0');
+            navLinks.classList.toggle('bg-white');
+            navLinks.classList.toggle('p-6');
+            navLinks.classList.toggle('shadow-lg');
+            navLinks.classList.toggle('space-y-4');
+        });
+    </script>
+</body>
+</html>
