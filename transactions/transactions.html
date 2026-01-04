@@ -312,7 +312,7 @@
                                 </div>
                                 <div>
                                     <p class="text-gray-500 text-sm">Total Income</p>
-                                    <p class="text-xl font-bold text-gray-800" id="totalIncome">$4,250.00</p>
+                                    <p class="text-xl font-bold text-gray-800" id="totalIncome">$0.00</p>
                                 </div>
                             </div>
                         </div>
@@ -324,7 +324,7 @@
                                 </div>
                                 <div>
                                     <p class="text-gray-500 text-sm">Total Expenses</p>
-                                    <p class="text-xl font-bold text-gray-800" id="totalExpenses">$1,845.00</p>
+                                    <p class="text-xl font-bold text-gray-800" id="totalExpenses">$0.00</p>
                                 </div>
                             </div>
                         </div>
@@ -336,7 +336,7 @@
                                 </div>
                                 <div>
                                     <p class="text-gray-500 text-sm">Transactions</p>
-                                    <p class="text-xl font-bold text-gray-800" id="totalTransactions">24</p>
+                                    <p class="text-xl font-bold text-gray-800" id="totalTransactions">0</p>
                                 </div>
                             </div>
                         </div>
@@ -348,7 +348,7 @@
                                 </div>
                                 <div>
                                     <p class="text-gray-500 text-sm">This Month</p>
-                                    <p class="text-xl font-bold text-gray-800" id="monthTransactions">8</p>
+                                    <p class="text-xl font-bold text-gray-800" id="monthTransactions">0</p>
                                 </div>
                             </div>
                         </div>
@@ -1001,19 +1001,10 @@
     <script>
     // Base URL for your JSON Server
     //const API_BASE_URL = 'http://localhost:3000';
-    
     let incomeCategories = [];
     let expenseCategories = [];
     let allCategories = [];
-    const paymentMethods = {
-        "credit_card": "Credit Card",
-        "debit_card": "Debit Card",
-        "cash": "Cash",
-        "bank_transfer": "Bank Transfer",
-        "digital_wallet": "Digital Wallet"
-    };
-
-    // Add this function to fetch categories from your API
+    
     async function fetchCategories() {
         try {
             const response = await fetch(`${API_BASE_URL}/categories`);
@@ -1028,139 +1019,124 @@
             return allCategories;
         } catch (error) {
             console.error('Error fetching categories:', error);
-            // Fallback to default categories if API fails
-            return getDefaultCategories();
         }
     }
 
-    function getDefaultCategories() {
-        const defaultCategories = [
-            { id: 'ctg-salary', name: 'Salary', type: 'income', subtype: 'essential', icon: 'money-bill-wave', color: '#10b981', isCustom: false },
-            { id: 'ctg-freelance', name: 'Freelance', type: 'income', subtype: 'optional', icon: 'laptop-code', color: '#f59e0b', isCustom: false },
-            { id: 'ctg-investment', name: 'Investment', type: 'income', subtype: 'optional', icon: 'chart-line', color: '#8b5cf6', isCustom: false },
-            { id: 'ctg-food', name: 'Food & Dining', type: 'expense', subtype: 'essential', icon: 'utensils', color: '#ef4444', isCustom: false },
-            { id: 'ctg-transport', name: 'Transportation', type: 'expense', subtype: 'essential', icon: 'car', color: '#3b82f6', isCustom: false },
-            { id: 'ctg-shopping', name: 'Shopping', type: 'expense', subtype: 'optional', icon: 'shopping-bag', color: '#8b5cf6', isCustom: false },
-            { id: 'ctg-bills', name: 'Bills & Utilities', type: 'expense', subtype: 'essential', icon: 'file-invoice-dollar', color: '#10b981', isCustom: false },
-            { id: 'ctg-entertainment', name: 'Entertainment', type: 'expense', subtype: 'optional', icon: 'film', color: '#ec4899', isCustom: false },
-            { id: 'ctg-health', name: 'Health & Fitness', type: 'expense', subtype: 'essential', icon: 'heart', color: '#dc2626', isCustom: false },
-            { id: 'ctg-education', name: 'Education', type: 'expense', subtype: 'essential', icon: 'graduation-cap', color: '#7c3aed', isCustom: false }
-        ];
-        
-        allCategories = defaultCategories;
-        incomeCategories = defaultCategories.filter(cat => cat.type === 'income');
-        expenseCategories = defaultCategories.filter(cat => cat.type === 'expense');
-        
-        return defaultCategories;
-    }
-
     function updateCategoryOptions(type) {
-    // Clear current options
-    transactionCategory.innerHTML = '';
-    
-    // Add new options based on type
-    const categories = type === 'income' ? incomeCategories : expenseCategories;
-    
-    // Add a default option
-    const defaultOption = document.createElement('option');
-    defaultOption.value = '';
-    defaultOption.textContent = 'Select a category...';
-    defaultOption.disabled = true;
-    defaultOption.selected = true;
-    transactionCategory.appendChild(defaultOption);
-    
-    // Add category options
-    categories.forEach(category => {
-        const option = document.createElement('option');
-        option.value = category.id || category.name.toLowerCase().replace(/\s+/g, '-'); // Use ID or generate from name
-        option.textContent = category.name;
-        option.dataset.color = category.color;
-        option.dataset.icon = category.icon;
-        transactionCategory.appendChild(option);
-    });
-    
-    // Also update the category filter dropdown
-    updateCategoryFilterDropdown();
-}
+        // Clear current options
+        transactionCategory.innerHTML = '';
+        
+        // Add new options based on type
+        const categories = type === 'income' ? incomeCategories : expenseCategories;
+        
+        // Add a default option
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Select a category...';
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        transactionCategory.appendChild(defaultOption);
+        
+        // Add category options
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            option.dataset.color = category.color;
+            option.dataset.icon = category.icon;
+            transactionCategory.appendChild(option);
+        });
+        
+        // Also update the category filter dropdown
+        updateCategoryFilterDropdown();
+    }
 
-// Function to update the category filter dropdown
-function updateCategoryFilterDropdown() {
-    const categoryFilterContainer = document.querySelector('#categoryFilterDropdown .space-y-1');
-    if (!categoryFilterContainer) return;
-    
-    categoryFilterContainer.innerHTML = '';
-    
-    // Add "All Categories" option
-    const allLabel = document.createElement('label');
-    allLabel.className = 'flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer';
-    allLabel.innerHTML = `
-        <input type="checkbox" class="checkbox-custom mr-2 w-4 h-4 border border-gray-300 rounded" data-category="all">
-        <span class="text-sm">All Categories</span>
-    `;
-    categoryFilterContainer.appendChild(allLabel);
-    
-    // Add category options
-    allCategories.forEach(category => {
-        const label = document.createElement('label');
-        label.className = 'flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer';
+    function updateCategoryFilterDropdown() {
+        const categoryFilterContainer = document.querySelector('#categoryFilterDropdown .space-y-1');
+        if (!categoryFilterContainer) return;
         
-        // Create category badge with dynamic color
-        const badge = document.createElement('span');
-        badge.className = 'px-2 py-1 rounded-full text-xs';
-        badge.style.backgroundColor = `${category.color}20`; // 20 = 12% opacity
-        badge.style.color = category.color;
-        badge.textContent = category.name;
+        categoryFilterContainer.innerHTML = '';
         
-        label.innerHTML = `
-            <input type="checkbox" class="checkbox-custom mr-2 w-4 h-4 border border-gray-300 rounded" value="${category.id || category.name}">
+        // Add "All Categories" option
+        const allLabel = document.createElement('label');
+        allLabel.className = 'flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer';
+        allLabel.innerHTML = `
+            <input type="checkbox" class="checkbox-custom mr-2 w-4 h-4 border border-gray-300 rounded" data-category="all">
+            <span class="text-sm">All Categories</span>
         `;
-        label.appendChild(badge);
+        categoryFilterContainer.appendChild(allLabel);
         
-        categoryFilterContainer.appendChild(label);
-    });
-}
-
-// Helper function to get category CSS class based on color
-function getCategoryColorClass(color) {
-    // Map colors to your existing CSS classes
-    const colorMap = {
-        '#10b981': 'category-salary',
-        '#f59e0b': 'category-freelance',
-        '#8b5cf6': 'category-shopping',
-        '#3b82f6': 'category-transport',
-        '#ef4444': 'category-food',
-        '#ec4899': 'category-entertainment',
-        '#7c3aed': 'category-other',
-        '#dc2626': 'category-other'
-    };
-    
-    return colorMap[color] || 'category-other';
-}
-
-// Helper function to get category by ID or name
-function getCategoryInfo(categoryValue) {
-    // Try to find by ID first
-    let category = allCategories.find(cat => cat.id === categoryValue);
-    
-    // If not found by ID, try by name (for backward compatibility)
-    if (!category) {
-        const categoryName = categoryValue.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        category = allCategories.find(cat => 
-            cat.name.toLowerCase() === categoryName.toLowerCase()
-        );
+        // Add category options
+        allCategories.forEach(category => {
+            const label = document.createElement('label');
+            label.className = 'flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer';
+            
+            // Create category badge with dynamic color
+            const badge = document.createElement('span');
+            badge.className = 'px-2 py-1 rounded-full text-xs';
+            badge.style.backgroundColor = `${category.color}20`; // 20 = 12% opacity
+            badge.style.color = category.color;
+            badge.textContent = category.name;
+            
+            label.innerHTML = `
+                <input type="checkbox" class="checkbox-custom mr-2 w-4 h-4 border border-gray-300 rounded" value="${category.id || category.name}">
+            `;
+            label.appendChild(badge);
+            
+            categoryFilterContainer.appendChild(label);
+        });
     }
-    
-    // If still not found, return a default
-    if (!category) {
-        return {
-            name: categoryValue.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-            color: '#6b7280',
-            icon: 'tag'
+
+    function getCategoryColorClass(color) {
+        // Map colors to your existing CSS classes
+        const colorMap = {
+            '#10b981': 'category-salary',
+            '#f59e0b': 'category-freelance',
+            '#8b5cf6': 'category-shopping',
+            '#3b82f6': 'category-transport',
+            '#ef4444': 'category-food',
+            '#ec4899': 'category-entertainment',
+            '#7c3aed': 'category-other',
+            '#dc2626': 'category-other'
         };
+        
+        return colorMap[color] || 'category-other';
     }
-    
-    return category;
-}
+
+    // Helper function to get category by ID or name
+    function getCategoryInfo(categoryValue) {
+        // Try to find by ID first
+        let category = allCategories.find(cat => cat.id === categoryValue);
+        
+        // If not found by ID, try by name (for backward compatibility)
+        if (!category) {
+            const categoryName = categoryValue.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            category = allCategories.find(cat => 
+                cat.name.toLowerCase() === categoryName.toLowerCase()
+            );
+        }
+        
+        // If still not found, return a default
+        if (!category) {
+            return {
+                name: categoryValue.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                color: '#6b7280',
+                icon: 'tag'
+            };
+        }
+        
+        return category;
+    }
+
+    // Payment method labels
+    const paymentMethods = {
+        "credit_card": "Credit Card",
+        "debit_card": "Debit Card",
+        "cash": "Cash",
+        "bank_transfer": "Bank Transfer",
+        "digital_wallet": "Digital Wallet"
+    };
+
     // Page definitions
     const pages = {
         'dashboard': {
@@ -1304,33 +1280,32 @@ function getCategoryInfo(categoryValue) {
         }
     }
 
-    async function updateCategoryUsage(categoryId, amount) {
-    try {
-        const category = allCategories.find(cat => cat.id === categoryId);
-        if (!category) return;
-        
-        // Update transaction count
-        category.transactions_count = (category.transactions_count || 0) + 1;
-        category.totalAmount = (category.totalAmount || 0) + amount;
-        category.lastUsed = new Date().toISOString().split('T')[0];
-        
-        // Update on server
-        await fetch(`${API_BASE_URL}/categories/${categoryId}`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                transactions_count: category.transactions_count,
-                totalAmount: category.totalAmount,
-                lastUsed: category.lastUsed
-            })
-        });
-        
-    } catch (error) {
-        console.error('Error updating category usage:', error);
+    async function updateTransaction(id, transaction) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/transactions/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(transaction)
+            });
+            
+            if (!response.ok) throw new Error('Failed to update transaction');
+            
+            const updatedTransaction = await response.json();
+            
+            // Update local array
+            const index = transactions.findIndex(t => t.id === id);
+            if (index !== -1) {
+                transactions[index] = updatedTransaction;
+            }
+            
+            return updatedTransaction;
+        } catch (error) {
+            console.error('Error updating transaction:', error);
+            throw error;
+        }
     }
-}
 
     async function deleteTransactionFromServer(id) {
         try {
@@ -1374,33 +1349,34 @@ function getCategoryInfo(categoryValue) {
 
     // Initialize the application
     document.addEventListener('DOMContentLoaded', async function() {
-    const isAuthenticated = await authManager.checkAuthStatus();
-    
-    if (!isAuthenticated) {
-        window.location.href = '../auth/login.html';
-        return;
-    }
 
-    const currentUser = authManager.getCurrentUser();
-    
-    // Fetch categories first
-    await fetchCategories();
-    
-    // Set today's date as default in the form
-    document.getElementById('transactionDate').valueAsDate = new Date();
-    
-    // Initialize with income categories
-    updateCategoryOptions('income');
-    
-    // Load transactions from server
-    loadTransactions();
-    
-    // Set up event listeners
-    setupEventListeners();
-    
-    // Initialize navigation
-    navigateTo('transactions');
-});
+        const isAuthenticated = await authManager.checkAuthStatus();
+        
+        if (!isAuthenticated) {
+            window.location.href = '../auth/login.html';
+            return;
+        }
+
+        const currentUser = authManager.getCurrentUser();
+        console.log('Current user:', currentUser);
+
+        await fetchCategories();
+
+        // Set today's date as default in the form
+        document.getElementById('transactionDate').valueAsDate = new Date();
+        
+        // Initialize with income categories
+        updateCategoryOptions('income');
+        
+        // Load transactions from server
+        loadTransactions();
+        
+        // Set up event listeners
+        setupEventListeners();
+        
+        // Initialize navigation
+        navigateTo('transactions');
+    });
 
     async function loadTransactions() {
         await fetchTransactions();
@@ -1639,237 +1615,227 @@ function getCategoryInfo(categoryValue) {
     }
 
     function setTransactionType(type) {
-    currentTransactionType = type;
-    
-    if (type === 'income') {
-        incomeTypeBtn.classList.add('bg-green-500', 'text-white');
-        incomeTypeBtn.classList.remove('text-gray-700');
-        expenseTypeBtn.classList.add('text-gray-700');
-        expenseTypeBtn.classList.remove('bg-red-500', 'text-white');
-    } else {
-        expenseTypeBtn.classList.add('bg-red-500', 'text-white');
-        expenseTypeBtn.classList.remove('text-gray-700');
-        incomeTypeBtn.classList.add('text-gray-700');
-        incomeTypeBtn.classList.remove('bg-green-500', 'text-white');
+        currentTransactionType = type;
+        
+        if (type === 'income') {
+            incomeTypeBtn.classList.add('bg-green-500', 'text-white');
+            incomeTypeBtn.classList.remove('text-gray-700');
+            expenseTypeBtn.classList.add('text-gray-700');
+            expenseTypeBtn.classList.remove('bg-red-500', 'text-white');
+            updateCategoryOptions('income');
+        } else {
+            expenseTypeBtn.classList.add('bg-red-500', 'text-white');
+            expenseTypeBtn.classList.remove('text-gray-700');
+            incomeTypeBtn.classList.add('text-gray-700');
+            incomeTypeBtn.classList.remove('bg-green-500', 'text-white');
+            updateCategoryOptions('expense');
+        }
     }
-    
-    // Call the updated function
-    updateCategoryOptions(type);
-}
 
     function closeTransactionModal() {
         transactionModal.classList.add('hidden');
         transactionForm.reset();
         document.getElementById('transactionDate').valueAsDate = new Date();
-        setTransactionType('income'); // This will reset the categories too
+        setTransactionType('income');
         isEditing = false;
         editingTransactionId = null;
         document.getElementById('modalTitle').textContent = 'Add Transaction';
     }
 
     async function saveTransaction(e) {
-    e.preventDefault();
-    
-    // Get form values
-    const title = document.getElementById('transactionTitle').value;
-    const amount = parseFloat(document.getElementById('transactionAmount').value);
-    const categoryId = document.getElementById('transactionCategory').value;
-    const date = document.getElementById('transactionDate').value;
-    const paymentMethod = document.getElementById('transactionPaymentMethod').value;
-    const notes = document.getElementById('transactionNotes').value;
-    
-    if (!title || !amount || !categoryId || !date || !paymentMethod) {
-        showNotification('Please fill in all required fields', 'error');
-        return;
-    }
-    
-    // Get the category name from the selected ID
-    const categoryInfo = getCategoryInfo(categoryId);
-    
-    const transactionData = { 
-        title: title,
-        amount: amount,
-        type: currentTransactionType,
-        category: categoryId, // Store the category ID
-        categoryName: categoryInfo.name, // Also store the name for easier display
-        date: date,
-        paymentMethod: paymentMethod,
-        status: "completed",
-        notes: notes,
-        tags: [],
-        userId: 1
-    };
-    
-    try {
-        if (isEditing && editingTransactionId) {
-            // Update existing transaction
-            await updateTransaction(editingTransactionId, transactionData);
-            showNotification('Transaction updated successfully!', 'success');
-        } else {
-            // Create new transaction
-            const newTransaction = await addTransaction(transactionData);
-            
-            // Update category usage statistics
-            await updateCategoryUsage(categoryId, amount);
-            
-            showNotification('Transaction added successfully!', 'success');
+        e.preventDefault();
+        
+        // Get form values
+        const title = document.getElementById('transactionTitle').value;
+        const amount = parseFloat(document.getElementById('transactionAmount').value);
+        const category = document.getElementById('transactionCategory').value;
+        const date = document.getElementById('transactionDate').value;
+        const paymentMethod = document.getElementById('transactionPaymentMethod').value;
+        const notes = document.getElementById('transactionNotes').value;
+        
+        if (!title || !amount || !category || !date || !paymentMethod) {
+            showNotification('Please fill in all required fields', 'error');
+            return;
         }
         
-        // Update UI
-        await loadTransactions();
-        updateSelectedCount();
+        const transactionData = {
+            title: title,
+            amount: amount,
+            type: currentTransactionType,
+            category: category,
+            date: date,
+            paymentMethod: paymentMethod,
+            status: "completed",
+            notes: notes,
+            tags: []
+        };
         
-        // Close modal and reset form
-        closeTransactionModal();
-    } catch (error) {
-        showNotification('Failed to save transaction', 'error');
-    }
-}
-
-    function renderTransactions() {
-    // Only render if we're on the transactions page
-    if (currentPage !== 'transactions') return;
-    
-    // First hide both states
-    emptyState.classList.add('hidden');
-    loadingState.classList.add('hidden');
-    
-    if (!loadingState.classList.contains('hidden')) {
-        return;
-    }
-    
-    transactionsTableBody.innerHTML = '';
-    
-    // Get search term
-    const searchTerm = searchInput.value.toLowerCase();
-    
-    // Get selected type filter
-    const typeFilter = document.querySelector('input[name="typeFilter"]:checked')?.value || 'all';
-    
-    // Filter transactions
-    let filteredTransactions = transactions.filter(transaction => {
-        // Search filter
-        const matchesSearch = transaction.title.toLowerCase().includes(searchTerm) || 
-                             (transaction.notes && transaction.notes.toLowerCase().includes(searchTerm));
-        
-        // Type filter
-        const matchesType = typeFilter === 'all' || transaction.type === typeFilter;
-        
-        return matchesSearch && matchesType;
-    });
-    
-    if (filteredTransactions.length === 0) {
-        emptyState.classList.remove('hidden');
-        totalCount.textContent = '0';
-        return;
-    }
-    
-    // Sort by date (newest first)
-    filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    // Render each transaction
-    filteredTransactions.forEach(transaction => {
-        const row = document.createElement('tr');
-        row.className = 'table-row border-b border-gray-100';
-        row.dataset.id = transaction.id;
-        
-        // Get category info dynamically
-        const categoryInfo = getCategoryInfo(transaction.category);
-        const colorClass = getCategoryColorClass(categoryInfo.color);
-        console.log(categoryInfo);
-        // Format date
-        const dateObj = new Date(transaction.date);
-        const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        
-        // Format amount with appropriate sign
-        const amountSign = transaction.type === 'income' ? '+' : '-';
-        const amountClass = transaction.type === 'income' ? 'text-green-600' : 'text-red-600';
-        
-        row.innerHTML = `
-            <td class="py-4 px-6">
-                <input type="checkbox" class="transaction-checkbox checkbox-custom w-4 h-4 border border-gray-300 rounded" data-id="${transaction.id}">
-            </td>
-            <td class="py-4 px-6 text-gray-700">${formattedDate}</td>
-            <td class="py-4 px-6">
-                <div class="font-medium text-gray-800">${transaction.title}</div>
-                <div class="text-gray-500 text-sm mt-1">${transaction.notes || ''}</div>
-            </td>
-            <td class="py-4 px-6">
-                <span class="px-3 py-1.5 rounded-full text-xs font-medium ${colorClass}">
-                    ${categoryInfo.name}
-                </span>
-            </td>
-            <td class="py-4 px-6 text-gray-700">${paymentMethods[transaction.paymentMethod]}</td>
-            <td class="py-4 px-6">
-                <span class="px-3 py-1.5 rounded-full text-xs font-medium ${transaction.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                    ${transaction.type === 'income' ? 'Income' : 'Expense'}
-                </span>
-            </td>
-            <td class="py-4 px-6 font-bold ${amountClass}">
-                ${amountSign}$${transaction.amount.toFixed(2)}
-            </td>
-            <td class="py-4 px-6">
-                <div class="flex space-x-2">
-                    <button type="button" class="view-btn text-blue-600 hover:text-blue-800" data-id="${transaction.id}">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button type="button" class="edit-btn text-gray-600 hover:text-gray-800" data-id="${transaction.id}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button type="button" class="delete-btn text-red-600 hover:text-red-800" data-id="${transaction.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-        
-        transactionsTableBody.appendChild(row);
-    });
-    
-    // Add event listeners to action buttons
-    document.querySelectorAll('.view-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const transactionId = this.getAttribute('data-id');
-            viewTransaction(transactionId);
-        });
-    });
-    
-    document.querySelectorAll('.edit-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const transactionId = this.getAttribute('data-id');
-            editTransaction(transactionId);
-        });
-    });
-    
-    document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const transactionId = this.getAttribute('data-id');
-            deleteTransaction(transactionId);
-        });
-    });
-    
-    // Add event listeners to checkboxes
-    document.querySelectorAll('.transaction-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const transactionId = this.getAttribute('data-id');
-            
-            if (this.checked) {
-                selectedTransactions.add(transactionId);
+        try {
+            if (isEditing && editingTransactionId) {
+                // Update existing transaction
+                await updateTransaction(editingTransactionId, transactionData);
+                showNotification('Transaction updated successfully!', 'success');
             } else {
-                selectedTransactions.delete(transactionId);
-                selectAllCheckbox.checked = false;
-                headerCheckbox.checked = false;
+                // Create new transaction
+                await addTransaction(transactionData);
+                showNotification('Transaction added successfully!', 'success');
             }
             
+            // Update UI
+            await loadTransactions();
             updateSelectedCount();
-            updateBulkActions();
+            
+            // Close modal and reset form
+            closeTransactionModal();
+        } catch (error) {
+            showNotification('Failed to save transaction', 'error');
+        }
+    }
+
+    function renderTransactions() {
+        // Only render if we're on the transactions page
+        if (currentPage !== 'transactions') return;
+        
+        // First hide both states
+        emptyState.classList.add('hidden');
+        loadingState.classList.add('hidden');
+        
+        if (!loadingState.classList.contains('hidden')) {
+            return;
+        }
+        
+        transactionsTableBody.innerHTML = '';
+        
+        // Get search term
+        const searchTerm = searchInput.value.toLowerCase();
+        
+        // Get selected type filter
+        const typeFilter = document.querySelector('input[name="typeFilter"]:checked')?.value || 'all';
+        
+        // Filter transactions
+        let filteredTransactions = transactions.filter(transaction => {
+            // Search filter
+            const matchesSearch = transaction.title.toLowerCase().includes(searchTerm) || 
+                                (transaction.notes && transaction.notes.toLowerCase().includes(searchTerm));
+            
+            // Type filter
+            const matchesType = typeFilter === 'all' || transaction.type === typeFilter;
+            
+            return matchesSearch && matchesType;
         });
-    });
-    
-    // Update total count
-    totalCount.textContent = filteredTransactions.length;
-    updateSelectedCount();
-}
+        
+        if (filteredTransactions.length === 0) {
+            emptyState.classList.remove('hidden');
+            totalCount.textContent = '0';
+            return;
+        }
+        
+        // Sort by date (newest first)
+        filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        // Render each transaction
+        filteredTransactions.forEach(transaction => {
+            const row = document.createElement('tr');
+            row.className = 'table-row border-b border-gray-100';
+            row.dataset.id = transaction.id;
+            
+            // Get category info dynamically
+            const categoryInfo = getCategoryInfo(transaction.category);
+            const colorClass = getCategoryColorClass(categoryInfo.color);
+            
+            // Format date
+            const dateObj = new Date(transaction.date);
+            const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            
+            // Format amount with appropriate sign
+            const amountSign = transaction.type === 'income' ? '+' : '-';
+            const amountClass = transaction.type === 'income' ? 'text-green-600' : 'text-red-600';
+            
+            row.innerHTML = `
+                <td class="py-4 px-6">
+                    <input type="checkbox" class="transaction-checkbox checkbox-custom w-4 h-4 border border-gray-300 rounded" data-id="${transaction.id}">
+                </td>
+                <td class="py-4 px-6 text-gray-700">${formattedDate}</td>
+                <td class="py-4 px-6">
+                    <div class="font-medium text-gray-800">${transaction.title}</div>
+                    <div class="text-gray-500 text-sm mt-1">${transaction.notes || ''}</div>
+                </td>
+                <td class="py-4 px-6">
+                    <span class="px-3 py-1.5 rounded-full text-xs font-medium ${colorClass}">
+                        ${categoryInfo.name}
+                    </span>
+                </td>
+                <td class="py-4 px-6 text-gray-700">${paymentMethods[transaction.paymentMethod]}</td>
+                <td class="py-4 px-6">
+                    <span class="px-3 py-1.5 rounded-full text-xs font-medium ${transaction.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                        ${transaction.type === 'income' ? 'Income' : 'Expense'}
+                    </span>
+                </td>
+                <td class="py-4 px-6 font-bold ${amountClass}">
+                    ${amountSign}$${transaction.amount.toFixed(2)}
+                </td>
+                <td class="py-4 px-6">
+                    <div class="flex space-x-2">
+                        <button type="button" class="view-btn text-blue-600 hover:text-blue-800" data-id="${transaction.id}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button type="button" class="edit-btn text-gray-600 hover:text-gray-800" data-id="${transaction.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="delete-btn text-red-600 hover:text-red-800" data-id="${transaction.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            transactionsTableBody.appendChild(row);
+        });
+        
+        // Add event listeners to action buttons
+        document.querySelectorAll('.view-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const transactionId = this.getAttribute('data-id');
+                viewTransaction(transactionId);
+            });
+        });
+        
+        document.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const transactionId = this.getAttribute('data-id');
+                editTransaction(transactionId);
+            });
+        });
+        
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const transactionId = this.getAttribute('data-id');
+                deleteTransaction(transactionId);
+            });
+        });
+        
+        // Add event listeners to checkboxes
+        document.querySelectorAll('.transaction-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const transactionId = this.getAttribute('data-id');
+                
+                if (this.checked) {
+                    selectedTransactions.add(transactionId);
+                } else {
+                    selectedTransactions.delete(transactionId);
+                    selectAllCheckbox.checked = false;
+                    headerCheckbox.checked = false;
+                }
+                
+                updateSelectedCount();
+                updateBulkActions();
+            });
+        });
+        
+        // Update total count
+        totalCount.textContent = filteredTransactions.length;
+        updateSelectedCount();
+    }
 
     function updateStats() {
         // Calculate totals
@@ -1947,37 +1913,29 @@ function getCategoryInfo(categoryValue) {
     }
 
     function editTransaction(id) {
-    const transaction = transactions.find(t => t.id === id);
-    if (!transaction) return;
-    
-    isEditing = true;
-    editingTransactionId = id;
-    
-    // Update modal title
-    document.getElementById('modalTitle').textContent = 'Edit Transaction';
-    
-    // Populate form with transaction data
-    document.getElementById('transactionTitle').value = transaction.title;
-    document.getElementById('transactionAmount').value = transaction.amount;
-    document.getElementById('transactionDate').value = transaction.date;
-    document.getElementById('transactionPaymentMethod').value = transaction.paymentMethod;
-    document.getElementById('transactionNotes').value = transaction.notes || '';
-    
-    // Set transaction type
-    setTransactionType(transaction.type);
-    
-    // Set category - need to find the correct option
-    const categorySelect = document.getElementById('transactionCategory');
-    const categoryInfo = getCategoryInfo(transaction.category);
-    
-    // Wait for the options to be populated
-    setTimeout(() => {
-        categorySelect.value = categoryInfo.id || transaction.category;
-    }, 100);
-    
-    // Show modal
-    transactionModal.classList.remove('hidden');
-}
+        const transaction = transactions.find(t => t.id === id);
+        if (!transaction) return;
+        
+        isEditing = true;
+        editingTransactionId = id;
+        
+        // Update modal title
+        document.getElementById('modalTitle').textContent = 'Edit Transaction';
+        
+        // Populate form with transaction data
+        document.getElementById('transactionTitle').value = transaction.title;
+        document.getElementById('transactionAmount').value = transaction.amount;
+        document.getElementById('transactionDate').value = transaction.date;
+        document.getElementById('transactionPaymentMethod').value = transaction.paymentMethod;
+        document.getElementById('transactionNotes').value = transaction.notes || '';
+        
+        // Set transaction type
+        setTransactionType(transaction.type);
+        document.getElementById('transactionCategory').value = transaction.category;
+        
+        // Show modal
+        transactionModal.classList.remove('hidden');
+    }
 
    async function deleteTransaction(id) {
         // First, prevent any default behavior by using a custom confirm
