@@ -1777,6 +1777,30 @@
         editingTransactionId = null;
         document.getElementById('modalTitle').textContent = 'Add Transaction';
     }
+
+    async function deleteTransaction(id) {
+        // First, prevent any default behavior by using a custom confirm
+        const confirmed = await showCustomConfirm('Are you sure you want to delete this transaction?');
+        
+        if (!confirmed) return;
+        
+        try {
+            await deleteTransactionFromServer(id);
+            
+            // Update UI
+            renderTransactions();
+            updateStats();
+            updateSelectedCount();
+            
+            // Show notification
+            showNotification('Transaction deleted successfully!', 'warning');
+            
+            // Close detail modal if open
+            transactionDetailModal.classList.add('hidden');
+        } catch (error) {
+            showNotification('Failed to delete transaction', 'error');
+        }
+    }
     </script>
 </body>
 </html>

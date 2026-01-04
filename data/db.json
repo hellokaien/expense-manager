@@ -24,32 +24,6 @@
       "tags": [],
       "id": "txn-70c8c0d6-a418-45ad-a0fc-82f43249f5b1",
       "userId": "1766944218991"
-    },
-    {
-      "id": "txn-f22bd2b5-9730-461e-9e54-07d9b714bea0",
-      "title": "Ratione non fugiat ",
-      "amount": 24,
-      "type": "income",
-      "category": "ctg-abf1b582-092d-4322-9f1a-b9148963818d",
-      "date": "2022-09-18",
-      "paymentMethod": "cash",
-      "status": "completed",
-      "notes": "Labore unde sed face",
-      "tags": [],
-      "userId": 1
-    },
-    {
-      "id": "txn-38cd64e0-4c31-4928-ad47-4e830f9f07bb",
-      "title": "test",
-      "amount": 3,
-      "type": "income",
-      "category": "ctg-abf1b582-092d-4322-9f1a-b9148963818d",
-      "date": "2026-01-04",
-      "paymentMethod": "credit_card",
-      "status": "completed",
-      "notes": "",
-      "tags": [],
-      "userId": 1
     }
   ],
   "users": [
