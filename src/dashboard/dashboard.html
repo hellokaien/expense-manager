@@ -846,10 +846,106 @@
         </div>
     </div>
 
+    <!-- Transaction Detail Modal -->
+    <div id="transactionDetailModal" class="fixed inset-0 modal-overlay flex items-center justify-center p-4 z-10 hidden">
+        <div class="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">Transaction Details</h3>
+                    <button id="closeDetailModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- Left Column -->
+                    <div>
+                        <div class="mb-6">
+                            <h4 class="text-lg font-medium text-gray-700 mb-2">Description</h4>
+                            <p id="detailDescription" class="text-gray-800 text-xl">Monthly Salary</p>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h4 class="text-lg font-medium text-gray-700 mb-2">Amount</h4>
+                            <p id="detailAmount" class="text-3xl font-bold text-green-600">+$3,800.00</p>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h4 class="text-lg font-medium text-gray-700 mb-2">Category</h4>
+                            <div>
+                                <span id="detailCategory" class="category-salary px-3 py-1.5 rounded-full text-sm font-medium">Salary</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-700 mb-2">Type</h4>
+                            <div>
+                                <span id="detailType" class="px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-medium">Income</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column -->
+                    <div>
+                        <div class="mb-6">
+                            <h4 class="text-lg font-medium text-gray-700 mb-2">Date & Time</h4>
+                            <p id="detailDate" class="text-gray-800">May 1, 2023 • 9:00 AM</p>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h4 class="text-lg font-medium text-gray-700 mb-2">Payment Method</h4>
+                            <p id="detailPaymentMethod" class="text-gray-800">Direct Deposit •••• 4567</p>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h4 class="text-lg font-medium text-gray-700 mb-2">Status</h4>
+                            <div>
+                                <span id="detailStatus" class="px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-medium">Completed</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-700 mb-2">Tags</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">Essential</span>
+                                <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">Recurring</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notes -->
+                <div class="mb-8">
+                    <h4 class="text-lg font-medium text-gray-700 mb-2">Notes</h4>
+                    <p id="detailNotes" class="text-gray-600 p-4 bg-gray-50 rounded-lg">Monthly paycheck from Company Inc. Includes regular salary and performance bonus.</p>
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex justify-end space-x-4">
+                    <button id="deleteDetailBtn" class="px-5 py-2.5 border border-red-300 text-red-600 rounded-lg hover:bg-red-50">
+                        <i class="fas fa-trash mr-2"></i> Delete
+                    </button>
+                    <button id="editDetailBtn" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-edit mr-2"></i> Edit Transaction
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="../auth/auth.js"></script>
     <script src="../app.js"></script>
     <script>
     // API Base URL - Same as login/signup
+
+    // Payment method labels
+    const paymentMethods = {
+        "credit_card": "Credit Card",
+        "debit_card": "Debit Card",
+        "cash": "Cash",
+        "bank_transfer": "Bank Transfer",
+        "digital_wallet": "Digital Wallet"
+    };
     
     // DOM Elements
     const transactionModal = document.getElementById('transactionModal');
@@ -1050,6 +1146,11 @@
         // Close modal
         closeModalBtn.addEventListener('click', closeTransactionModal);
         cancelBtn.addEventListener('click', closeTransactionModal);
+
+        // Close detail modal
+        closeDetailModal.addEventListener('click', () => {
+            transactionDetailModal.classList.add('hidden');
+        });
         
         // Close modal when clicking outside
         transactionModal.addEventListener('click', (e) => {
@@ -1361,16 +1462,29 @@
                     ${transaction.type === 'income' ? '+' : '-'}$${transaction.amount.toFixed(2)}
                 </td>
                 <td class="py-4 px-4">
-                    <button class="edit-btn text-blue-600 hover:text-blue-800 mr-3" data-id="${transaction.id}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="delete-btn-table text-red-600 hover:text-red-800" data-id="${transaction.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <div class="flex space-x-2">
+                        <button type="button" class="view-btn text-blue-600 hover:text-blue-800" data-id="${transaction.id}">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button type="button" class="edit-btn text-gray-600 hover:text-gray-800" data-id="${transaction.id}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="delete-btn-table text-red-600 hover:text-red-800" data-id="${transaction.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </td>
             `;
             
             allTransactionsTable.appendChild(row);
+        });
+
+        // Add event listeners to action buttons
+        document.querySelectorAll('.view-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const transactionId = this.getAttribute('data-id');
+                viewTransaction(transactionId);
+            });
         });
         
         // Add delete event listeners
@@ -1389,6 +1503,50 @@
                 editTransaction(transactionId);
             });
         });
+    }
+
+    function viewTransaction(id) {
+        const transaction = transactions.find(t => t.id === id);
+        if (!transaction) return;
+        
+        // Find category label
+        const categoryList = transaction.type === 'income' ? incomeCategories : expenseCategories;
+        const categoryInfo = categoryList.find(c => c.value === transaction.category) || { label: transaction.category, color: 'category-other' };
+        
+        // Format date
+        const dateObj = new Date(transaction.date);
+        const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + ' • ' + 
+                              dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        
+        // Update modal content
+        document.getElementById('detailDescription').textContent = transaction.title;
+        document.getElementById('detailAmount').textContent = `${transaction.type === 'income' ? '+' : '-'}$${transaction.amount.toFixed(2)}`;
+        document.getElementById('detailAmount').className = `text-3xl font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`;
+        document.getElementById('detailCategory').textContent = categoryInfo.label;
+        document.getElementById('detailCategory').className = `${categoryInfo.color} px-3 py-1.5 rounded-full text-sm font-medium`;
+        document.getElementById('detailType').textContent = transaction.type === 'income' ? 'Income' : 'Expense';
+        document.getElementById('detailType').className = `px-3 py-1.5 ${transaction.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} rounded-full text-sm font-medium`;
+        document.getElementById('detailDate').textContent = formattedDate;
+        document.getElementById('detailPaymentMethod').textContent = paymentMethods[transaction.paymentMethod];
+        document.getElementById('detailStatus').textContent = transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1);
+        document.getElementById('detailNotes').textContent = transaction.notes || 'No notes added';
+        
+        // Update tags
+        const tagsContainer = document.querySelector('#transactionDetailModal .flex.flex-wrap.gap-2');
+        tagsContainer.innerHTML = '';
+        transaction.tags.forEach(tag => {
+            const tagElement = document.createElement('span');
+            tagElement.className = 'px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm';
+            tagElement.textContent = tag.charAt(0).toUpperCase() + tag.slice(1);
+            tagsContainer.appendChild(tagElement);
+        });
+        
+        // Update action buttons
+        document.getElementById('deleteDetailBtn').onclick = () => deleteTransaction(id);
+        document.getElementById('editDetailBtn').onclick = () => editTransaction(id);
+        
+        // Show modal
+        transactionDetailModal.classList.remove('hidden');
     }
     
     async function deleteTransaction(id) {
