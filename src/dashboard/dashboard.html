@@ -1239,6 +1239,7 @@
             
             // Update UI
             await loadTransactions();
+            renderAllTransactionsTable();
             //updateSelectedCount();
             
             // Close modal and reset form
@@ -1423,23 +1424,28 @@
     }
     
     function editTransaction(id) {
-        // Find transaction
         const transaction = transactions.find(t => t.id === id);
         if (!transaction) return;
         
-        // Open modal with transaction data
-        transactionModal.classList.remove('hidden');
-        setTransactionType(transaction.type);
+        isEditing = true;
+        editingTransactionId = id;
         
+        // Update modal title
+        document.getElementById('modalTitle').textContent = 'Edit Transaction';
+        
+        // Populate form with transaction data
         document.getElementById('transactionTitle').value = transaction.title;
         document.getElementById('transactionAmount').value = transaction.amount;
-        document.getElementById('transactionCategory').value = transaction.category;
         document.getElementById('transactionDate').value = transaction.date;
+        document.getElementById('transactionPaymentMethod').value = transaction.paymentMethod;
+        document.getElementById('transactionNotes').value = transaction.notes || '';
         
-        // Update form to edit mode
-        const saveBtn = document.getElementById('saveTransactionBtn');
-        saveBtn.innerHTML = '<i class="fas fa-save mr-2"></i> Update Transaction';
-        saveBtn.dataset.editingId = id;
+        // Set transaction type
+        setTransactionType(transaction.type);
+        document.getElementById('transactionCategory').value = transaction.category;
+        
+        // Show modal
+        transactionModal.classList.remove('hidden');
     }
     
     function updateSummary() {
