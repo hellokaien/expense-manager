@@ -1961,7 +1961,7 @@
         }
     }
 
-// Add this custom confirmation function to avoid browser's default confirm
+    // Add this custom confirmation function to avoid browser's default confirm
     async function showCustomConfirm(message) { 
         return new Promise((resolve) => {
         // Create a custom confirmation modal
@@ -2011,8 +2011,8 @@
                 resolve(false);
             }
         });
-    });
-}
+        });
+    }   
 
     function toggleSelectAll() {
         const isChecked = selectAllCheckbox.checked || headerCheckbox.checked;

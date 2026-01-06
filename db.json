@@ -39,17 +39,16 @@
       "userId": 1
     },
     {
-      "id": "txn-38cd64e0-4c31-4928-ad47-4e830f9f07bb",
-      "title": "test",
-      "amount": 3,
-      "type": "income",
-      "category": "ctg-abf1b582-092d-4322-9f1a-b9148963818d",
+      "title": "Valorant Top Up",
+      "amount": 800,
+      "type": "expense",
+      "category": "ctg-d0bf0ba2-9f21-4244-bc0c-54f7d07151b4",
       "date": "2026-01-04",
-      "paymentMethod": "credit_card",
+      "paymentMethod": "digital_wallet",
       "status": "completed",
       "notes": "",
       "tags": [],
-      "userId": 1
+      "id": "txn-4e601dfc-e972-4b2f-ba71-6b7ad3f6f4a9"
     }
   ],
   "users": [
@@ -77,7 +76,7 @@
       "trialStartDate": "2025-12-28T17:50:18.949Z",
       "trialEndDate": "2026-01-27T17:50:18.949Z",
       "status": "active",
-      "lastLogin": "2026-01-03T17:18:42.926Z"
+      "lastLogin": "2026-01-06T06:29:26.496Z"
     }
   ],
   "categories": [
