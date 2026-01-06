@@ -502,7 +502,7 @@
                             </div>
                             <h3 class="text-xl font-medium text-gray-700 mb-2">No transactions found</h3>
                             <p class="text-gray-500 mb-6">Try adjusting your filters or add a new transaction</p>
-                            <button id="addFirstTransactionBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-lg">
+                            <button id="openAddModalEmpty" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-6 rounded-lg">
                                 <i class="fas fa-plus mr-2"></i> Add Your First Transaction
                             </button>
                         </div>
@@ -1039,6 +1039,13 @@
         openAddModalBtn.addEventListener('click', () => {
             transactionModal.classList.remove('hidden');
         });
+
+        const openAddModalEmptyBtn = document.getElementById('openAddModalEmpty');
+        if (openAddModalEmptyBtn) {
+            openAddModalEmptyBtn.addEventListener('click', () => {
+                transactionModal.classList.remove('hidden');
+            });
+        }
         
         // Close modal
         closeModalBtn.addEventListener('click', closeTransactionModal);
@@ -1307,12 +1314,25 @@
     }
     
     function renderAllTransactionsTable() {
+
+        emptyState.classList.add('hidden');
+        loadingState.classList.add('hidden');
+        
+        if (!loadingState.classList.contains('hidden')) {
+            return;
+        }
         // Clear current table
         allTransactionsTable.innerHTML = '';
         
         // Sort by date (newest first)
         const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
         
+        if (sortedTransactions.length === 0) {
+            emptyState.classList.remove('hidden');
+            
+            return;
+        }
+
         // Render each transaction
         sortedTransactions.forEach(transaction => {
             // Find category label
