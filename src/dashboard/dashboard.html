@@ -1097,9 +1097,10 @@
         ];
     }
     
-    function updateUserInfo() {
+    function updateUserInfo(currentUser) {
+
         if (!currentUser) return;
-        
+        console.log(currentUser);
         // Get user initials
         const firstName = currentUser.firstName || 'John';
         const lastName = currentUser.lastName || 'Doe';
