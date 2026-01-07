@@ -1,56 +1,5 @@
 {
-  "transactions": [
-    {
-      "title": "Load",
-      "amount": 649,
-      "type": "expense",
-      "category": "ctg-d0bf0ba2-9f21-4244-bc0c-54f7d07151b4",
-      "date": "2026-01-03",
-      "paymentMethod": "digital_wallet",
-      "status": "completed",
-      "notes": "MAGIC DATA",
-      "tags": [],
-      "id": "txn-233ef0c6-ea9c-4874-8e77-fc138ac4e34b"
-    },
-    {
-      "title": "Bebu's Wallet Shopee",
-      "amount": 95,
-      "type": "expense",
-      "category": "ctg-31585733-0de9-4928-8346-271b64905825",
-      "date": "2026-01-03",
-      "paymentMethod": "cash",
-      "status": "completed",
-      "notes": "Money holder",
-      "tags": [],
-      "id": "txn-70c8c0d6-a418-45ad-a0fc-82f43249f5b1",
-      "userId": "1766944218991"
-    },
-    {
-      "id": "txn-f22bd2b5-9730-461e-9e54-07d9b714bea0",
-      "title": "Ratione non fugiat ",
-      "amount": 24,
-      "type": "income",
-      "category": "ctg-abf1b582-092d-4322-9f1a-b9148963818d",
-      "date": "2022-09-18",
-      "paymentMethod": "cash",
-      "status": "completed",
-      "notes": "Labore unde sed face",
-      "tags": [],
-      "userId": 1
-    },
-    {
-      "title": "Valorant Top Up",
-      "amount": 800,
-      "type": "expense",
-      "category": "ctg-d0bf0ba2-9f21-4244-bc0c-54f7d07151b4",
-      "date": "2026-01-04",
-      "paymentMethod": "digital_wallet",
-      "status": "completed",
-      "notes": "",
-      "tags": [],
-      "id": "txn-4e601dfc-e972-4b2f-ba71-6b7ad3f6f4a9"
-    }
-  ],
+  "transactions": [],
   "users": [
     {
       "id": "1766944218991",
