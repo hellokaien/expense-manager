@@ -1237,7 +1237,13 @@
     async function fetchTransactions() {
         try {
             loadingState.classList.remove('hidden');
-            const response = await fetch(`${API_BASE_URL}/transactions`);
+            const currentUser = authManager.getCurrentUser();
+            
+            if (!currentUser) {
+                throw new Error('User not authenticated');
+            }
+            
+            const response = await fetch(`${API_BASE_URL}/transactions?userId=${currentUser.id}`);
             if (!response.ok) throw new Error('Failed to fetch transactions');
             
             transactions = await response.json();
@@ -1253,12 +1259,13 @@
 
     async function addTransaction(transaction) {
         try {
+            const currentUser = authManager.getCurrentUser();
             const transactionId = `txn-${crypto.randomUUID()}`;
             // Add userId to transaction
             const transactionWithUser = {
                 id: transactionId,  // ← Always include an ID
                 ...transaction,
-                userId: 1 // You can change this based on your user system
+                userId: currentUser.id // You can change this based on your user system
             };
             
             const response = await fetch(`${API_BASE_URL}/transactions`, {

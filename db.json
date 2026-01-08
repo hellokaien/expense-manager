@@ -1,5 +1,32 @@
 {
-  "transactions": [],
+  "transactions": [
+    {
+      "id": "txn-869a7981-0d0c-42e4-81d9-6217245ddd74",
+      "title": "test",
+      "amount": 123,
+      "type": "income",
+      "category": "ctg-abf1b582-092d-4322-9f1a-b9148963818d",
+      "date": "2026-01-08",
+      "paymentMethod": "credit_card",
+      "status": "completed",
+      "notes": "",
+      "tags": [],
+      "userId": "1766944218991"
+    },
+    {
+      "id": "txn-02957bac-2ac6-4ada-b67b-5faa9adc6982",
+      "title": "user 2",
+      "amount": 23232,
+      "type": "expense",
+      "category": "ctg-8c021558-e3b7-4b0e-9a78-f5748b0d3b6b",
+      "date": "2026-01-08",
+      "paymentMethod": "credit_card",
+      "status": "completed",
+      "notes": "",
+      "tags": [],
+      "userId": "user-9327081c-48d4-4fd0-b446-5c1b0dac6841"
+    }
+  ],
   "users": [
     {
       "id": "1766944218991",
@@ -25,7 +52,32 @@
       "trialStartDate": "2025-12-28T17:50:18.949Z",
       "trialEndDate": "2026-01-27T17:50:18.949Z",
       "status": "active",
-      "lastLogin": "2026-01-06T06:29:26.496Z"
+      "lastLogin": "2026-01-08T10:22:42.802Z"
+    },
+    {
+      "id": "user-9327081c-48d4-4fd0-b446-5c1b0dac6841",
+      "firstName": "USER ",
+      "lastName": "TWO",
+      "email": "user@c.cc",
+      "password": "MTIzMTIzMTIz",
+      "termsAccepted": true,
+      "phone": "21323",
+      "country": "US",
+      "currency": "USD",
+      "initials": "UT",
+      "goals": [
+        "track_spending",
+        "budget_better"
+      ],
+      "newsletter": true,
+      "experience": "intermediate",
+      "status": "active",
+      "lastLogin": null,
+      "createdAt": "2026-01-08T10:33:52.343Z",
+      "accountId": "MF1767868432343841",
+      "premiumTrial": true,
+      "trialStartDate": "2026-01-08T10:33:52.343Z",
+      "trialEndDate": "2026-02-07T10:33:52.343Z"
     }
   ],
   "categories": [

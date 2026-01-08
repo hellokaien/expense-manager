@@ -127,7 +127,7 @@ class AuthManager {
             // Check if user already exists
             const checkResponse = await fetch(`${API_BASE_URL}/users?email=${encodeURIComponent(userData.email)}`);
             const existingUsers = await checkResponse.json();
-            
+            const userId = `user-${crypto.randomUUID()}`;
             if (existingUsers.length > 0) {
                 throw new Error('An account with this email already exists');
             }
@@ -135,7 +135,7 @@ class AuthManager {
             // Create complete user object
             const completeUserData = {
                 ...userData,
-                id: String(Date.now()),
+                id: userId,
                 status: 'active',
                 lastLogin: null,
                 password: btoa(userData.password), // Encode password
