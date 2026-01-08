@@ -1237,7 +1237,13 @@
     async function fetchTransactions() {
         try {
             loadingState.classList.remove('hidden');
-            const response = await fetch(`${API_BASE_URL}/transactions`);
+            const currentUser = authManager.getCurrentUser();
+            
+            if (!currentUser) {
+                throw new Error('User not authenticated');
+            }
+            
+            const response = await fetch(`${API_BASE_URL}/transactions?userId=${currentUser.id}`);
             if (!response.ok) throw new Error('Failed to fetch transactions');
             
             transactions = await response.json();
