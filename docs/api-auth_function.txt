@@ -1,0 +1,636 @@
+Here's what `api.js` and `auth.js` should contain:
+
+## **1. `api.js` - Base API Service**
+
+```javascript
+// src/shared/services/api.js
+
+class ApiService {
+    constructor(baseURL = 'http://localhost:3000') {
+        this.baseURL = baseURL;
+        this.defaultHeaders = {
+            'Content-Type': 'application/json',
+        };
+    }
+
+    /**
+     * Set authentication token for all requests
+     * @param {string} token - JWT token
+     */
+    setAuthToken(token) {
+        this.defaultHeaders['Authorization'] = `Bearer ${token}`;
+    }
+
+    /**
+     * Clear authentication token
+     */
+    clearAuthToken() {
+        delete this.defaultHeaders['Authorization'];
+    }
+
+    /**
+     * Generic request handler
+     * @private
+     */
+    async _request(endpoint, options = {}) {
+        const url = `${this.baseURL}${endpoint}`;
+        
+        const config = {
+            ...options,
+            headers: {
+                ...this.defaultHeaders,
+                ...options.headers,
+            },
+        };
+
+        try {
+            const response = await fetch(url, config);
+            
+            // Handle non-2xx responses
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new ApiError(
+                    `API Error: ${response.status} ${response.statusText}`,
+                    response.status,
+                    errorData
+                );
+            }
+
+            // Handle 204 No Content
+            if (response.status === 204) {
+                return null;
+            }
+
+            return await response.json();
+            
+        } catch (error) {
+            // Re-throw ApiError instances, wrap others
+            if (error instanceof ApiError) {
+                throw error;
+            }
+            
+            // Network errors, etc.
+            console.error('Network error:', error);
+            throw new ApiError(
+                'Network error: Unable to reach the server',
+                0,
+                { originalError: error.message }
+            );
+        }
+    }
+
+    // CRUD Methods
+    async get(endpoint, queryParams = {}) {
+        let url = endpoint;
+        
+        if (Object.keys(queryParams).length > 0) {
+            const params = new URLSearchParams(queryParams);
+            url += `?${params.toString()}`;
+        }
+        
+        return this._request(url, { method: 'GET' });
+    }
+
+    async post(endpoint, data = {}) {
+        return this._request(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async put(endpoint, data = {}) {
+        return this._request(endpoint, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async patch(endpoint, data = {}) {
+        return this._request(endpoint, {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+        });
+    }
+
+    async delete(endpoint) {
+        return this._request(endpoint, { method: 'DELETE' });
+    }
+
+    /**
+     * Upload file with FormData
+     */
+    async upload(endpoint, formData) {
+        const headers = { ...this.defaultHeaders };
+        delete headers['Content-Type']; // Let browser set content-type for FormData
+        
+        return this._request(endpoint, {
+            method: 'POST',
+            headers,
+            body: formData,
+        });
+    }
+}
+
+// Custom error class for API errors
+class ApiError extends Error {
+    constructor(message, status = 0, data = {}) {
+        super(message);
+        this.name = 'ApiError';
+        this.status = status;
+        this.data = data;
+        this.timestamp = new Date().toISOString();
+    }
+}
+
+export default ApiService;
+```
+
+## **2. `auth.js` - Authentication Service**
+
+```javascript
+// src/shared/services/auth.js
+
+class AuthService {
+    constructor(apiService, storageService) {
+        this.api = apiService;
+        this.storage = storageService;
+        
+        // Auth state
+        this.currentUser = null;
+        this.isAuthenticated = false;
+        
+        // Auto-initialize from storage
+        this._initFromStorage();
+    }
+
+    /**
+     * Initialize auth state from localStorage
+     * @private
+     */
+    _initFromStorage() {
+        const token = this.storage.getItem('auth_token');
+        const userData = this.storage.getItem('user_data');
+        
+        if (token && userData) {
+            try {
+                this.currentUser = JSON.parse(userData);
+                this.isAuthenticated = true;
+                this.api.setAuthToken(token);
+            } catch (error) {
+                console.error('Failed to parse stored user data:', error);
+                this._clearAuth();
+            }
+        }
+    }
+
+    /**
+     * Save auth data to storage
+     * @private
+     */
+    _saveAuthData(token, user) {
+        this.storage.setItem('auth_token', token);
+        this.storage.setItem('user_data', JSON.stringify(user));
+        this.api.setAuthToken(token);
+        this.currentUser = user;
+        this.isAuthenticated = true;
+    }
+
+    /**
+     * Clear auth data
+     * @private
+     */
+    _clearAuth() {
+        this.storage.removeItem('auth_token');
+        this.storage.removeItem('user_data');
+        this.api.clearAuthToken();
+        this.currentUser = null;
+        this.isAuthenticated = false;
+    }
+
+    /**
+     * Register new user
+     * @param {Object} userData - { email, password, name, ... }
+     */
+    async register(userData) {
+        try {
+            const response = await this.api.post('/auth/register', userData);
+            
+            if (response.token && response.user) {
+                this._saveAuthData(response.token, response.user);
+                this._emitAuthChange();
+                return { success: true, user: response.user };
+            }
+            
+            throw new Error('Invalid response from server');
+            
+        } catch (error) {
+            console.error('Registration failed:', error);
+            
+            // Handle specific error cases
+            if (error.status === 409) {
+                return { 
+                    success: false, 
+                    error: 'Email already exists' 
+                };
+            }
+            
+            return { 
+                success: false, 
+                error: error.data?.message || 'Registration failed' 
+            };
+        }
+    }
+
+    /**
+     * Login user
+     * @param {string} email 
+     * @param {string} password 
+     */
+    async login(email, password) {
+        try {
+            const response = await this.api.post('/auth/login', { email, password });
+            
+            if (response.token && response.user) {
+                this._saveAuthData(response.token, response.user);
+                this._emitAuthChange();
+                return { success: true, user: response.user };
+            }
+            
+            throw new Error('Invalid response from server');
+            
+        } catch (error) {
+            console.error('Login failed:', error);
+            
+            if (error.status === 401) {
+                return { 
+                    success: false, 
+                    error: 'Invalid email or password' 
+                };
+            }
+            
+            return { 
+                success: false, 
+                error: error.data?.message || 'Login failed' 
+            };
+        }
+    }
+
+    /**
+     * Logout user
+     */
+    logout() {
+        // Optionally call logout endpoint if needed
+        // await this.api.post('/auth/logout');
+        
+        this._clearAuth();
+        this._emitAuthChange();
+        return { success: true };
+    }
+
+    /**
+     * Get current user data (with optional refresh)
+     */
+    async getCurrentUser(refresh = false) {
+        if (!this.isAuthenticated) {
+            return null;
+        }
+
+        if (refresh) {
+            try {
+                const userData = await this.api.get('/auth/me');
+                this.currentUser = userData;
+                this.storage.setItem('user_data', JSON.stringify(userData));
+                return userData;
+            } catch (error) {
+                console.error('Failed to refresh user data:', error);
+                // If token is invalid, logout
+                if (error.status === 401) {
+                    this.logout();
+                }
+                return this.currentUser;
+            }
+        }
+
+        return this.currentUser;
+    }
+
+    /**
+     * Update user profile
+     */
+    async updateProfile(userData) {
+        try {
+            const updatedUser = await this.api.patch('/auth/profile', userData);
+            this.currentUser = { ...this.currentUser, ...updatedUser };
+            this.storage.setItem('user_data', JSON.stringify(this.currentUser));
+            this._emitAuthChange();
+            return { success: true, user: this.currentUser };
+        } catch (error) {
+            console.error('Profile update failed:', error);
+            return { 
+                success: false, 
+                error: error.data?.message || 'Update failed' 
+            };
+        }
+    }
+
+    /**
+     * Change password
+     */
+    async changePassword(currentPassword, newPassword) {
+        try {
+            await this.api.post('/auth/change-password', {
+                currentPassword,
+                newPassword
+            });
+            return { success: true };
+        } catch (error) {
+            console.error('Password change failed:', error);
+            return { 
+                success: false, 
+                error: error.data?.message || 'Password change failed' 
+            };
+        }
+    }
+
+    /**
+     * Request password reset
+     */
+    async requestPasswordReset(email) {
+        try {
+            await this.api.post('/auth/forgot-password', { email });
+            return { success: true };
+        } catch (error) {
+            // Don't reveal if email exists or not for security
+            console.error('Password reset request failed:', error);
+            return { 
+                success: false, 
+                error: 'If an account exists, you will receive reset instructions' 
+            };
+        }
+    }
+
+    /**
+     * Reset password with token
+     */
+    async resetPassword(token, newPassword) {
+        try {
+            await this.api.post('/auth/reset-password', {
+                token,
+                newPassword
+            });
+            return { success: true };
+        } catch (error) {
+            console.error('Password reset failed:', error);
+            return { 
+                success: false, 
+                error: error.data?.message || 'Invalid or expired reset token' 
+            };
+        }
+    }
+
+    /**
+     * Event system for auth state changes
+     */
+    _listeners = new Set();
+    
+    onAuthChange(callback) {
+        this._listeners.add(callback);
+        return () => this._listeners.delete(callback);
+    }
+    
+    _emitAuthChange() {
+        this._listeners.forEach(callback => {
+            try {
+                callback({
+                    isAuthenticated: this.isAuthenticated,
+                    user: this.currentUser
+                });
+            } catch (error) {
+                console.error('Auth change listener error:', error);
+            }
+        });
+    }
+
+    /**
+     * Check if user has specific role/permission
+     */
+    hasRole(role) {
+        return this.currentUser?.roles?.includes(role) || false;
+    }
+
+    /**
+     * Check if user has permission
+     */
+    hasPermission(permission) {
+        return this.currentUser?.permissions?.includes(permission) || false;
+    }
+}
+
+export default AuthService;
+```
+
+## **3. `storage.js` - Storage Service Abstraction**
+
+```javascript
+// src/shared/services/storage.js
+
+class StorageService {
+    constructor() {
+        this.prefix = 'moneyflow_';
+        this.testStorage();
+    }
+
+    /**
+     * Test if localStorage is available
+     */
+    testStorage() {
+        try {
+            const testKey = `${this.prefix}_test`;
+            localStorage.setItem(testKey, 'test');
+            localStorage.removeItem(testKey);
+            this.storageAvailable = true;
+        } catch (error) {
+            console.warn('localStorage not available:', error);
+            this.storageAvailable = false;
+            this.memoryStorage = {};
+        }
+    }
+
+    /**
+     * Get item from storage
+     */
+    getItem(key) {
+        const fullKey = `${this.prefix}${key}`;
+        
+        if (!this.storageAvailable) {
+            return this.memoryStorage[fullKey] || null;
+        }
+
+        try {
+            const value = localStorage.getItem(fullKey);
+            return value ? JSON.parse(value) : null;
+        } catch (error) {
+            console.error(`Failed to get item ${key}:`, error);
+            return null;
+        }
+    }
+
+    /**
+     * Set item in storage
+     */
+    setItem(key, value) {
+        const fullKey = `${this.prefix}${key}`;
+        
+        if (!this.storageAvailable) {
+            this.memoryStorage[fullKey] = value;
+            return;
+        }
+
+        try {
+            const serialized = JSON.stringify(value);
+            localStorage.setItem(fullKey, serialized);
+        } catch (error) {
+            console.error(`Failed to set item ${key}:`, error);
+        }
+    }
+
+    /**
+     * Remove item from storage
+     */
+    removeItem(key) {
+        const fullKey = `${this.prefix}${key}`;
+        
+        if (!this.storageAvailable) {
+            delete this.memoryStorage[fullKey];
+            return;
+        }
+
+        try {
+            localStorage.removeItem(fullKey);
+        } catch (error) {
+            console.error(`Failed to remove item ${key}:`, error);
+        }
+    }
+
+    /**
+     * Clear all app storage
+     */
+    clear() {
+        if (!this.storageAvailable) {
+            this.memoryStorage = {};
+            return;
+        }
+
+        try {
+            // Only remove items with our prefix
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith(this.prefix)) {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+        } catch (error) {
+            console.error('Failed to clear storage:', error);
+        }
+    }
+
+    /**
+     * Get all keys with our prefix
+     */
+    getAllKeys() {
+        if (!this.storageAvailable) {
+            return Object.keys(this.memoryStorage)
+                .map(key => key.replace(this.prefix, ''));
+        }
+
+        try {
+            const keys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith(this.prefix)) {
+                    keys.push(key.replace(this.prefix, ''));
+                }
+            }
+            return keys;
+        } catch (error) {
+            console.error('Failed to get storage keys:', error);
+            return [];
+        }
+    }
+}
+
+// Export singleton instance
+export default new StorageService();
+```
+
+## **4. Updated `serviceManager.js`**
+
+```javascript
+// src/shared/services/serviceManager.js
+
+import ApiService from './api.js';
+import AuthService from './auth.js';
+import StorageService from './storage.js';
+import CategoryService from './data/categoryService.js';
+import TransactionService from './data/transactionService.js';
+
+class ServiceManager {
+    constructor() {
+        if (!ServiceManager.instance) {
+            // Initialize core services
+            this.api = new ApiService(import.meta.env?.VITE_API_URL || 'http://localhost:3000');
+            this.storage = StorageService;
+            this.auth = new AuthService(this.api, this.storage);
+            
+            // Initialize data services
+            this.categories = new CategoryService(this.api);
+            this.transactions = new TransactionService(this.api);
+            this.budgets = new BudgetService(this.api);
+            this.analytics = new AnalyticsService(this.api);
+            
+            ServiceManager.instance = this;
+        }
+        
+        return ServiceManager.instance;
+    }
+
+    static getInstance() {
+        if (!ServiceManager.instance) {
+            ServiceManager.instance = new ServiceManager();
+        }
+        return ServiceManager.instance;
+    }
+
+    /**
+     * Initialize app with config
+     */
+    initialize(config = {}) {
+        if (config.apiUrl) {
+            this.api.baseURL = config.apiUrl;
+        }
+        
+        if (config.authToken) {
+            this.api.setAuthToken(config.authToken);
+        }
+        
+        return this;
+    }
+}
+
+// Export singleton
+export default ServiceManager.getInstance();
+```
+
+## **Key Benefits of This Structure:**
+
+1. **Separation of Concerns**: Each service handles one specific responsibility
+2. **Centralized Error Handling**: All API errors are handled consistently
+3. **Authentication Management**: Token handling is automatic
+4. **Storage Abstraction**: Works even if localStorage is unavailable
+5. **Event System**: Components can listen for auth state changes
+6. **Easy Testing**: Each service can be mocked independently
+
+This setup will eliminate code duplication and provide a solid foundation for your application's data layer.

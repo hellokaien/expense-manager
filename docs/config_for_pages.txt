@@ -1,0 +1,192 @@
+Your folder structure is good, but you need to add a **shared services layer** to handle data fetching and business logic that's used across multiple modules. Here's what I recommend adding/modifying:
+
+## 1. **Add Shared Services for Data Operations**
+
+```
+src/shared/services/
+├── api.js              # Existing
+├── auth.js             # Existing
+├── storage.js          # Existing
+├── categoryService.js  # NEW: Handle all category operations
+├── transactionService.js # NEW: Handle all transaction operations
+├── budgetService.js    # NEW: Handle all budget operations
+└── analyticsService.js # NEW: Handle analytics calculations
+```
+
+### Example: `categoryService.js`
+```javascript
+// src/shared/services/categoryService.js
+
+class CategoryService {
+    constructor(apiService) {
+        this.api = apiService;
+        this.cache = {
+            categories: null,
+            lastFetch: null,
+            cacheDuration: 5 * 60 * 1000 // 5 minutes
+        };
+    }
+
+    async getCategories(forceRefresh = false) {
+        // Return cached data if valid
+        if (!forceRefresh && 
+            this.cache.categories && 
+            Date.now() - this.cache.lastFetch < this.cache.cacheDuration) {
+            return this.cache.categories;
+        }
+
+        try {
+            const categories = await this.api.get('/categories');
+            this.cache.categories = categories;
+            this.cache.lastFetch = Date.now();
+            return categories;
+        } catch (error) {
+            console.error('Failed to fetch categories:', error);
+            throw error;
+        }
+    }
+
+    async getCategoryById(id) {
+        const categories = await this.getCategories();
+        return categories.find(cat => cat.id === id);
+    }
+
+    async createCategory(categoryData) {
+        const newCategory = await this.api.post('/categories', categoryData);
+        this.cache.categories = null; // Invalidate cache
+        return newCategory;
+    }
+
+    async updateCategory(id, updates) {
+        const updated = await this.api.patch(`/categories/${id}`, updates);
+        this.cache.categories = null;
+        return updated;
+    }
+
+    async deleteCategory(id) {
+        await this.api.delete(`/categories/${id}`);
+        this.cache.categories = null;
+    }
+}
+```
+
+## 2. **Add a Service Manager/Facade**
+
+```
+src/shared/services/
+├── serviceManager.js   # NEW: Central service coordinator
+```
+
+### Example: `serviceManager.js`
+```javascript
+// src/shared/services/serviceManager.js
+
+import ApiService from './api.js';
+import CategoryService from './categoryService.js';
+import TransactionService from './transactionService.js';
+import BudgetService from './budgetService.js';
+
+class ServiceManager {
+    constructor() {
+        if (!ServiceManager.instance) {
+            this.api = new ApiService();
+            this.categoryService = new CategoryService(this.api);
+            this.transactionService = new TransactionService(this.api);
+            this.budgetService = new BudgetService(this.api);
+            this.analyticsService = new AnalyticsService(this.api);
+            
+            ServiceManager.instance = this;
+        }
+        
+        return ServiceManager.instance;
+    }
+
+    static getInstance() {
+        if (!ServiceManager.instance) {
+            ServiceManager.instance = new ServiceManager();
+        }
+        return ServiceManager.instance;
+    }
+}
+
+export default ServiceManager.getInstance();
+```
+
+## 3. **Update Your Module Structure**
+
+```
+src/shared/services/
+├── api.js                    # Base API service (already exists)
+├── auth.js                   # Auth service (already exists)
+├── storage.js                # Storage service (already exists)
+├── serviceManager.js         # Service facade
+├── data/
+│   ├── categoryService.js    # Category-specific operations
+│   ├── transactionService.js # Transaction-specific operations
+│   ├── budgetService.js      # Budget-specific operations
+│   └── analyticsService.js   # Analytics calculations
+└── utilities/
+    ├── cacheManager.js       # Centralized caching
+    ├── validationService.js  # Shared validation rules
+    └── formatterService.js   # Data formatting utilities
+```
+
+## 4. **Usage Example in Modules**
+
+```javascript
+// In any module (dashboard.js, transactions.js, etc.)
+
+import ServiceManager from '../shared/services/serviceManager.js';
+
+class Dashboard {
+    constructor() {
+        this.services = ServiceManager;
+    }
+
+    async init() {
+        // Now all modules use the same service
+        const categories = await this.services.categoryService.getCategories();
+        const transactions = await this.services.transactionService.getRecentTransactions();
+        // ... rest of your code
+    }
+}
+```
+
+## 5. **Add Constants and Configuration**
+
+```
+src/shared/
+├── constants/
+│   ├── apiEndpoints.js      # API endpoint definitions
+│   ├── cacheKeys.js         # Cache key constants
+│   └── validationRules.js   # Shared validation rules
+└── config/
+    ├── appConfig.js         # App-wide configuration
+    └── featureFlags.js      # Feature toggles
+```
+
+## 6. **Benefits of This Approach**
+
+1. **Single Source of Truth**: All category operations go through `categoryService.js`
+2. **Centralized Caching**: Avoid duplicate API calls across modules
+3. **Easy Maintenance**: Update logic in one place
+4. **Consistent Error Handling**: All services handle errors the same way
+5. **Better Testing**: Services can be unit tested independently
+
+## 7. **Quick Start Implementation**
+
+Here's how to implement this step by step:
+
+1. **Create the base services**:
+   - `categoryService.js`
+   - `transactionService.js`
+   - `budgetService.js`
+
+2. **Create the service manager**:
+   - `serviceManager.js`
+
+3. **Update your existing modules** to import from the service manager instead of writing their own fetch logic.
+
+4. **Add caching layer** to prevent duplicate requests.
+
+This structure will eliminate the duplication you're experiencing while keeping your code organized and maintainable.
