@@ -1,6 +1,6 @@
-// auth.js - Shared authentication utilities
-
-const API_BASE_URL = 'http://localhost:3000';
+// src/auth/auth.js
+import { STORAGE_KEYS, getInitials } from '../shared/utils.js';
+import apiService from '../shared/apiService.js';
 
 class AuthManager {
     constructor() {
@@ -8,11 +8,10 @@ class AuthManager {
         this.isAuthenticated = false;
     }
 
-    // Check if user is logged in
     async checkAuthStatus() {
         try {
-            const isLoggedIn = localStorage.getItem('moneyflow_logged_in');
-            const userId = localStorage.getItem('moneyflow_user_id');
+            const isLoggedIn = localStorage.getItem(STORAGE_KEYS.LOGGED_IN);
+            const userId = localStorage.getItem(STORAGE_KEYS.USER_ID);
             
             if (isLoggedIn !== 'true' || !userId) {
                 this.logout();
@@ -20,9 +19,9 @@ class AuthManager {
             }
 
             // Check session expiration
-            const rememberMe = localStorage.getItem('moneyflow_remember_me');
+            const rememberMe = localStorage.getItem(STORAGE_KEYS.REMEMBER_ME);
             if (rememberMe !== 'true') {
-                const expiry = localStorage.getItem('moneyflow_session_expiry');
+                const expiry = localStorage.getItem(STORAGE_KEYS.SESSION_EXPIRY);
                 if (expiry && new Date() > new Date(expiry)) {
                     this.logout();
                     return false;
@@ -30,13 +29,12 @@ class AuthManager {
             }
 
             // Fetch user data from API
-            const response = await fetch(`${API_BASE_URL}/users/${userId}`);
-            
-            if (response.ok) {
-                this.currentUser = await response.json();
+            try {
+                this.currentUser = await apiService.getUser(userId);
                 this.isAuthenticated = true;
                 return true;
-            } else {
+            } catch (error) {
+                console.error('Failed to fetch user:', error);
                 this.logout();
                 return false;
             }
@@ -47,12 +45,10 @@ class AuthManager {
         }
     }
 
-    // Login user
     async login(email, password, rememberMe = false) {
         try {
-            // Check credentials against JSON Server
-            const response = await fetch(`${API_BASE_URL}/users?email=${encodeURIComponent(email)}`);
-            const users = await response.json();
+            // Get user by email
+            const users = await apiService.getUserByEmail(email);
             
             if (users.length === 0) {
                 throw new Error('No account found with this email');
@@ -60,7 +56,8 @@ class AuthManager {
             
             const user = users[0];
             
-            // Check password
+            // TODO: Replace btoa with proper password hashing
+            // For now, keeping btoa for compatibility, but this should be changed
             const encodedPassword = btoa(password);
             
             if (user.password !== encodedPassword) {
@@ -68,14 +65,8 @@ class AuthManager {
             }
 
             // Update last login
-            await fetch(`${API_BASE_URL}/users/${user.id}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    lastLogin: new Date().toISOString()
-                })
+            await apiService.updateUser(user.id, {
+                lastLogin: new Date().toISOString()
             });
 
             // Store user data
@@ -97,48 +88,24 @@ class AuthManager {
         }
     }
 
-    // Demo login
-    demoLogin(rememberMe = false) {
-        const demoUser = {
-            id: 'demo-user-001',
-            firstName: 'Demo',
-            lastName: 'User',
-            email: 'demo@moneyflow.com',
-            accountId: 'MFDEMO001',
-            initials: 'DU',
-            premiumTrial: true,
-            currency: 'USD',
-            country: 'US'
-        };
-        
-        this.saveUserToLocalStorage(demoUser, rememberMe);
-        this.currentUser = demoUser;
-        this.isAuthenticated = true;
-        
-        return {
-            success: true,
-            user: demoUser
-        };
-    }
-
-    // Register new user
     async register(userData) {
         try {
             // Check if user already exists
-            const checkResponse = await fetch(`${API_BASE_URL}/users?email=${encodeURIComponent(userData.email)}`);
-            const existingUsers = await checkResponse.json();
-            const userId = `user-${crypto.randomUUID()}`;
+            const existingUsers = await apiService.getUserByEmail(userData.email);
+            
             if (existingUsers.length > 0) {
                 throw new Error('An account with this email already exists');
             }
 
+            const userId = `user-${crypto.randomUUID()}`;
+            
             // Create complete user object
             const completeUserData = {
                 ...userData,
                 id: userId,
                 status: 'active',
                 lastLogin: null,
-                password: btoa(userData.password), // Encode password
+                password: btoa(userData.password), // TODO: Use proper hashing
                 createdAt: new Date().toISOString(),
                 accountId: 'MF' + Date.now() + Math.floor(Math.random() * 1000),
                 premiumTrial: true,
@@ -146,31 +113,19 @@ class AuthManager {
                 trialEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
             };
 
-            // Save to JSON Server
-            const response = await fetch(`${API_BASE_URL}/users`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(completeUserData)
-            });
-
-            if (response.ok) {
-                const savedUser = await response.json();
-                
-                // Store in localStorage
-                this.saveUserToLocalStorage(savedUser, false);
-                
-                this.currentUser = savedUser;
-                this.isAuthenticated = true;
-                
-                return {
-                    success: true,
-                    user: savedUser
-                };
-            } else {
-                throw new Error('Failed to create account');
-            }
+            // Save to API
+            const savedUser = await apiService.createUser(completeUserData);
+            
+            // Store in localStorage
+            this.saveUserToLocalStorage(savedUser, false);
+            
+            this.currentUser = savedUser;
+            this.isAuthenticated = true;
+            
+            return {
+                success: true,
+                user: savedUser
+            };
             
         } catch (error) {
             return {
@@ -180,7 +135,6 @@ class AuthManager {
         }
     }
 
-    // Save user to localStorage
     saveUserToLocalStorage(user, rememberMe = false) {
         const userData = {
             id: user.id,
@@ -188,58 +142,52 @@ class AuthManager {
             lastName: user.lastName,
             email: user.email,
             accountId: user.accountId,
-            initials: user.initials || this.getInitials(user.firstName, user.lastName),
+            initials: user.initials || getInitials(user.firstName, user.lastName),
             premiumTrial: user.premiumTrial,
             currency: user.currency || 'USD',
             country: user.country || 'US',
             avatar: user.avatar || null
         };
 
-        localStorage.setItem('moneyflow_user', JSON.stringify(userData));
-        localStorage.setItem('moneyflow_logged_in', 'true');
-        localStorage.setItem('moneyflow_user_id', user.id);
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
+        localStorage.setItem(STORAGE_KEYS.LOGGED_IN, 'true');
+        localStorage.setItem(STORAGE_KEYS.USER_ID, user.id);
 
         if (rememberMe) {
-            localStorage.setItem('moneyflow_remember_me', 'true');
+            localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
             const expirationDate = new Date();
             expirationDate.setDate(expirationDate.getDate() + 30);
-            localStorage.setItem('moneyflow_session_expiry', expirationDate.toISOString());
+            localStorage.setItem(STORAGE_KEYS.SESSION_EXPIRY, expirationDate.toISOString());
         } else {
-            localStorage.removeItem('moneyflow_remember_me');
-            localStorage.removeItem('moneyflow_session_expiry');
+            localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
+            localStorage.removeItem(STORAGE_KEYS.SESSION_EXPIRY);
         }
 
         this.forceLocalStorageSync();
     }
 
-    // Logout
     logout() {
-        localStorage.removeItem('moneyflow_user');
-        localStorage.removeItem('moneyflow_logged_in');
-        localStorage.removeItem('moneyflow_user_id');
-        localStorage.removeItem('moneyflow_remember_me');
-        localStorage.removeItem('moneyflow_session_expiry');
+        Object.values(STORAGE_KEYS).forEach(key => {
+            localStorage.removeItem(key);
+        });
         
         this.currentUser = null;
         this.isAuthenticated = false;
     }
 
-    // Get current user
     getCurrentUser() {
         if (!this.currentUser) {
-            const userStr = localStorage.getItem('moneyflow_user');
+            const userStr = localStorage.getItem(STORAGE_KEYS.USER);
             if (userStr) {
                 this.currentUser = JSON.parse(userStr);
-                this.isAuthenticated = localStorage.getItem('moneyflow_logged_in') === 'true';
+                this.isAuthenticated = localStorage.getItem(STORAGE_KEYS.LOGGED_IN) === 'true';
             }
         }
         return this.currentUser;
     }
 
-    // Helper methods
     getInitials(firstName, lastName) {
-        if (!firstName || !lastName) return 'MF';
-        return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+        return getInitials(firstName, lastName);
     }
 
     forceLocalStorageSync() {
