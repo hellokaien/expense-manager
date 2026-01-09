@@ -52,7 +52,7 @@
       "trialStartDate": "2025-12-28T17:50:18.949Z",
       "trialEndDate": "2026-01-27T17:50:18.949Z",
       "status": "active",
-      "lastLogin": "2026-01-08T10:22:42.802Z"
+      "lastLogin": "2026-01-08T17:07:48.696Z"
     },
     {
       "id": "user-9327081c-48d4-4fd0-b446-5c1b0dac6841",
@@ -82,7 +82,8 @@
   ],
   "categories": [
     {
-      "id": "ctg-d0bf0ba2-9f21-4244-bc0c-54f7d07151b4",
+      "id": "ctg-e79a9b4f-653d-4bee-848e-ba35b3104684",
+      "userId": "user-9327081c-48d4-4fd0-b446-5c1b0dac6841",
       "name": "Food & Dining",
       "type": "expense",
       "subtype": "essential",
@@ -90,7 +91,7 @@
       "color": "#f59e0b",
       "transactions_count": 0,
       "totalAmount": 0,
-      "lastUsed": "2026-01-03",
+      "lastUsed": "2026-01-08",
       "monthlyAverage": 0,
       "description": "",
       "budget": null,
@@ -98,7 +99,8 @@
       "order": 1
     },
     {
-      "id": "ctg-8c021558-e3b7-4b0e-9a78-f5748b0d3b6b",
+      "id": "ctg-3e2c6651-7309-4d0d-b007-afd981450b2a",
+      "userId": "1766944218991",
       "name": "Transportation",
       "type": "expense",
       "subtype": "essential",
@@ -106,44 +108,12 @@
       "color": "#3b82f6",
       "transactions_count": 0,
       "totalAmount": 0,
-      "lastUsed": "2026-01-03",
+      "lastUsed": "2026-01-08",
       "monthlyAverage": 0,
       "description": "",
       "budget": null,
       "isCustom": false,
-      "order": 2
-    },
-    {
-      "id": "ctg-abf1b582-092d-4322-9f1a-b9148963818d",
-      "name": "Salary",
-      "type": "income",
-      "subtype": "essential",
-      "icon": "money-bill-wave",
-      "color": "#10b981",
-      "transactions_count": 1,
-      "totalAmount": 12,
-      "lastUsed": "2026-01-03",
-      "monthlyAverage": 0,
-      "description": "",
-      "budget": null,
-      "isCustom": false,
-      "order": 3
-    },
-    {
-      "id": "ctg-31585733-0de9-4928-8346-271b64905825",
-      "name": "Shopee",
-      "type": "expense",
-      "subtype": "other",
-      "icon": "shopping-bag",
-      "color": "#ef4444",
-      "transactions_count": 0,
-      "totalAmount": 0,
-      "lastUsed": "2026-01-03",
-      "monthlyAverage": 0,
-      "description": "Items purchased in shoppee.",
-      "budget": null,
-      "isCustom": false,
-      "order": 4
+      "order": 1
     }
   ]
 }

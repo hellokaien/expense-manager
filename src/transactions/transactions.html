@@ -1007,7 +1007,13 @@
     
     async function fetchCategories() {
         try {
-            const response = await fetch(`${API_BASE_URL}/categories`);
+            const currentUser = authManager.getCurrentUser();
+            
+            if (!currentUser) {
+                throw new Error('User not authenticated');
+            }
+            
+            const response = await fetch(`${API_BASE_URL}/categories?userId=${currentUser.id}`);
             if (!response.ok) throw new Error('Failed to fetch categories');
             
             allCategories = await response.json();

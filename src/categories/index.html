@@ -894,7 +894,13 @@
         async function fetchCategories() {
             try {
                 loadingState.classList.remove('hidden');
-                const response = await fetch(`${API_BASE_URL}/categories`);
+                const currentUser = authManager.getCurrentUser();
+            
+                if (!currentUser) {
+                    throw new Error('User not authenticated');
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/categories?userId=${currentUser.id}`);
                 if (!response.ok) throw new Error('Failed to fetch categories');
                 
                 categories = await response.json();
@@ -1458,6 +1464,7 @@
                     const categoryId = `ctg-${crypto.randomUUID()}`;
                     const categoryData = {
                         id: categoryId,
+                        userId: authManager.getCurrentUser().id,
                         name: name,
                         type: type,
                         subtype: subtype,
