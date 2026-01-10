@@ -199,3 +199,6 @@ class AuthManager {
 
 // Create singleton instance
 const authManager = new AuthManager();
+
+// Export for use in other modules
+export default authManager;
