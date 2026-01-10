@@ -65,7 +65,7 @@
       "trialStartDate": "2025-12-28T17:50:18.949Z",
       "trialEndDate": "2026-01-27T17:50:18.949Z",
       "status": "active",
-      "lastLogin": "2026-01-10T18:10:07.347Z"
+      "lastLogin": "2026-01-10T18:45:20.158Z"
     },
     {
       "id": "user-9327081c-48d4-4fd0-b446-5c1b0dac6841",
@@ -117,7 +117,7 @@
       "name": "Transportation",
       "type": "expense",
       "subtype": "essential",
-      "icon": "car",
+      "icon": "home",
       "color": "#3b82f6",
       "transactions_count": 0,
       "totalAmount": 0,
@@ -127,6 +127,40 @@
       "budget": null,
       "isCustom": false,
       "order": 1
+    },
+    {
+      "id": "ctg-397b6013-6966-4a4c-bd30-07b43bdcb2d4",
+      "userId": "1766944218991",
+      "name": "Salary",
+      "type": "income",
+      "subtype": "essential",
+      "icon": "money-bill-wave",
+      "color": "#10b981",
+      "transactions_count": 0,
+      "totalAmount": 0,
+      "lastUsed": "2026-01-10",
+      "monthlyAverage": 0,
+      "description": "",
+      "budget": null,
+      "isCustom": false,
+      "order": 2
+    },
+    {
+      "id": "ctg-e4e447e5-cc44-4453-aa45-a70ea2d73a7f",
+      "userId": "1766944218991",
+      "name": "Shoppee",
+      "type": "expense",
+      "subtype": "other",
+      "icon": "shopping-bag",
+      "color": "#ef4444",
+      "transactions_count": 0,
+      "totalAmount": 0,
+      "lastUsed": "2026-01-10",
+      "monthlyAverage": 0,
+      "description": "",
+      "budget": null,
+      "isCustom": false,
+      "order": 3
     }
   ]
 }
