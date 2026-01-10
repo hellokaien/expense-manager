@@ -1,6 +1,8 @@
-import {  API_BASE_URL } from '../shared/utils.js';
+import { showNotification, API_BASE_URL, getInitials } from '../shared/utils.js';
 import authManager from '../auth/auth.js';
 import categoryService from '../shared/services/categoryService.js';
+import transactionService from '../shared/services/transactionService.js';  
+import { logout } from '../app.js';
 
 // Payment method labels
 const paymentMethods = {
@@ -73,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
 
         const currentUser = authManager.getCurrentUser();
-        console.log('Current user:', currentUser);
+        //console.log('Current user:', currentUser);
 
         await fetchCategories();      
           
@@ -165,24 +167,10 @@ async function loadTransactions() {
     renderTransactions();
 }
 
-function generateSampleTransactions() {
-    // Generate sample transactions for demo
-    return [
-        { id: 1, userId: currentUser.id, title: "Monthly Salary", amount: 3800, type: "income", category: "salary", date: "2023-05-01", description: "Monthly paycheck" },
-        { id: 2, userId: currentUser.id, title: "Grocery Shopping", amount: 145.50, type: "expense", category: "food", date: "2023-05-03", description: "Weekly groceries" },
-        { id: 3, userId: currentUser.id, title: "Netflix Subscription", amount: 15.99, type: "expense", category: "entertainment", date: "2023-05-05", description: "Monthly subscription" },
-        { id: 4, userId: currentUser.id, title: "Freelance Project", amount: 450, type: "income", category: "freelance", date: "2023-05-08", description: "Website design project" },
-        { id: 5, userId: currentUser.id, title: "Gas Bill", amount: 85.25, type: "expense", category: "bills", date: "2023-05-10", description: "Monthly gas bill" },
-        { id: 6, userId: currentUser.id, title: "Uber Rides", amount: 62.30, type: "expense", category: "transport", date: "2023-05-12", description: "Transportation for the week" },
-        { id: 7, userId: currentUser.id, title: "New Headphones", amount: 129.99, type: "expense", category: "shopping", date: "2023-05-15", description: "Bought new headphones" },
-        { id: 8, userId: currentUser.id, title: "Dividend Payment", amount: 250, type: "income", category: "investment", date: "2023-05-18", description: "Stock dividends" }
-    ];
-}
-
 function updateUserInfo(currentUser) {
 
     if (!currentUser) return;
-    console.log(currentUser);
+    //console.log(currentUser);
     // Get user initials
     const firstName = currentUser.firstName || 'John';
     const lastName = currentUser.lastName || 'Doe';
@@ -920,25 +908,13 @@ function updateCharts() {
     }
 }
 
-function getInitials(firstName, lastName) {
-    if (!firstName || !lastName) return 'MF';
-    return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
-}
-
 async function fetchTransactions() {
     try {
         loadingState.classList.remove('hidden');
-        const currentUser = authManager.getCurrentUser();
         
-        if (!currentUser) {
-            throw new Error('User not authenticated');
-        }
+        // Use transactionService - it handles auth and API calls automatically!
+        transactions = await transactionService.getTransactions();
         
-        const response = await fetch(`${API_BASE_URL}/transactions?userId=${currentUser.id}`);
-        if (!response.ok) throw new Error('Failed to fetch transactions');
-        
-        transactions = await response.json();
-        console.log(transactions);
         return transactions;
     } catch (error) {
         console.error('Error fetching transactions:', error);
@@ -989,16 +965,7 @@ function getCategoryColorClass(color) {
 }
 async function fetchCategories() {
     try {
-        const currentUser = authManager.getCurrentUser();
-        
-        if (!currentUser) {
-            throw new Error('User not authenticated');
-        }
-        
-        const response = await fetch(`${API_BASE_URL}/categories?userId=${currentUser.id}`);
-        if (!response.ok) throw new Error('Failed to fetch categories');
-        
-        allCategories = await response.json();
+        allCategories = await categoryService.getCategories();
         
         // Filter categories by type
         incomeCategories = allCategories.filter(category => category.type === 'income');
@@ -1017,7 +984,7 @@ async function addTransaction(transaction) {
         const transactionWithUser = {
             id: transactionId,  // ← Always include an ID
             ...transaction,
-            userId: 1 // You can change this based on your user system
+            userId: authManager.getCurrentUser().id // You can change this based on your user system
         };
         
         const response = await fetch(`${API_BASE_URL}/transactions`, {

@@ -1,12 +1,12 @@
 {
   "transactions": [
     {
-      "id": "txn-869a7981-0d0c-42e4-81d9-6217245ddd74",
-      "title": "test",
-      "amount": 123,
-      "type": "income",
-      "category": "ctg-abf1b582-092d-4322-9f1a-b9148963818d",
-      "date": "2026-01-08",
+      "id": "txn-9f43d37f-1f8f-408f-8713-991976cf06a2",
+      "title": "Test",
+      "amount": 1,
+      "type": "expense",
+      "category": "ctg-3e2c6651-7309-4d0d-b007-afd981450b2a",
+      "date": "2026-01-10",
       "paymentMethod": "credit_card",
       "status": "completed",
       "notes": "",
@@ -14,17 +14,30 @@
       "userId": "1766944218991"
     },
     {
-      "id": "txn-02957bac-2ac6-4ada-b67b-5faa9adc6982",
-      "title": "user 2",
-      "amount": 23232,
+      "id": "txn-5c94b87c-da4e-4382-90e8-984ace273c9b",
+      "title": "test 2",
+      "amount": 2,
       "type": "expense",
-      "category": "ctg-8c021558-e3b7-4b0e-9a78-f5748b0d3b6b",
-      "date": "2026-01-08",
+      "category": "ctg-3e2c6651-7309-4d0d-b007-afd981450b2a",
+      "date": "2026-01-10",
       "paymentMethod": "credit_card",
       "status": "completed",
       "notes": "",
       "tags": [],
-      "userId": "user-9327081c-48d4-4fd0-b446-5c1b0dac6841"
+      "userId": "1766944218991"
+    },
+    {
+      "id": "txn-bc8231f4-a1a8-4161-b331-3dc5bec4fbe6",
+      "title": "test 3 ",
+      "amount": 3,
+      "type": "expense",
+      "category": "ctg-3e2c6651-7309-4d0d-b007-afd981450b2a",
+      "date": "2026-01-10",
+      "paymentMethod": "credit_card",
+      "status": "completed",
+      "notes": "",
+      "tags": [],
+      "userId": "1766944218991"
     }
   ],
   "users": [
@@ -52,7 +65,7 @@
       "trialStartDate": "2025-12-28T17:50:18.949Z",
       "trialEndDate": "2026-01-27T17:50:18.949Z",
       "status": "active",
-      "lastLogin": "2026-01-10T09:20:02.143Z"
+      "lastLogin": "2026-01-10T18:10:07.347Z"
     },
     {
       "id": "user-9327081c-48d4-4fd0-b446-5c1b0dac6841",

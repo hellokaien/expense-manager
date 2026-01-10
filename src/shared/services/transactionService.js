@@ -1,4 +1,3 @@
-// src/shared/services/transactionService.js
 import apiService from '../apiService.js';
 import authManager from '../../auth/auth.js';
 
