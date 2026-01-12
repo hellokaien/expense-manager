@@ -38,6 +38,19 @@
       "notes": "",
       "tags": [],
       "userId": "1766944218991"
+    },
+    {
+      "id": "txn-fdc977f3-aa53-49a4-9e05-b3c940fb43f6",
+      "title": "Orangeapps",
+      "amount": 7500,
+      "type": "income",
+      "category": "ctg-397b6013-6966-4a4c-bd30-07b43bdcb2d4",
+      "date": "2026-01-12",
+      "paymentMethod": "credit_card",
+      "status": "completed",
+      "notes": "",
+      "tags": [],
+      "userId": "1766944218991"
     }
   ],
   "users": [
@@ -65,7 +78,7 @@
       "trialStartDate": "2025-12-28T17:50:18.949Z",
       "trialEndDate": "2026-01-27T17:50:18.949Z",
       "status": "active",
-      "lastLogin": "2026-01-12T13:48:16.369Z"
+      "lastLogin": "2026-01-12T16:54:28.749Z"
     },
     {
       "id": "user-9327081c-48d4-4fd0-b446-5c1b0dac6841",
