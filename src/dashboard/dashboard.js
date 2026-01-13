@@ -442,19 +442,19 @@ function renderTransactions(filter = 'all') {
     transactionsList.innerHTML = '';
     
     // Filter transactions if needed
-    //let filteredTransactions = transactions;
-    //if (filter !== 'all') {
-    //    filteredTransactions = transactions.filter(t => t.type === filter);
-    //}
+    let filteredTransactions = transactions;
+    if (filter !== 'all') {
+        filteredTransactions = transactions.filter(t => t.type === filter);
+    }
     
     // Sort by date (newest first)
-    //filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+    filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
     
     // Take only the last 5 transactions for the recent list
-    //const recentTransactions = filteredTransactions.slice(0, 5);
+    const recentTransactions = filteredTransactions.slice(0, 5);
     
     // Render each transaction
-    transactions.forEach(transaction => {
+    recentTransactions.forEach(transaction => {
         const transactionElement = document.createElement('div');
         transactionElement.className = `p-4 rounded-lg ${transaction.type === 'income' ? 'transaction-income bg-green-50' : 'transaction-expense bg-red-50'}`;
         
@@ -472,7 +472,7 @@ function renderTransactions(filter = 'all') {
                 <div>
                     <h4 class="font-medium text-gray-800">${transaction.title}</h4>
                     <div class="flex items-center mt-1">
-                        <span class="text-xs px-2 py-1 rounded-full mr-3 ${colorClass}">${categoryInfo}</span>
+                        <span class="text-xs px-2 py-1 rounded-full mr-3 ${colorClass}">${categoryInfo.name}</span>
                         <span class="text-gray-500 text-sm">${formattedDate}</span>
                     </div>
                 </div>
