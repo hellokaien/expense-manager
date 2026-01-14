@@ -63,7 +63,7 @@
       "termsAccepted": true,
       "createdAt": "2025-12-28T17:50:17.843Z",
       "accountId": "MF176694421784318",
-      "phone": "",
+      "phone": "0909",
       "country": "US",
       "currency": "USD",
       "initials": "TT",
@@ -78,7 +78,10 @@
       "trialStartDate": "2025-12-28T17:50:18.949Z",
       "trialEndDate": "2026-01-27T17:50:18.949Z",
       "status": "active",
-      "lastLogin": "2026-01-12T16:54:28.749Z"
+      "lastLogin": "2026-01-14T06:11:57.548Z",
+      "bio": "",
+      "location": "",
+      "dateFormat": "MM/DD/YYYY"
     },
     {
       "id": "user-9327081c-48d4-4fd0-b446-5c1b0dac6841",
@@ -104,6 +107,36 @@
       "premiumTrial": true,
       "trialStartDate": "2026-01-08T10:33:52.343Z",
       "trialEndDate": "2026-02-07T10:33:52.343Z"
+    },
+    {
+      "id": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1",
+      "firstName": "Karl Lewis",
+      "lastName": "Doctolero",
+      "email": "doctolerokt@gmail.com",
+      "password": "MTIzMTIzMTIz",
+      "termsAccepted": true,
+      "avatar": null,
+      "phone": "09427991764",
+      "country": "US",
+      "currency": "USD",
+      "initials": "KD",
+      "goals": [
+        "reduce_debt",
+        "track_spending",
+        "budget_better"
+      ],
+      "newsletter": false,
+      "experience": "beginner",
+      "status": "active",
+      "lastLogin": "2026-01-14T06:41:44.371Z",
+      "createdAt": "2026-01-14T06:16:40.881Z",
+      "accountId": "MF1768371400881812",
+      "premiumTrial": true,
+      "trialStartDate": "2026-01-14T06:16:40.881Z",
+      "trialEndDate": "2026-02-13T06:16:40.881Z",
+      "bio": "",
+      "location": "",
+      "dateFormat": "MM/DD/YYYY"
     }
   ],
   "categories": [
