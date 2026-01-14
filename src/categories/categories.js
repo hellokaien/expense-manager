@@ -572,7 +572,6 @@ async function saveCategory(e) {
             const categoryId = `ctg-${crypto.randomUUID()}`;
             const categoryData = {
                 id: categoryId,
-                userId: authManager.getCurrentUser().id,
                 name: name,
                 type: type,
                 subtype: subtype,
@@ -615,40 +614,21 @@ async function saveCategory(e) {
 
 async function addCategory(categoryData){
     try{
-        const response = await fetch(`${API_BASE_URL}/categories`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json,'
-            },
-            body: JSON.stringify(categoryData)
-        });
-
-        if (!response.ok) throw new Error('Failed to add category');
-        const newCategory = await response.json();
+        const newCategory = await categoryService.createCategory(categoryData);
         categories.push(newCategory);
         return newCategory;
     } catch (error){
-        console.error('Error adding transaction:', error);
+        console.error('Error adding category:', error);
         throw error;
     }
 }
 
 async function updateCategory(id, category){
     try {
-        const reponse = await fetch(`${API_BASE_URL}/categories/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(category)
-        });
-
-        if (!reponse.ok) throw new Error('Failed to update Category.');
-
-        const updatedCategory = await reponse.json();
+        const updatedCategory = await categoryService.updateCategory(id, category);
 
         const index = categories.findIndex(c => c.id === id);
-        if(index !=+ -1){
+        if(index !== -1){
             categories[index] = updatedCategory;
         }
 
@@ -681,47 +661,46 @@ function showDeleteConfirmation(categoryId) {
     deleteCategoryModal.classList.remove('hidden');
 }
 
-function deleteCategory() {
+async function deleteCategory() {
     const categoryId = confirmDeleteBtn.dataset.categoryId;
     
-    // Remove category from array
-    categories = categories.filter(c => c.id !== categoryId);
-    
-    // Remove from selected categories
-    selectedCategories.delete(categoryId);
-    deleteCategoryFromServerid(categoryId);
-    // Update UI
-    renderCategories();
-    
-    // Hide preview if deleted category was being viewed
-    if (selectedCategoryId === categoryId) {
-        categoryPreview.classList.add('hidden');
-        noCategorySelected.classList.remove('hidden');
-        selectedCategoryId = null;
+    try {
+        // Delete from server using service
+        await deleteCategoryFromServerid(categoryId);
+        
+        // Remove category from array
+        categories = categories.filter(c => c.id !== categoryId);
+        
+        // Remove from selected categories
+        selectedCategories.delete(categoryId);
+        
+        // Hide preview if deleted category was being viewed
+        if (selectedCategoryId === categoryId) {
+            categoryPreview.classList.add('hidden');
+            noCategorySelected.classList.remove('hidden');
+            selectedCategoryId = null;
+        }
+        
+        // Update UI
+        renderCategories();
+        
+        // Show notification
+        showNotification('Category deleted successfully!', 'warning');
+        
+        // Close modal
+        deleteCategoryModal.classList.add('hidden');
+    } catch (error) {
+        console.error('Error deleting category:', error);
+        showNotification('Failed to delete category', 'error');
     }
-    
-    // Show notification
-    showNotification('Category deleted successfully!', 'warning');
-    
-    // Close modal
-    deleteCategoryModal.classList.add('hidden');
 }
 
 async function deleteCategoryFromServerid(id){
     try {
-        const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
-            method: 'DELETE'
-        });
-        
-        if (!response.ok) throw new Error('Failed to delete categorie');
-        
-        // Remove from local array
-        //categories = categories.filter(c => c.id !== id);
-        //selectedcategories.delete(id);
-        
+        await categoryService.deleteCategory(id);
         return true;
     } catch (error) {
-        console.error('Error deleting categories:', error);
+        console.error('Error deleting category:', error);
         throw error;
     }
 }
@@ -764,28 +743,43 @@ function editSelectedCategories() {
     editCategory(categoryId);
 }
 
-function deleteSelectedCategories() {
+async function deleteSelectedCategories() {
     if (selectedCategories.size === 0) return;
     
     if (confirm(`Are you sure you want to delete ${selectedCategories.size} categor${selectedCategories.size === 1 ? 'y' : 'ies'}?`)) {
-        // Remove selected categories from array
-        categories = categories.filter(c => !selectedCategories.has(c.id));
-        
-        // Clear selected categories
-        selectedCategories.clear();
-        
-        // Update UI
-        renderCategories();
-        
-        // Hide preview if deleted categories included the viewed one
-        if (selectedCategoryId && selectedCategories.has(selectedCategoryId)) {
-            categoryPreview.classList.add('hidden');
-            noCategorySelected.classList.remove('hidden');
-            selectedCategoryId = null;
+        try {
+            const categoryIds = Array.from(selectedCategories);
+            const deletedCount = categoryIds.length;
+            
+            // Delete from server using service
+            if (categoryIds.length === 1) {
+                await categoryService.deleteCategory(categoryIds[0]);
+            } else {
+                await categoryService.deleteMultipleCategories(categoryIds);
+            }
+            
+            // Remove selected categories from array
+            categories = categories.filter(c => !selectedCategories.has(c.id));
+            
+            // Hide preview if deleted categories included the viewed one
+            if (selectedCategoryId && selectedCategories.has(selectedCategoryId)) {
+                categoryPreview.classList.add('hidden');
+                noCategorySelected.classList.remove('hidden');
+                selectedCategoryId = null;
+            }
+            
+            // Clear selected categories
+            selectedCategories.clear();
+            
+            // Update UI
+            renderCategories();
+            
+            // Show notification
+            showNotification(`${deletedCount} categor${deletedCount === 1 ? 'y' : 'ies'} deleted successfully!`, 'warning');
+        } catch (error) {
+            console.error('Error deleting categories:', error);
+            showNotification('Failed to delete categories', 'error');
         }
-        
-        // Show notification
-        showNotification(`${selectedCategories.size} categor${selectedCategories.size === 1 ? 'y' : 'ies'} deleted successfully!`, 'warning');
     }
 }
 

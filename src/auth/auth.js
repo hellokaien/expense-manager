@@ -146,7 +146,10 @@ class AuthManager {
             premiumTrial: user.premiumTrial,
             currency: user.currency || 'USD',
             country: user.country || 'US',
-            avatar: user.avatar || null
+            avatar: user.avatar || null, // Store avatar from db.json
+            phone: user.phone || null,
+            bio: user.bio || null,
+            location: user.location || null
         };
 
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));

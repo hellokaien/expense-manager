@@ -1,6 +1,7 @@
     import { showNotification, API_BASE_URL, getInitials, STORAGE_KEYS } from '../shared/utils.js';
     import authManager from '../auth/auth.js';
     import apiService from '../shared/apiService.js';
+    import { getUserAvatar, saveUserAvatar, fileToBase64, validateImageFile, deleteUserAvatar } from '../shared/imageStorage.js';
  
  // DOM Elements
     const toggleSidebarBtn = document.getElementById('toggleSidebar');
@@ -39,6 +40,8 @@
 
         const currentUser = authManager.getCurrentUser();
         if (currentUser) {
+            // Load avatar from user object (which comes from db.json)
+            await loadUserAvatar(currentUser.id, currentUser);
             updateUserInfo(currentUser);
             loadUserDataToForm(currentUser);
         } else {
@@ -47,6 +50,8 @@
             if (userId) {
                 try {
                     const user = await apiService.getUser(userId);
+                    // Load avatar from user object (from db.json)
+                    await loadUserAvatar(userId, user);
                     updateUserInfo(user);
                     loadUserDataToForm(user);
                 } catch (error) {
@@ -128,6 +133,9 @@
         if (lastNameInput) {
             lastNameInput.addEventListener('input', updateProfileAvatar);
         }
+        
+        // Avatar upload functionality
+        setupAvatarUpload();
     }
 
     function switchSettingsTab(tabName) {
@@ -380,14 +388,161 @@
     function updateProfileAvatar() {
         const firstNameInput = document.getElementById('firstName');
         const lastNameInput = document.getElementById('lastName');
-        const avatarDiv = document.querySelector('#profileContent .w-32.h-32');
+        const avatarDiv = document.getElementById('profileAvatarDisplay');
         
         if (avatarDiv && firstNameInput && lastNameInput) {
             const firstName = firstNameInput.value.trim() || 'John';
             const lastName = lastNameInput.value.trim() || 'Doe';
             const initials = getInitials(firstName, lastName);
-            avatarDiv.textContent = initials;
+            
+            // Only show initials if no image is loaded
+            const currentUser = authManager.getCurrentUser();
+            if (currentUser && currentUser.id) {
+                getUserAvatar(currentUser.id, currentUser).then(avatarData => {
+                    if (!avatarData) {
+                        avatarDiv.textContent = initials;
+                        avatarDiv.classList.add('bg-gradient-to-br', 'from-blue-400', 'to-purple-500', 'flex', 'items-center', 'justify-center');
+                    }
+                });
+            } else {
+                avatarDiv.textContent = initials;
+                avatarDiv.classList.add('bg-gradient-to-br', 'from-blue-400', 'to-purple-500', 'flex', 'items-center', 'justify-center');
+            }
         }
+    }
+    
+    // Setup avatar upload functionality
+    function setupAvatarUpload() {
+        const avatarUploadInput = document.getElementById('profileAvatarUpload');
+        const avatarDiv = document.getElementById('profileAvatarDisplay');
+        const resetAvatarBtn = document.getElementById('resetAvatarBtn');
+        const uploadAvatarBtn = document.getElementById('uploadAvatarBtn');
+        
+        // Also make the avatar div clickable
+        if (avatarDiv && avatarUploadInput) {
+            avatarDiv.addEventListener('click', function() {
+                avatarUploadInput.click();
+            });
+        }
+        
+        if (avatarUploadInput) {
+            avatarUploadInput.addEventListener('change', async function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const validation = validateImageFile(file);
+                    if (!validation.valid) {
+                        showNotification(validation.error, 'error');
+                        e.target.value = '';
+                        return;
+                    }
+                    
+                    try {
+                        const base64Data = await fileToBase64(file);
+                        const currentUser = authManager.getCurrentUser();
+                        
+                        if (currentUser && currentUser.id) {
+                            // Save to db.json via API (this is the persistent storage)
+                            await apiService.updateUser(currentUser.id, { avatar: base64Data });
+                            
+                            // Cache in localStorage for quick access
+                            await saveUserAvatar(currentUser.id, base64Data);
+                            
+                            // Update displayed avatar
+                            displayAvatar(avatarDiv, base64Data);
+                            
+                            // Update user object in memory
+                            const updatedUser = { ...currentUser, avatar: base64Data };
+                            authManager.saveUserToLocalStorage(updatedUser, localStorage.getItem(STORAGE_KEYS.REMEMBER_ME) === 'true');
+                            authManager.currentUser = updatedUser;
+                            
+                            // Update sidebar avatar
+                            updateUserInfo(updatedUser);
+                            
+                            showNotification('Profile picture updated successfully!', 'success');
+                        }
+                    } catch (error) {
+                        console.error('Error uploading avatar:', error);
+                        showNotification('Failed to upload image. Please try again.', 'error');
+                        e.target.value = '';
+                    }
+                }
+            });
+        }
+        
+        // Reset avatar button
+        if (resetAvatarBtn) {
+            resetAvatarBtn.addEventListener('click', async function() {
+                const currentUser = authManager.getCurrentUser();
+                if (currentUser && currentUser.id) {
+                    try {
+                        // Remove from db.json via API first (persistent storage)
+                        await apiService.updateUser(currentUser.id, { avatar: null });
+                        // Then remove from cache
+                        await deleteUserAvatar(currentUser.id);
+                        
+                        const updatedUser = { ...currentUser };
+                        delete updatedUser.avatar;
+                        authManager.saveUserToLocalStorage(updatedUser, localStorage.getItem(STORAGE_KEYS.REMEMBER_ME) === 'true');
+                        authManager.currentUser = updatedUser;
+                        
+                        // Reset to initials
+                        updateProfileAvatar();
+                        updateUserInfo(updatedUser);
+                        
+                        showNotification('Profile picture reset successfully!', 'success');
+                    } catch (error) {
+                        console.error('Error resetting avatar:', error);
+                        showNotification('Failed to reset profile picture.', 'error');
+                    }
+                }
+            });
+        }
+        
+        // Upload button (triggers file input)
+        if (uploadAvatarBtn) {
+            uploadAvatarBtn.addEventListener('click', function() {
+                if (avatarUploadInput) {
+                    avatarUploadInput.click();
+                }
+            });
+        }
+    }
+    
+    // Load user avatar from storage
+    async function loadUserAvatar(userId, userObject = null) {
+        try {
+            // Get avatar from user object (db.json) or cache
+            const avatarData = await getUserAvatar(userId, userObject);
+            if (avatarData) {
+                // Update all avatar displays
+                const avatarDivs = document.querySelectorAll('.w-32.h-32, .w-10.h-10');
+                avatarDivs.forEach(div => {
+                    displayAvatar(div, avatarData);
+                });
+            }
+        } catch (error) {
+            console.error('Error loading avatar:', error);
+        }
+    }
+    
+    // Display avatar image
+    function displayAvatar(avatarDiv, imageData) {
+        if (!avatarDiv || !imageData) return;
+        
+        // Clear existing content
+        avatarDiv.innerHTML = '';
+        
+        // Create image element
+        const img = document.createElement('img');
+        img.src = imageData;
+        img.classList.add('w-full', 'h-full', 'rounded-full', 'object-cover');
+        img.style.display = 'block';
+        
+        // Add to div
+        avatarDiv.appendChild(img);
+        
+        // Remove gradient background classes if present
+        avatarDiv.classList.remove('bg-gradient-to-br', 'from-blue-400', 'to-purple-500', 'bg-blue-500');
     }
 
     function initializeRangeSliders() {
@@ -445,13 +600,19 @@
         }
     });
 
-    function updateUserInfo(currentUser) {
+    async function updateUserInfo(currentUser) {
         if (!currentUser) return;
         
         // Get user initials
         const firstName = currentUser.firstName || 'John';
         const lastName = currentUser.lastName || 'Doe';
         const initials = getInitials(firstName, lastName);
+        
+        // Load avatar from user object (from db.json) or cache
+        let avatarData = null;
+        if (currentUser.id) {
+            avatarData = await getUserAvatar(currentUser.id, currentUser);
+        }
         
         // Update sidebar user info
         const userProfile = document.querySelector('.flex.items-center.mb-8');
@@ -460,7 +621,12 @@
             const nameDiv = userProfile.querySelector('.ml-3');
             
             if (initialsDiv) {
+                if (avatarData) {
+                    displayAvatar(initialsDiv, avatarData);
+                } else {
                 initialsDiv.innerHTML = `<span class="font-bold">${initials}</span>`;
+                    initialsDiv.classList.add('bg-blue-500', 'flex', 'items-center', 'justify-center');
+                }
             }
             
             if (nameDiv) {
@@ -483,14 +649,23 @@
         }
         
         // Update profile picture in settings
-        const profileAvatar = document.querySelector('#profileContent .w-32.h-32');
+        const profileAvatar = document.getElementById('profileAvatarDisplay');
         if (profileAvatar) {
+            if (avatarData) {
+                displayAvatar(profileAvatar, avatarData);
+            } else {
             profileAvatar.textContent = initials;
+                profileAvatar.classList.add('bg-gradient-to-br', 'from-blue-400', 'to-purple-500', 'flex', 'items-center', 'justify-center');
+            }
         }
         
         // Update avatar in modal if exists
         const avatarPreview = document.getElementById('avatarPreview');
         if (avatarPreview) {
+            if (avatarData) {
+                displayAvatar(avatarPreview, avatarData);
+            } else {
             avatarPreview.textContent = initials;
+            }
         }
     }

@@ -428,14 +428,14 @@
                                 
                                 <div class="flex flex-col items-center">
                                     <div class="relative mb-4">
-                                        <div class="w-32 h-32 rounded-full bg-blue-500 flex items-center justify-center text-white text-4xl font-bold">
+                                        <div class="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-4xl font-bold" id="profileAvatarDisplay">
                                             JD
                                         </div>
-                                        <div class="avatar-upload">
+                                        <div class="avatar-upload absolute inset-0 cursor-pointer">
                                             <div class="avatar-overlay">
                                                 <i class="fas fa-camera text-white text-2xl"></i>
                                             </div>
-                                            <input type="file" accept="image/*">
+                                            <input type="file" id="profileAvatarUpload" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
                                         </div>
                                     </div>
                                     
@@ -444,10 +444,10 @@
                                     </p>
                                     
                                     <div class="flex space-x-3">
-                                        <button class="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
+                                        <button id="resetAvatarBtn" class="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
                                             <i class="fas fa-undo mr-2"></i> Reset
                                         </button>
-                                        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                        <button id="uploadAvatarBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                                             <i class="fas fa-upload mr-2"></i> Upload
                                         </button>
                                     </div>
