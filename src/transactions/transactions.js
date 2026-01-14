@@ -1,6 +1,7 @@
 import authManager from '../auth/auth.js';
 import { API_BASE_URL, showNotification } from '../shared/utils.js';
 import { logout } from '../app.js';
+import transactionService from '../shared/services/transactionService.js';
 
 let incomeCategories = [];
 let expenseCategories = [];
@@ -244,16 +245,8 @@ let transactions = []; // Will be populated from API
 async function fetchTransactions() {
     try {
         loadingState.classList.remove('hidden');
-        const currentUser = authManager.getCurrentUser();
         
-        if (!currentUser) {
-            throw new Error('User not authenticated');
-        }
-        
-        const response = await fetch(`${API_BASE_URL}/transactions?userId=${currentUser.id}`);
-        if (!response.ok) throw new Error('Failed to fetch transactions');
-        
-        transactions = await response.json();
+        transactions = await transactionService.getTransactions();
         return transactions;
     } catch (error) {
         console.error('Error fetching transactions:', error);
@@ -266,26 +259,14 @@ async function fetchTransactions() {
 
 async function addTransaction(transaction) {
     try {
-        const currentUser = authManager.getCurrentUser();
         const transactionId = `txn-${crypto.randomUUID()}`;
-        // Add userId to transaction
-        const transactionWithUser = {
-            id: transactionId,  // ← Always include an ID
-            ...transaction,
-            userId: currentUser.id // You can change this based on your user system
+        // Add ID to transaction
+        const transactionWithId = {
+            id: transactionId,
+            ...transaction
         };
         
-        const response = await fetch(`${API_BASE_URL}/transactions`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(transactionWithUser)
-        });
-        
-        if (!response.ok) throw new Error('Failed to add transaction');
-        
-        const newTransaction = await response.json();
+        const newTransaction = await transactionService.createTransaction(transactionWithId);
         transactions.push(newTransaction);
         return newTransaction;
     } catch (error) {
@@ -296,17 +277,7 @@ async function addTransaction(transaction) {
 
 async function updateTransaction(id, transaction) {
     try {
-        const response = await fetch(`${API_BASE_URL}/transactions/${id}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(transaction)
-        });
-        
-        if (!response.ok) throw new Error('Failed to update transaction');
-        
-        const updatedTransaction = await response.json();
+        const updatedTransaction = await transactionService.updateTransaction(id, transaction);
         
         // Update local array
         const index = transactions.findIndex(t => t.id === id);
@@ -323,11 +294,7 @@ async function updateTransaction(id, transaction) {
 
 async function deleteTransactionFromServer(id) {
     try {
-        const response = await fetch(`${API_BASE_URL}/transactions/${id}`, {
-            method: 'DELETE'
-        });
-        
-        if (!response.ok) throw new Error('Failed to delete transaction');
+        await transactionService.deleteTransaction(id);
         
         // Remove from local array
         transactions = transactions.filter(t => t.id !== id);
@@ -342,11 +309,7 @@ async function deleteTransactionFromServer(id) {
 
 async function deleteMultipleTransactions(ids) {
     try {
-        const deletePromises = ids.map(id => 
-            fetch(`${API_BASE_URL}/transactions/${id}`, {
-                method: 'DELETE'
-            })
-        );
+        const deletePromises = ids.map(id => transactionService.deleteTransaction(id));
         
         await Promise.all(deletePromises);
         
