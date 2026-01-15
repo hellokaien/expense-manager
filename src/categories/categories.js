@@ -75,6 +75,10 @@ async function loadCategories() {
 //    updateStats();
 }
 
+function updateStats(){
+    
+}
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', async function() {
 
