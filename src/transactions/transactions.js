@@ -661,6 +661,7 @@ async function saveTransaction(e) {
         // Update UI
         await loadTransactions();
         updateSelectedCount();
+        updateStats();
         
         // Close modal and reset form
         closeTransactionModal();
@@ -806,6 +807,7 @@ function renderTransactions() {
             
             updateSelectedCount();
             updateBulkActions();
+            updateStats();
         });
     });
     
@@ -927,7 +929,7 @@ async function deleteTransaction(id) {
         renderTransactions();
         updateStats();
         updateSelectedCount();
-        
+        updateStats();
         // Show notification
         showNotification('Transaction deleted successfully!', 'warning');
         

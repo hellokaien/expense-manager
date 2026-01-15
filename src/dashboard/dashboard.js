@@ -428,6 +428,7 @@ async function saveTransaction(e) {
         await loadTransactions();
         renderAllTransactionsTable();
         //updateSelectedCount();
+        updateSummary();
         
         // Close modal and reset form
         closeTransactionModal();
@@ -1059,7 +1060,7 @@ async function deleteTransaction(id) {
         
         // Show notification
         showNotification('Transaction deleted successfully!', 'warning');
-        
+        updateSummary();
         // Close detail modal if open
         //transactionDetailModal.classList.add('hidden');
     } catch (error) {
