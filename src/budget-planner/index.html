@@ -851,33 +851,33 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <label class="block text-gray-700 mb-2">Budget Name</label>
-                            <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="e.g., May 2023 Budget" required>
+                            <input type="text" name="name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="e.g., May 2023 Budget" required>
                         </div>
                         
                         <div>
                             <label class="block text-gray-700 mb-2">Total Amount ($)</label>
-                            <input type="number" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="0.00" step="0.01" required>
+                            <input type="number" name="amount" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="0.00" step="0.01" required>
                         </div>
                         
                         <div>
                             <label class="block text-gray-700 mb-2">Start Date</label>
-                            <input type="date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
+                            <input type="date" name="startDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
                         </div>
                         
                         <div>
                             <label class="block text-gray-700 mb-2">End Date</label>
-                            <input type="date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
+                            <input type="date" name="endDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
                         </div>
                     </div>
                     
                     <div class="mb-6">
                         <label class="block text-gray-700 mb-2">Description (Optional)</label>
-                        <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" rows="3" placeholder="Describe your budget goals..."></textarea>
+                        <textarea name="description" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" rows="3" placeholder="Describe your budget goals..."></textarea>
                     </div>
                     
                     <div class="mb-6">
                         <label class="flex items-center">
-                            <input type="checkbox" class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <input type="checkbox" name="recurring" class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                             <span class="text-gray-700">Make this a recurring monthly budget</span>
                         </label>
                     </div>
@@ -907,17 +907,17 @@
                 <form id="addCategoryForm">
                     <div class="mb-4">
                         <label class="block text-gray-700 mb-2">Category Name</label>
-                        <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="e.g., Groceries" required>
+                        <input type="text" name="name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="e.g., Groceries" required>
                     </div>
                     
                     <div class="mb-4">
                         <label class="block text-gray-700 mb-2">Budget Amount ($)</label>
-                        <input type="number" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="0.00" step="0.01" required>
+                        <input type="number" name="amount" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="0.00" step="0.01" required>
                     </div>
                     
                     <div class="mb-4">
                         <label class="block text-gray-700 mb-2">Category Type</label>
-                        <select class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
+                        <select name="type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
                             <option value="">Select type</option>
                             <option value="essential">Essential (Needs)</option>
                             <option value="discretionary">Discretionary (Wants)</option>
@@ -987,28 +987,28 @@
                 <form id="addGoalForm">
                     <div class="mb-4">
                         <label class="block text-gray-700 mb-2">Goal Name</label>
-                        <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="e.g., Vacation to Hawaii" required>
+                        <input type="text" name="name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="e.g., Vacation to Hawaii" required>
                     </div>
                     
                     <div class="mb-4">
                         <label class="block text-gray-700 mb-2">Target Amount ($)</label>
-                        <input type="number" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="0.00" step="0.01" required>
+                        <input type="number" name="target" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="0.00" step="0.01" required>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-gray-700 mb-2">Start Date</label>
-                            <input type="date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
+                            <input type="date" name="startDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
                         </div>
                         <div>
                             <label class="block text-gray-700 mb-2">Target Date</label>
-                            <input type="date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
+                            <input type="date" name="deadline" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
                         </div>
                     </div>
                     
                     <div class="mb-6">
                         <label class="block text-gray-700 mb-2">Monthly Contribution ($)</label>
-                        <input type="number" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="0.00" step="0.01" required>
+                        <input type="number" name="monthly" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="0.00" step="0.01" required>
                     </div>
                     
                     <div class="flex justify-end space-x-4">
@@ -1046,11 +1046,8 @@
     </div>
 
     <!-- Toast Notification -->
-    <div id="toastNotification" class="fixed bottom-4 right-4 z-50 hidden">
-        <div class="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide">
-            <i class="fas fa-check-circle mr-3 text-xl"></i>
-            <span id="toastMessage">Budget saved successfully!</span>
-        </div>
+    <div id="notificationToast" class="fixed top-4 right-4 z-50 hidden">
+        <span id="notificationMessage"></span>
     </div>
 
     <script type="module" src="budget.js"></script>

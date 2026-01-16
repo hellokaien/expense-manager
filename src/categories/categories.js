@@ -72,11 +72,24 @@ async function fetchCategories() {
 async function loadCategories() {
     await fetchCategories();
     renderCategories();
-//    updateStats();
+    updateStats();
 }
 
 function updateStats(){
-    
+    let totalIncome = 0;
+    let totalExpenses = 0;
+
+    categories.forEach(category => {
+        if (category.type === 'income') {
+            totalIncome++;
+        } else {
+            totalExpenses++;
+        }
+    });
+
+    document.getElementById('totalCategories').textContent = categories.length;
+    document.getElementById('totalIncomeCategories').textContent = totalIncome;
+    document.getElementById('totalExpenseCategories').textContent = totalExpenses;
 }
 
 // Initialize the application
@@ -430,11 +443,13 @@ function renderCategories() {
                 
                 updateSelectedCount();
                 updateBulkActions();
+                
             });
         });
         
         // Initialize drag and drop for reordering
         initializeDragAndDrop();
+        updateStats();
     }
 }
 
