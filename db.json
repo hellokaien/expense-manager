@@ -129,6 +129,32 @@
       "notes": "",
       "tags": [],
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-605f16b7-880c-41cc-bb92-c563c76afc5e",
+      "title": "From Love",
+      "amount": 1000,
+      "type": "income",
+      "category": "ctg-ad1046a8-324e-41fb-81ff-8b761f541d60",
+      "date": "2026-01-16",
+      "paymentMethod": "digital_wallet",
+      "status": "completed",
+      "notes": "",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-4978e810-12c2-4d91-9cf4-715ea65efb09",
+      "title": "Gcash to Love",
+      "amount": 500,
+      "type": "expense",
+      "category": "ctg-b26e1037-a572-42cd-9751-0f56bcc032d3",
+      "date": "2026-01-16",
+      "paymentMethod": "digital_wallet",
+      "status": "completed",
+      "notes": "Bayad daw sa shoppee",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ],
   "users": [
@@ -181,7 +207,7 @@
       "newsletter": false,
       "experience": "beginner",
       "status": "active",
-      "lastLogin": "2026-01-15T13:06:04.712Z",
+      "lastLogin": "2026-01-16T07:55:35.847Z",
       "createdAt": "2026-01-14T06:16:40.881Z",
       "accountId": "MF1768371400881812",
       "premiumTrial": true,
@@ -426,6 +452,40 @@
       "budget": null,
       "isCustom": false,
       "order": 8,
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "ctg-ad1046a8-324e-41fb-81ff-8b761f541d60",
+      "name": "iPhone 12 ",
+      "type": "income",
+      "subtype": "essential",
+      "icon": "gamepad",
+      "color": "#ef4444",
+      "transactions_count": 0,
+      "totalAmount": 0,
+      "lastUsed": "2026-01-16",
+      "monthlyAverage": 0,
+      "description": "",
+      "budget": null,
+      "isCustom": false,
+      "order": 9,
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "ctg-b26e1037-a572-42cd-9751-0f56bcc032d3",
+      "name": "Shoppee",
+      "type": "expense",
+      "subtype": "essential",
+      "icon": "shopping-bag",
+      "color": "#ef4444",
+      "transactions_count": 0,
+      "totalAmount": 0,
+      "lastUsed": "2026-01-16",
+      "monthlyAverage": 0,
+      "description": "",
+      "budget": null,
+      "isCustom": false,
+      "order": 10,
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ]
