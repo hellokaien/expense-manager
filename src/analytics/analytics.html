@@ -499,9 +499,9 @@
                 <!-- Bottom Section -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Top Categories -->
-                    <div class="analytics-card p-6">
+                    <div class="analytics-card p-6" id="topCategoriesCard">
                         <h3 class="text-xl font-bold text-gray-800 mb-6">Top Spending Categories</h3>
-                        <div class="space-y-4">
+                        <div class="space-y-4" id="topCategoriesList">
                             <div>
                                 <div class="flex justify-between mb-1">
                                     <span class="text-gray-700">Food & Dining</span>
@@ -585,9 +585,9 @@
                     </div>
                     
                     <!-- Income Sources -->
-                    <div class="analytics-card p-6">
+                    <div class="analytics-card p-6" id="incomeSourcesCard">
                         <h3 class="text-xl font-bold text-gray-800 mb-6">Income Sources</h3>
-                        <div class="space-y-4">
+                        <div class="space-y-4" id="incomeSourcesList">
                             <div>
                                 <div class="flex justify-between mb-1">
                                     <span class="text-gray-700">Salary</span>
@@ -662,21 +662,21 @@
                     </div>
                     
                     <!-- Savings Progress -->
-                    <div class="analytics-card p-6">
+                    <div class="analytics-card p-6" id="savingsProgressCard">
                         <h3 class="text-xl font-bold text-gray-800 mb-6">Savings Progress</h3>
                         <div class="text-center mb-6">
                             <div class="relative inline-block">
                                 <canvas id="savingsChart" width="200" height="200"></canvas>
                                 <div class="absolute inset-0 flex items-center justify-center flex-col">
-                                    <span class="text-3xl font-bold text-gray-800">67%</span>
+                                    <span class="text-3xl font-bold text-gray-800" id="savingsProgressPercent">0%</span>
                                     <span class="text-gray-500 text-sm">of goal</span>
                                 </div>
                             </div>
-                            <p class="text-gray-700 mt-4">Annual Savings Goal: <span class="font-bold">$15,000</span></p>
-                            <p class="text-gray-600">Current: <span class="font-medium text-green-600">$10,050</span></p>
+                            <p class="text-gray-700 mt-4">Annual Savings Goal: <span class="font-bold" id="annualSavingsGoal">$0</span></p>
+                            <p class="text-gray-600">Current: <span class="font-medium text-green-600" id="currentSavings">$0</span></p>
                         </div>
                         
-                        <div class="space-y-4">
+                        <div class="space-y-4" id="savingsGoalsList">
                             <div>
                                 <div class="flex justify-between mb-1">
                                     <span class="text-gray-700">Emergency Fund</span>
@@ -804,11 +804,8 @@
     </div>
 
     <!-- Toast Notification -->
-    <div id="toastNotification" class="fixed bottom-4 right-4 z-50 hidden">
-        <div class="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center notification-slide">
-            <i class="fas fa-check-circle mr-3 text-xl"></i>
-            <span id="toastMessage">Analytics report exported successfully!</span>
-        </div>
+    <div id="notificationToast" class="fixed top-4 right-4 z-50 hidden">
+        <span id="notificationMessage"></span>
     </div>
 
     <script type="module" src="analytics.js"></script>
