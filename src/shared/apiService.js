@@ -19,6 +19,12 @@ class ApiService {
         try {
             const response = await fetch(url, config);
             
+            // Handle 404 for GET requests - return empty array for list endpoints
+            const method = options.method || 'GET';
+            if (response.status === 404 && method === 'GET' && endpoint.includes('?')) {
+                return [];
+            }
+            
             if (!response.ok) {
                 throw new Error(`API Error: ${response.status} ${response.statusText}`);
             }
