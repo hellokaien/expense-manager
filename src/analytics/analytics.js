@@ -347,7 +347,7 @@ function setupEventListeners() {
     
     budgetNav?.addEventListener('click', (e) => {
         e.preventDefault();
-        window.location.href = '../budget-planner/index.html';
+        window.location.href = '../budget/budget.html';
     });
     
     categoriesNav?.addEventListener('click', (e) => {
