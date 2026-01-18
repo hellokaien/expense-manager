@@ -2,6 +2,7 @@ import authManager from '../auth/auth.js';
 import { API_BASE_URL, showNotification } from '../shared/utils.js';
 import { logout } from '../app.js';
 import transactionService from '../shared/services/transactionService.js';
+import { formatCurrency, getCurrencySymbol } from '../shared/currencyUtils.js';
 
 let incomeCategories = [];
 let expenseCategories = [];
@@ -355,6 +356,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Set up event listeners
     setupEventListeners();
+
+    updateAmountLabel();
     
     // Initialize navigation
     navigateTo('transactions');
@@ -403,6 +406,7 @@ function setupEventListeners() {
         isEditing = false;
         editingTransactionId = null;
         document.getElementById('modalTitle').textContent = 'Add Transaction';
+        updateAmountLabel();
         transactionModal.classList.remove('hidden');
     });
     
@@ -799,7 +803,7 @@ function renderTransactions() {
                 </span>
             </td>
             <td class="py-4 px-6 font-bold ${amountClass}">
-                ${amountSign}$${transaction.amount.toFixed(2)}
+                ${amountSign}${formatCurrency(transaction.amount.toFixed(2))}
             </td>
             <td class="py-4 px-6">
                 <div class="flex space-x-2">
@@ -1032,6 +1036,8 @@ function editTransaction(id) {
     setTransactionType(transaction.type);
     document.getElementById('transactionCategory').value = transaction.category;
     
+    //update amount label
+    updateAmountLabel();
     // Show modal
     transactionModal.classList.remove('hidden');
 }
@@ -1206,4 +1212,12 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+function updateAmountLabel() {
+    const amountLabel = document.getElementById('amountLabel');
+    if (amountLabel) {
+        const currencySymbol = getCurrencySymbol();
+        amountLabel.textContent = `Amount (${currencySymbol})`;
+    }
 }
