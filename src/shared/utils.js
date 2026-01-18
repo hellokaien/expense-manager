@@ -1,7 +1,8 @@
 // src/shared/utils.js
 
 // Centralized API configuration
-export const API_BASE_URL = 'http://localhost:3000';
+export const API_BASE_URL = 'http://192.168.100.194:3000';
+// export const API_BASE_URL = 'http://localhost3000'; //change to PC's IP address during development for testing in mobile devices
 
 // Centralized localStorage keys
 export const STORAGE_KEYS = {
