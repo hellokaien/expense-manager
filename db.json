@@ -155,6 +155,32 @@
       "notes": "Bayad daw sa shoppee",
       "tags": [],
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-05a3057e-fdc6-487c-9ce6-c402ee2ac17c",
+      "title": "GAS to Sundo love",
+      "amount": 105,
+      "type": "expense",
+      "category": "ctg-7675cdeb-7a43-4feb-ab96-0d484696ea11",
+      "date": "2026-01-18",
+      "paymentMethod": "cash",
+      "status": "completed",
+      "notes": "",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-978a7019-9145-45b6-8c82-ef4874893bf8",
+      "title": "McDonald's in UCC",
+      "amount": 300,
+      "type": "expense",
+      "category": "ctg-30dd1566-d39b-4017-9583-fc71bb42acd6",
+      "date": "2026-01-18",
+      "paymentMethod": "cash",
+      "status": "completed",
+      "notes": "6:00PM",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ],
   "users": [
@@ -182,7 +208,7 @@
       "trialStartDate": "2025-12-28T17:50:18.949Z",
       "trialEndDate": "2026-01-27T17:50:18.949Z",
       "status": "active",
-      "lastLogin": "2026-01-17T08:08:28.405Z",
+      "lastLogin": "2026-01-18T13:44:41.389Z",
       "bio": "",
       "location": "",
       "dateFormat": "MM/DD/YYYY"
@@ -207,7 +233,7 @@
       "newsletter": false,
       "experience": "beginner",
       "status": "active",
-      "lastLogin": "2026-01-17T09:19:23.025Z",
+      "lastLogin": "2026-01-18T03:18:08.866Z",
       "createdAt": "2026-01-14T06:16:40.881Z",
       "accountId": "MF1768371400881812",
       "premiumTrial": true,
