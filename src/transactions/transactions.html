@@ -569,18 +569,18 @@
                         <div class="border-t border-gray-200 px-6 py-4">
                             <div class="flex flex-col md:flex-row md:items-center justify-between">
                                 <div class="mb-4 md:mb-0">
-                                    <p class="text-gray-600">Showing <span class="font-medium">1-8</span> of <span class="font-medium">24</span> transactions</p>
+                                    <p class="text-gray-600">Showing <span class="font-medium" id="showingRange">1-0</span> of <span class="font-medium" id="totalFilteredCount">0</span> transactions</p>
                                 </div>
                                 
                                 <!-- Pagination -->
-                                <div class="flex items-center space-x-1">
-                                    <button class="p-2 rounded-lg hover:bg-gray-100 text-gray-700">
+                                <div class="flex items-center space-x-1" id="paginationContainer">
+                                    <button id="prevPageBtn" class="p-2 rounded-lg hover:bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
                                         <i class="fas fa-chevron-left"></i>
                                     </button>
-                                    <button class="w-10 h-10 rounded-lg pagination-active">1</button>
-                                    <button class="w-10 h-10 rounded-lg hover:bg-gray-100">2</button>
-                                    <button class="w-10 h-10 rounded-lg hover:bg-gray-100">3</button>
-                                    <button class="p-2 rounded-lg hover:bg-gray-100 text-gray-700">
+                                    <div id="paginationPages" class="flex items-center space-x-1">
+                                        <!-- Page buttons will be dynamically generated -->
+                                    </div>
+                                    <button id="nextPageBtn" class="p-2 rounded-lg hover:bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
                                         <i class="fas fa-chevron-right"></i>
                                     </button>
                                 </div>
@@ -588,11 +588,12 @@
                                 <!-- Rows Per Page -->
                                 <div class="flex items-center mt-4 md:mt-0">
                                     <span class="text-gray-600 mr-2">Rows per page:</span>
-                                    <select class="border border-gray-300 rounded-lg px-3 py-1.5 text-gray-700">
-                                        <option>10</option>
-                                        <option selected>20</option>
-                                        <option>50</option>
-                                        <option>100</option>
+                                    <select id="rowsPerPageSelect" class="border border-gray-300 rounded-lg px-3 py-1.5 text-gray-700">
+                                        <option value="5" selected>5</option>
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
                                     </select>
                                 </div>
                             </div>
