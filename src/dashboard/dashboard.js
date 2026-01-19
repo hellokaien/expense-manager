@@ -3,6 +3,7 @@ import authManager from '../auth/auth.js';
 import categoryService from '../shared/services/categoryService.js';
 import transactionService from '../shared/services/transactionService.js';  
 import { logout } from '../app.js';
+import { formatCurrency, getCurrencySymbol } from '../shared/currencyUtils.js';
 
 // Payment method labels
 const paymentMethods = {
@@ -99,6 +100,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         renderAllTransactionsTable();
         updateSummary();
         initializeCharts();
+        
+        // Update currency label in modal
+        updateAmountLabel();
         
         // Set up event listeners
         setupEventListeners();
@@ -204,12 +208,14 @@ function updateUserInfo(currentUser) {
 function setupEventListeners() {
     // Open modal
     openAddModalBtn.addEventListener('click', () => {
+        updateAmountLabel(); // Update currency label when opening modal
         transactionModal.classList.remove('hidden');
     });
 
     const openAddModalEmptyBtn = document.getElementById('openAddModalEmpty');
     if (openAddModalEmptyBtn) {
         openAddModalEmptyBtn.addEventListener('click', () => {
+            updateAmountLabel(); // Update currency label when opening modal
             transactionModal.classList.remove('hidden');
         });
     }
@@ -479,7 +485,7 @@ function renderTransactions(filter = 'all') {
                 </div>
                 <div class="text-right">
                     <p class="font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}">
-                        ${transaction.type === 'income' ? '+' : '-'}$${transaction.amount.toFixed(2)}
+                        ${transaction.type === 'income' ? '+' : '-'}${formatCurrency(transaction.amount.toFixed(2))}
                     </p>
                     <button class="delete-btn text-gray-400 hover:text-red-500 text-sm mt-1" data-id="${transaction.id}">
                         <i class="fas fa-trash"></i>
@@ -546,7 +552,7 @@ function renderAllTransactionsTable() {
                 </span>
             </td>
             <td class="py-4 px-4 font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}">
-                ${transaction.type === 'income' ? '+' : '-'}$${transaction.amount.toFixed(2)}
+                ${transaction.type === 'income' ? '+' : '-'}${formatCurrency(transaction.amount.toFixed(2))}
             </td>
             <td class="py-4 px-4">
                 <div class="flex space-x-2">
@@ -691,6 +697,9 @@ function editTransaction(id) {
     setTransactionType(transaction.type);
     document.getElementById('transactionCategory').value = transaction.category;
     
+    // Update currency label before showing modal
+    updateAmountLabel();
+    
     // Show modal
     transactionModal.classList.remove('hidden');
 }
@@ -712,13 +721,13 @@ function updateSummary() {
     const savingsRate = totalIncome > 0 ? ((totalBalance / totalIncome) * 100).toFixed(0) : 0;
     
     // Update UI
-    document.getElementById('totalIncome').textContent = `$${totalIncome.toFixed(2)}`;
-    document.getElementById('totalExpenses').textContent = `$${totalExpenses.toFixed(2)}`;
+    document.getElementById('totalIncome').textContent = formatCurrency(totalIncome.toFixed(2));
+    document.getElementById('totalExpenses').textContent = formatCurrency(totalExpenses.toFixed(2));
     
     // Update balance display
     const balanceElements = document.querySelectorAll('.balance-bg h3');
     balanceElements.forEach(el => {
-        el.textContent = `$${totalBalance.toFixed(2)}`;
+        el.textContent = formatCurrency(totalBalance.toFixed(2));
     });
     
     // Update savings rate card
@@ -731,7 +740,7 @@ function updateSummary() {
             savingsTitle.textContent = `${savingsRate}%`;
         }
         if (savingsSubtitle) {
-            savingsSubtitle.textContent = `$${totalBalance.toFixed(0)} saved this month`;
+            savingsSubtitle.textContent = `${formatCurrency(totalBalance.toFixed(0))} saved this month`;
         }
     }
 }
@@ -1031,6 +1040,14 @@ async function updateTransaction(id, transaction) {
     } catch (error) {
         console.error('Error updating transaction:', error);
         throw error;
+    }
+}
+
+function updateAmountLabel() {
+    const amountLabel = document.getElementById('amountLabel');
+    if (amountLabel) {
+        const currencySymbol = getCurrencySymbol();
+        amountLabel.textContent = `Amount (${currencySymbol})`;
     }
 }
 

@@ -2,6 +2,8 @@ import authManager from '../auth/auth.js';
 import { API_BASE_URL, showNotification } from '../shared/utils.js';
 import { logout } from '../app.js';
 import transactionService from '../shared/services/transactionService.js';
+import { formatCurrency, getCurrencySymbol } from '../shared/currencyUtils.js';
+import categoryService from '../shared/services/categoryService.js';
 
 let incomeCategories = [];
 let expenseCategories = [];
@@ -14,11 +16,8 @@ async function fetchCategories() {
         if (!currentUser) {
             throw new Error('User not authenticated');
         }
-        
-        const response = await fetch(`${API_BASE_URL}/categories?userId=${currentUser.id}`);
-        if (!response.ok) throw new Error('Failed to fetch categories');
-        
-        allCategories = await response.json();
+
+        allCategories = await categoryService.getCategories();
         
         // Filter categories by type
         incomeCategories = allCategories.filter(category => category.type === 'income');
@@ -241,6 +240,11 @@ let editingTransactionId = null;
 let currentPage = 'transactions';
 let transactions = []; // Will be populated from API
 
+// Pagination variables
+let currentPageNumber = 1;
+let itemsPerPage = 5;
+let filteredTransactions = [];
+
 // API Functions
 async function fetchTransactions() {
     try {
@@ -265,9 +269,26 @@ async function addTransaction(transaction) {
             id: transactionId,
             ...transaction
         };
-        
+
+        // Create transaction first
         const newTransaction = await transactionService.createTransaction(transactionWithId);
         transactions.push(newTransaction);
+
+        // Update category transactions_count in database
+        const category = allCategories.find(cat => cat.id === transaction.category);
+        if (category) {
+            const updatedCount = (category.transactions_count || 0) + 1;
+            
+            // Update in database
+            await categoryService.updateCategory(category.id, {
+                ...category,
+                transactions_count: updatedCount
+            });
+            
+            // Update local array
+            category.transactions_count = updatedCount;
+        }
+
         return newTransaction;
     } catch (error) {
         console.error('Error adding transaction:', error);
@@ -277,12 +298,40 @@ async function addTransaction(transaction) {
 
 async function updateTransaction(id, transaction) {
     try {
+        // Get the old transaction to check if category changed
+        const oldTransaction = transactions.find(t => t.id === id);
+        
         const updatedTransaction = await transactionService.updateTransaction(id, transaction);
         
         // Update local array
         const index = transactions.findIndex(t => t.id === id);
         if (index !== -1) {
             transactions[index] = updatedTransaction;
+        }
+        
+        // Update category counts if category changed
+        if (oldTransaction && oldTransaction.category !== transaction.category) {
+            // Decrement old category count
+            const oldCategory = allCategories.find(cat => cat.id === oldTransaction.category);
+            if (oldCategory && oldCategory.transactions_count > 0) {
+                const oldCount = (oldCategory.transactions_count || 0) - 1;
+                await categoryService.updateCategory(oldCategory.id, {
+                    ...oldCategory,
+                    transactions_count: oldCount
+                });
+                oldCategory.transactions_count = oldCount;
+            }
+            
+            // Increment new category count
+            const newCategory = allCategories.find(cat => cat.id === transaction.category);
+            if (newCategory) {
+                const newCount = (newCategory.transactions_count || 0) + 1;
+                await categoryService.updateCategory(newCategory.id, {
+                    ...newCategory,
+                    transactions_count: newCount
+                });
+                newCategory.transactions_count = newCount;
+            }
         }
         
         return updatedTransaction;
@@ -294,11 +343,31 @@ async function updateTransaction(id, transaction) {
 
 async function deleteTransactionFromServer(id) {
     try {
+        // Get the transaction before deleting to update category count
+        const transaction = transactions.find(t => t.id === id);
+        
         await transactionService.deleteTransaction(id);
         
         // Remove from local array
         transactions = transactions.filter(t => t.id !== id);
         selectedTransactions.delete(id);
+        
+        // Decrement category transactions_count in database
+        if (transaction) {
+            const category = allCategories.find(cat => cat.id === transaction.category);
+            if (category && category.transactions_count > 0) {
+                const updatedCount = (category.transactions_count || 0) - 1;
+                
+                // Update in database
+                await categoryService.updateCategory(category.id, {
+                    ...category,
+                    transactions_count: updatedCount
+                });
+                
+                // Update local array
+                category.transactions_count = updatedCount;
+            }
+        }
         
         return true;
     } catch (error) {
@@ -309,13 +378,40 @@ async function deleteTransactionFromServer(id) {
 
 async function deleteMultipleTransactions(ids) {
     try {
-        const deletePromises = ids.map(id => transactionService.deleteTransaction(id));
+        // Get transactions before deleting to update category counts
+        const transactionsToDelete = transactions.filter(t => ids.includes(t.id));
         
+        // Group by category to count how many transactions per category
+        const categoryCounts = {};
+        transactionsToDelete.forEach(transaction => {
+            if (transaction.category) {
+                categoryCounts[transaction.category] = (categoryCounts[transaction.category] || 0) + 1;
+            }
+        });
+        
+        const deletePromises = ids.map(id => transactionService.deleteTransaction(id));
         await Promise.all(deletePromises);
         
         // Remove from local array
         transactions = transactions.filter(t => !ids.includes(t.id));
         selectedTransactions.clear();
+        
+        // Update category counts in database
+        for (const [categoryId, count] of Object.entries(categoryCounts)) {
+            const category = allCategories.find(cat => cat.id === categoryId);
+            if (category && category.transactions_count >= count) {
+                const updatedCount = (category.transactions_count || 0) - count;
+                
+                // Update in database
+                await categoryService.updateCategory(category.id, {
+                    ...category,
+                    transactions_count: updatedCount
+                });
+                
+                // Update local array
+                category.transactions_count = updatedCount;
+            }
+        }
         
         return true;
     } catch (error) {
@@ -350,6 +446,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Set up event listeners
     setupEventListeners();
+
+    updateAmountLabel();
     
     // Initialize navigation
     navigateTo('transactions');
@@ -398,6 +496,7 @@ function setupEventListeners() {
         isEditing = false;
         editingTransactionId = null;
         document.getElementById('modalTitle').textContent = 'Add Transaction';
+        updateAmountLabel();
         transactionModal.classList.remove('hidden');
     });
     
@@ -458,6 +557,7 @@ function setupEventListeners() {
     
     // Search functionality
     searchInput.addEventListener('input', debounce(() => {
+        currentPageNumber = 1; // Reset to first page on search
         renderTransactions();
     }, 300));
     
@@ -470,6 +570,7 @@ function setupEventListeners() {
                 <span>Type: ${selectedValue === 'all' ? 'All' : selectedValue === 'income' ? 'Income' : 'Expenses'}</span>
                 <i class="fas fa-chevron-down text-gray-500 ml-2"></i>
             `;
+            currentPageNumber = 1; // Reset to first page on filter change
             renderTransactions();
         });
     });
@@ -533,6 +634,36 @@ function setupEventListeners() {
     document.getElementById('goToTransactionsFromOther')?.addEventListener('click', () => {
         navigateTo('transactions');
     });
+    
+    // Pagination event listeners
+    const prevPageBtn = document.getElementById('prevPageBtn');
+    const nextPageBtn = document.getElementById('nextPageBtn');
+    const rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
+    
+    if (prevPageBtn) {
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPageNumber > 1) {
+                goToPage(currentPageNumber - 1);
+            }
+        });
+    }
+    
+    if (nextPageBtn) {
+        nextPageBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+            if (currentPageNumber < totalPages) {
+                goToPage(currentPageNumber + 1);
+            }
+        });
+    }
+    
+    if (rowsPerPageSelect) {
+        rowsPerPageSelect.addEventListener('change', (e) => {
+            itemsPerPage = parseInt(e.target.value);
+            currentPageNumber = 1; // Reset to first page when changing items per page
+            renderTransactions();
+        });
+    }
 }
 
 function navigateTo(page) {
@@ -691,7 +822,7 @@ function renderTransactions() {
     const typeFilter = document.querySelector('input[name="typeFilter"]:checked')?.value || 'all';
     
     // Filter transactions
-    let filteredTransactions = transactions.filter(transaction => {
+    filteredTransactions = transactions.filter(transaction => {
         // Search filter
         const matchesSearch = transaction.title.toLowerCase().includes(searchTerm) || 
                             (transaction.notes && transaction.notes.toLowerCase().includes(searchTerm));
@@ -705,14 +836,26 @@ function renderTransactions() {
     if (filteredTransactions.length === 0) {
         emptyState.classList.remove('hidden');
         totalCount.textContent = '0';
+        updatePaginationUI(0);
         return;
     }
     
     // Sort by date (newest first)
     filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    // Render each transaction
-    filteredTransactions.forEach(transaction => {
+    // Calculate pagination
+    const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+    if (currentPageNumber > totalPages && totalPages > 0) {
+        currentPageNumber = totalPages;
+    }
+    
+    // Get transactions for current page
+    const startIndex = (currentPageNumber - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex);
+    
+    // Render each transaction for current page
+    paginatedTransactions.forEach(transaction => {
         const row = document.createElement('tr');
         row.className = 'table-row border-b border-gray-100';
         row.dataset.id = transaction.id;
@@ -750,7 +893,7 @@ function renderTransactions() {
                 </span>
             </td>
             <td class="py-4 px-6 font-bold ${amountClass}">
-                ${amountSign}$${transaction.amount.toFixed(2)}
+                ${amountSign}${formatCurrency(transaction.amount.toFixed(2))}
             </td>
             <td class="py-4 px-6">
                 <div class="flex space-x-2">
@@ -814,6 +957,77 @@ function renderTransactions() {
     // Update total count
     totalCount.textContent = filteredTransactions.length;
     updateSelectedCount();
+    
+    // Update pagination UI
+    updatePaginationUI(filteredTransactions.length);
+}
+
+function updatePaginationUI(totalItems) {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const paginationPages = document.getElementById('paginationPages');
+    const prevPageBtn = document.getElementById('prevPageBtn');
+    const nextPageBtn = document.getElementById('nextPageBtn');
+    const showingRange = document.getElementById('showingRange');
+    const totalFilteredCount = document.getElementById('totalFilteredCount');
+    
+    if (!paginationPages || !prevPageBtn || !nextPageBtn || !showingRange || !totalFilteredCount) {
+        return;
+    }
+    
+    // Update showing range
+    if (totalItems === 0) {
+        showingRange.textContent = '0-0';
+        totalFilteredCount.textContent = '0';
+    } else {
+        const start = ((currentPageNumber - 1) * itemsPerPage) + 1;
+        const end = Math.min(currentPageNumber * itemsPerPage, totalItems);
+        showingRange.textContent = `${start}-${end}`;
+        totalFilteredCount.textContent = totalItems.toString();
+    }
+    
+    // Clear pagination buttons
+    paginationPages.innerHTML = '';
+    
+    // Generate page buttons
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPageNumber - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Adjust start page if we're near the end
+    if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    // Previous button
+    prevPageBtn.disabled = currentPageNumber === 1;
+    
+    // Page number buttons
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `w-10 h-10 rounded-lg hover:bg-gray-100 ${i === currentPageNumber ? 'pagination-active' : 'text-gray-700'}`;
+        pageBtn.textContent = i;
+        pageBtn.addEventListener('click', () => {
+            currentPageNumber = i;
+            renderTransactions();
+        });
+        paginationPages.appendChild(pageBtn);
+    }
+    
+    // Next button
+    nextPageBtn.disabled = currentPageNumber === totalPages || totalPages === 0;
+}
+
+function goToPage(page) {
+    const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+    if (page >= 1 && page <= totalPages) {
+        currentPageNumber = page;
+        renderTransactions();
+        // Scroll to top of table
+        const tableContainer = document.querySelector('.overflow-x-auto');
+        if (tableContainer) {
+            tableContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
 }
 
 function updateStats() {
@@ -912,6 +1126,8 @@ function editTransaction(id) {
     setTransactionType(transaction.type);
     document.getElementById('transactionCategory').value = transaction.category;
     
+    //update amount label
+    updateAmountLabel();
     // Show modal
     transactionModal.classList.remove('hidden');
 }
@@ -1086,4 +1302,12 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+function updateAmountLabel() {
+    const amountLabel = document.getElementById('amountLabel');
+    if (amountLabel) {
+        const currencySymbol = getCurrencySymbol();
+        amountLabel.textContent = `Amount (${currencySymbol})`;
+    }
 }
