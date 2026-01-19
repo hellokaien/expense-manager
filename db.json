@@ -1,58 +1,6 @@
 {
   "transactions": [
     {
-      "id": "txn-9f43d37f-1f8f-408f-8713-991976cf06a2",
-      "title": "Test",
-      "amount": 1,
-      "type": "expense",
-      "category": "ctg-3e2c6651-7309-4d0d-b007-afd981450b2a",
-      "date": "2026-01-10",
-      "paymentMethod": "credit_card",
-      "status": "completed",
-      "notes": "",
-      "tags": [],
-      "userId": "1766944218991"
-    },
-    {
-      "id": "txn-5c94b87c-da4e-4382-90e8-984ace273c9b",
-      "title": "test 2",
-      "amount": 2,
-      "type": "expense",
-      "category": "ctg-3e2c6651-7309-4d0d-b007-afd981450b2a",
-      "date": "2026-01-10",
-      "paymentMethod": "credit_card",
-      "status": "completed",
-      "notes": "",
-      "tags": [],
-      "userId": "1766944218991"
-    },
-    {
-      "id": "txn-bc8231f4-a1a8-4161-b331-3dc5bec4fbe6",
-      "title": "test 3 ",
-      "amount": 3,
-      "type": "expense",
-      "category": "ctg-3e2c6651-7309-4d0d-b007-afd981450b2a",
-      "date": "2026-01-10",
-      "paymentMethod": "credit_card",
-      "status": "completed",
-      "notes": "",
-      "tags": [],
-      "userId": "1766944218991"
-    },
-    {
-      "id": "txn-fdc977f3-aa53-49a4-9e05-b3c940fb43f6",
-      "title": "Orangeapps",
-      "amount": 7500,
-      "type": "income",
-      "category": "ctg-397b6013-6966-4a4c-bd30-07b43bdcb2d4",
-      "date": "2026-01-12",
-      "paymentMethod": "credit_card",
-      "status": "completed",
-      "notes": "",
-      "tags": [],
-      "userId": "1766944218991"
-    },
-    {
       "id": "txn-7dbf3fef-29af-4638-98e2-f0c57429ed62",
       "title": "Orange Apps",
       "amount": 7500,
@@ -181,6 +129,32 @@
       "notes": "6:00PM",
       "tags": [],
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-e71c694d-8a1b-4fb3-bd15-c219ed32263e",
+      "title": "Eggs 1 tray",
+      "amount": 225,
+      "type": "expense",
+      "category": "ctg-30dd1566-d39b-4017-9583-fc71bb42acd6",
+      "date": "2026-01-19",
+      "paymentMethod": "cash",
+      "status": "completed",
+      "notes": "+ Buko Juice",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-b5046b1f-e1c6-49d0-999a-5087f6df5766",
+      "title": "test",
+      "amount": 1,
+      "type": "income",
+      "category": "ctg-e25668d8-9b3c-41b2-8a18-6eccd8e51432",
+      "date": "2026-01-19",
+      "paymentMethod": "cash",
+      "status": "completed",
+      "notes": "1",
+      "tags": [],
+      "userId": "1766944218991"
     }
   ],
   "users": [
@@ -208,7 +182,7 @@
       "trialStartDate": "2025-12-28T17:50:18.949Z",
       "trialEndDate": "2026-01-27T17:50:18.949Z",
       "status": "active",
-      "lastLogin": "2026-01-18T13:44:41.389Z",
+      "lastLogin": "2026-01-19T14:07:09.123Z",
       "bio": "",
       "location": "",
       "dateFormat": "MM/DD/YYYY"
@@ -233,7 +207,7 @@
       "newsletter": false,
       "experience": "beginner",
       "status": "active",
-      "lastLogin": "2026-01-18T22:42:59.538Z",
+      "lastLogin": "2026-01-19T13:55:37.259Z",
       "createdAt": "2026-01-14T06:16:40.881Z",
       "accountId": "MF1768371400881812",
       "premiumTrial": true,
@@ -292,57 +266,6 @@
       "budget": null,
       "isCustom": false,
       "order": 1
-    },
-    {
-      "id": "ctg-3e2c6651-7309-4d0d-b007-afd981450b2a",
-      "userId": "1766944218991",
-      "name": "Transportation",
-      "type": "expense",
-      "subtype": "essential",
-      "icon": "home",
-      "color": "#3b82f6",
-      "transactions_count": 0,
-      "totalAmount": 0,
-      "lastUsed": "2026-01-08",
-      "monthlyAverage": 0,
-      "description": "",
-      "budget": null,
-      "isCustom": false,
-      "order": 1
-    },
-    {
-      "id": "ctg-397b6013-6966-4a4c-bd30-07b43bdcb2d4",
-      "userId": "1766944218991",
-      "name": "Salary",
-      "type": "income",
-      "subtype": "essential",
-      "icon": "money-bill-wave",
-      "color": "#10b981",
-      "transactions_count": 0,
-      "totalAmount": 0,
-      "lastUsed": "2026-01-10",
-      "monthlyAverage": 0,
-      "description": "",
-      "budget": null,
-      "isCustom": false,
-      "order": 2
-    },
-    {
-      "id": "ctg-e4e447e5-cc44-4453-aa45-a70ea2d73a7f",
-      "userId": "1766944218991",
-      "name": "Shoppee",
-      "type": "expense",
-      "subtype": "other",
-      "icon": "shopping-bag",
-      "color": "#ef4444",
-      "transactions_count": 0,
-      "totalAmount": 0,
-      "lastUsed": "2026-01-10",
-      "monthlyAverage": 0,
-      "description": "",
-      "budget": null,
-      "isCustom": false,
-      "order": 3
     },
     {
       "id": "ctg-f41abc9f-9777-49f6-8c81-a7983d52a2ad",
@@ -513,17 +436,34 @@
       "isCustom": false,
       "order": 10,
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "ctg-e25668d8-9b3c-41b2-8a18-6eccd8e51432",
+      "name": "Salary",
+      "type": "income",
+      "subtype": "essential",
+      "icon": "money-bill-wave",
+      "color": "#10b981",
+      "transactions_count": 1,
+      "totalAmount": 0,
+      "lastUsed": "2026-01-19",
+      "monthlyAverage": 0,
+      "description": "",
+      "budget": null,
+      "isCustom": false,
+      "order": 1,
+      "userId": "1766944218991"
     }
   ],
   "budgets": [
     {
-      "id": "c327",
-      "name": "January 2026",
-      "totalAmount": 15000,
+      "id": "c09b",
+      "name": "January 1st Cutoff",
+      "totalAmount": 7500,
       "startDate": "2026-01-01",
-      "endDate": "2026-01-31",
-      "description": "",
-      "recurring": false,
+      "endDate": "2026-01-15",
+      "description": "Orange Apps",
+      "recurring": true,
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ],
@@ -538,5 +478,16 @@
       "icon": "tag"
     }
   ],
-  "savingsGoals": []
+  "savingsGoals": [
+    {
+      "id": "375b",
+      "name": "Travel to Baguio City",
+      "target": 15000,
+      "startDate": "2026-01-19",
+      "deadline": "2026-05-26",
+      "monthly": 200,
+      "saved": 0,
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    }
+  ]
 }

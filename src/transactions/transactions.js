@@ -3,6 +3,7 @@ import { API_BASE_URL, showNotification } from '../shared/utils.js';
 import { logout } from '../app.js';
 import transactionService from '../shared/services/transactionService.js';
 import { formatCurrency, getCurrencySymbol } from '../shared/currencyUtils.js';
+import categoryService from '../shared/services/categoryService.js';
 
 let incomeCategories = [];
 let expenseCategories = [];
@@ -15,11 +16,8 @@ async function fetchCategories() {
         if (!currentUser) {
             throw new Error('User not authenticated');
         }
-        
-        const response = await fetch(`${API_BASE_URL}/categories?userId=${currentUser.id}`);
-        if (!response.ok) throw new Error('Failed to fetch categories');
-        
-        allCategories = await response.json();
+
+        allCategories = await categoryService.getCategories();
         
         // Filter categories by type
         incomeCategories = allCategories.filter(category => category.type === 'income');
@@ -271,9 +269,26 @@ async function addTransaction(transaction) {
             id: transactionId,
             ...transaction
         };
-        
+
+        // Create transaction first
         const newTransaction = await transactionService.createTransaction(transactionWithId);
         transactions.push(newTransaction);
+
+        // Update category transactions_count in database
+        const category = allCategories.find(cat => cat.id === transaction.category);
+        if (category) {
+            const updatedCount = (category.transactions_count || 0) + 1;
+            
+            // Update in database
+            await categoryService.updateCategory(category.id, {
+                ...category,
+                transactions_count: updatedCount
+            });
+            
+            // Update local array
+            category.transactions_count = updatedCount;
+        }
+
         return newTransaction;
     } catch (error) {
         console.error('Error adding transaction:', error);
@@ -283,12 +298,40 @@ async function addTransaction(transaction) {
 
 async function updateTransaction(id, transaction) {
     try {
+        // Get the old transaction to check if category changed
+        const oldTransaction = transactions.find(t => t.id === id);
+        
         const updatedTransaction = await transactionService.updateTransaction(id, transaction);
         
         // Update local array
         const index = transactions.findIndex(t => t.id === id);
         if (index !== -1) {
             transactions[index] = updatedTransaction;
+        }
+        
+        // Update category counts if category changed
+        if (oldTransaction && oldTransaction.category !== transaction.category) {
+            // Decrement old category count
+            const oldCategory = allCategories.find(cat => cat.id === oldTransaction.category);
+            if (oldCategory && oldCategory.transactions_count > 0) {
+                const oldCount = (oldCategory.transactions_count || 0) - 1;
+                await categoryService.updateCategory(oldCategory.id, {
+                    ...oldCategory,
+                    transactions_count: oldCount
+                });
+                oldCategory.transactions_count = oldCount;
+            }
+            
+            // Increment new category count
+            const newCategory = allCategories.find(cat => cat.id === transaction.category);
+            if (newCategory) {
+                const newCount = (newCategory.transactions_count || 0) + 1;
+                await categoryService.updateCategory(newCategory.id, {
+                    ...newCategory,
+                    transactions_count: newCount
+                });
+                newCategory.transactions_count = newCount;
+            }
         }
         
         return updatedTransaction;
@@ -300,11 +343,31 @@ async function updateTransaction(id, transaction) {
 
 async function deleteTransactionFromServer(id) {
     try {
+        // Get the transaction before deleting to update category count
+        const transaction = transactions.find(t => t.id === id);
+        
         await transactionService.deleteTransaction(id);
         
         // Remove from local array
         transactions = transactions.filter(t => t.id !== id);
         selectedTransactions.delete(id);
+        
+        // Decrement category transactions_count in database
+        if (transaction) {
+            const category = allCategories.find(cat => cat.id === transaction.category);
+            if (category && category.transactions_count > 0) {
+                const updatedCount = (category.transactions_count || 0) - 1;
+                
+                // Update in database
+                await categoryService.updateCategory(category.id, {
+                    ...category,
+                    transactions_count: updatedCount
+                });
+                
+                // Update local array
+                category.transactions_count = updatedCount;
+            }
+        }
         
         return true;
     } catch (error) {
@@ -315,13 +378,40 @@ async function deleteTransactionFromServer(id) {
 
 async function deleteMultipleTransactions(ids) {
     try {
-        const deletePromises = ids.map(id => transactionService.deleteTransaction(id));
+        // Get transactions before deleting to update category counts
+        const transactionsToDelete = transactions.filter(t => ids.includes(t.id));
         
+        // Group by category to count how many transactions per category
+        const categoryCounts = {};
+        transactionsToDelete.forEach(transaction => {
+            if (transaction.category) {
+                categoryCounts[transaction.category] = (categoryCounts[transaction.category] || 0) + 1;
+            }
+        });
+        
+        const deletePromises = ids.map(id => transactionService.deleteTransaction(id));
         await Promise.all(deletePromises);
         
         // Remove from local array
         transactions = transactions.filter(t => !ids.includes(t.id));
         selectedTransactions.clear();
+        
+        // Update category counts in database
+        for (const [categoryId, count] of Object.entries(categoryCounts)) {
+            const category = allCategories.find(cat => cat.id === categoryId);
+            if (category && category.transactions_count >= count) {
+                const updatedCount = (category.transactions_count || 0) - count;
+                
+                // Update in database
+                await categoryService.updateCategory(category.id, {
+                    ...category,
+                    transactions_count: updatedCount
+                });
+                
+                // Update local array
+                category.transactions_count = updatedCount;
+            }
+        }
         
         return true;
     } catch (error) {
