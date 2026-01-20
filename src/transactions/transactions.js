@@ -359,11 +359,12 @@ async function deleteTransactionFromServer(id) {
             const category = allCategories.find(cat => cat.id === transaction.category);
             if (category && category.transactions_count > 0) {
                 const updatedCount = (category.transactions_count || 0) - 1;
-                
+                const updatedTotal = (category.totalAmount || 0) - transaction.amount;
                 // Update in database
                 await categoryService.updateCategory(category.id, {
                     ...category,
-                    transactions_count: updatedCount
+                    transactions_count: updatedCount,
+                    totalAmount: updatedTotal
                 });
                 
                 // Update local array

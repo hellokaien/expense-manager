@@ -168,19 +168,6 @@
       "notes": "From Jorge",
       "tags": [],
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
-    },
-    {
-      "id": "txn-28be4b5e-7578-4260-908a-60756676f9b6",
-      "title": "Gas test",
-      "amount": 6,
-      "type": "expense",
-      "category": "ctg-7df28431-d1b5-44cf-955a-32261b1229aa",
-      "date": "2026-01-20",
-      "paymentMethod": "cash",
-      "status": "completed",
-      "notes": "",
-      "tags": [],
-      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ],
   "users": [
@@ -470,8 +457,8 @@
       "subtype": "essential",
       "icon": "gas-pump",
       "color": "#3b82f6",
-      "transactions_count": 2,
-      "totalAmount": 100,
+      "transactions_count": 1,
+      "totalAmount": 94,
       "lastUsed": "2026-01-20",
       "monthlyAverage": 0,
       "description": "",
