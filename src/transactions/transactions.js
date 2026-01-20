@@ -270,6 +270,7 @@ async function addTransaction(transaction) {
             ...transaction
         };
 
+        console.log(transaction);
         // Create transaction first
         const newTransaction = await transactionService.createTransaction(transactionWithId);
         transactions.push(newTransaction);
@@ -278,11 +279,12 @@ async function addTransaction(transaction) {
         const category = allCategories.find(cat => cat.id === transaction.category);
         if (category) {
             const updatedCount = (category.transactions_count || 0) + 1;
-            
+            const updatedTotal = (category.totalAmount || 0) + transaction.amount;
             // Update in database
             await categoryService.updateCategory(category.id, {
                 ...category,
-                transactions_count: updatedCount
+                transactions_count: updatedCount,
+                totalAmount: updatedTotal
             });
             
             // Update local array

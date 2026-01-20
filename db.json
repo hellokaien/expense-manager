@@ -155,6 +155,32 @@
       "notes": "1",
       "tags": [],
       "userId": "1766944218991"
+    },
+    {
+      "id": "txn-6fbdfc61-5ef5-44ed-af8c-aae407da618f",
+      "title": "Full Tank ",
+      "amount": 94,
+      "type": "expense",
+      "category": "ctg-7df28431-d1b5-44cf-955a-32261b1229aa",
+      "date": "2026-01-20",
+      "paymentMethod": "cash",
+      "status": "completed",
+      "notes": "From Jorge",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-28be4b5e-7578-4260-908a-60756676f9b6",
+      "title": "Gas test",
+      "amount": 6,
+      "type": "expense",
+      "category": "ctg-7df28431-d1b5-44cf-955a-32261b1229aa",
+      "date": "2026-01-20",
+      "paymentMethod": "cash",
+      "status": "completed",
+      "notes": "",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ],
   "users": [
@@ -207,7 +233,7 @@
       "newsletter": false,
       "experience": "beginner",
       "status": "active",
-      "lastLogin": "2026-01-19T13:55:37.259Z",
+      "lastLogin": "2026-01-19T14:39:15.002Z",
       "createdAt": "2026-01-14T06:16:40.881Z",
       "accountId": "MF1768371400881812",
       "premiumTrial": true,
@@ -336,23 +362,6 @@
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     },
     {
-      "id": "ctg-7675cdeb-7a43-4feb-ab96-0d484696ea11",
-      "name": "Gas",
-      "type": "expense",
-      "subtype": "essential",
-      "icon": "gas-pump",
-      "color": "#ef4444",
-      "transactions_count": 0,
-      "totalAmount": 0,
-      "lastUsed": "2026-01-14",
-      "monthlyAverage": 0,
-      "description": "",
-      "budget": null,
-      "isCustom": false,
-      "order": 5,
-      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
-    },
-    {
       "id": "ctg-c53543e2-da3e-4e8c-a71a-ef183b9477ef",
       "name": "Entertainment",
       "type": "expense",
@@ -453,6 +462,23 @@
       "isCustom": false,
       "order": 1,
       "userId": "1766944218991"
+    },
+    {
+      "id": "ctg-7df28431-d1b5-44cf-955a-32261b1229aa",
+      "name": "Gas Premium",
+      "type": "expense",
+      "subtype": "essential",
+      "icon": "gas-pump",
+      "color": "#3b82f6",
+      "transactions_count": 2,
+      "totalAmount": 100,
+      "lastUsed": "2026-01-20",
+      "monthlyAverage": 0,
+      "description": "",
+      "budget": null,
+      "isCustom": false,
+      "order": 10,
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ],
   "budgets": [
