@@ -3,6 +3,7 @@ import authManager from '../auth/auth.js';
 import categoryService from '../shared/services/categoryService.js';
 import transactionService from '../shared/services/transactionService.js';  
 import { logout } from '../app.js';
+import { formatCurrency } from '../shared/currencyUtils.js';
 
 // DOM Elements
 const toggleSidebarBtn = document.getElementById('toggleSidebar');
@@ -382,8 +383,8 @@ function renderCategories() {
                     </div>
                 </td>
                 <td class="py-4 text-gray-700">
-                    <div class="font-medium">${category.transactions_count}</div>
-                    <div class="text-gray-500 text-sm">$${category.totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                    <div class="font-medium ml-5">${category.transactions_count}</div>
+                    <div class="text-gray-500 text-sm ml-5">${formatCurrency(category.totalAmount)}</div>
                 </td>
                 <td class="py-4">
                     <div class="text-gray-700">${formattedDate}</div>

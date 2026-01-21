@@ -168,6 +168,19 @@
       "notes": "From Jorge",
       "tags": [],
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-be70db49-3c8d-4812-97cc-2410422f9c93",
+      "title": "Almusal",
+      "amount": 90,
+      "type": "expense",
+      "category": "ctg-30dd1566-d39b-4017-9583-fc71bb42acd6",
+      "date": "2026-01-21",
+      "paymentMethod": "cash",
+      "status": "completed",
+      "notes": "Lugaw /w laman + Toge (4)",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ],
   "users": [
@@ -220,7 +233,7 @@
       "newsletter": false,
       "experience": "beginner",
       "status": "active",
-      "lastLogin": "2026-01-19T14:39:15.002Z",
+      "lastLogin": "2026-01-21T08:36:36.265Z",
       "createdAt": "2026-01-14T06:16:40.881Z",
       "accountId": "MF1768371400881812",
       "premiumTrial": true,
@@ -338,8 +351,8 @@
       "subtype": "other",
       "icon": "utensils",
       "color": "#ef4444",
-      "transactions_count": 0,
-      "totalAmount": 0,
+      "transactions_count": 1,
+      "totalAmount": 90,
       "lastUsed": "2026-01-14",
       "monthlyAverage": 0,
       "description": "",

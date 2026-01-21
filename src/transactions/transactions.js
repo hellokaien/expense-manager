@@ -300,7 +300,7 @@ async function addTransaction(transaction) {
 
 async function updateTransaction(id, transaction) {
     try {
-        // Get the old transaction to check if category changed
+        // Get the old transaction to check if category changed and amount difference
         const oldTransaction = transactions.find(t => t.id === id);
         
         const updatedTransaction = await transactionService.updateTransaction(id, transaction);
@@ -311,28 +311,58 @@ async function updateTransaction(id, transaction) {
             transactions[index] = updatedTransaction;
         }
         
-        // Update category counts if category changed
+        // Update category counts if category changed or amount changed
+        const amountDifference = transaction.amount - oldTransaction.amount;
+        
         if (oldTransaction && oldTransaction.category !== transaction.category) {
-            // Decrement old category count
+            // Category changed - update both old and new categories
+            
+            // Decrement old category count and amount
             const oldCategory = allCategories.find(cat => cat.id === oldTransaction.category);
-            if (oldCategory && oldCategory.transactions_count > 0) {
+            if (oldCategory) {
                 const oldCount = (oldCategory.transactions_count || 0) - 1;
+                const oldTotal = (oldCategory.totalAmount || 0) - oldTransaction.amount;
+                
                 await categoryService.updateCategory(oldCategory.id, {
                     ...oldCategory,
-                    transactions_count: oldCount
+                    transactions_count: oldCount,
+                    totalAmount: Math.max(0, oldTotal) // Ensure non-negative
                 });
+                
                 oldCategory.transactions_count = oldCount;
+                oldCategory.totalAmount = Math.max(0, oldTotal);
             }
             
-            // Increment new category count
+            // Increment new category count and amount
             const newCategory = allCategories.find(cat => cat.id === transaction.category);
             if (newCategory) {
                 const newCount = (newCategory.transactions_count || 0) + 1;
+                const newTotal = (newCategory.totalAmount || 0) + transaction.amount;
+                
                 await categoryService.updateCategory(newCategory.id, {
                     ...newCategory,
-                    transactions_count: newCount
+                    transactions_count: newCount,
+                    totalAmount: newTotal
                 });
+                
                 newCategory.transactions_count = newCount;
+                newCategory.totalAmount = newTotal;
+            }
+        } else if (amountDifference !== 0) {
+            // Same category but amount changed - update category total amount
+            const category = allCategories.find(cat => cat.id === transaction.category);
+            if (category) {
+                const updatedTotal = (category.totalAmount || 0) + amountDifference;
+                
+                // Ensure total doesn't go negative
+                const safeTotal = Math.max(0, updatedTotal);
+                
+                await categoryService.updateCategory(category.id, {
+                    ...category,
+                    totalAmount: safeTotal
+                });
+                
+                category.totalAmount = safeTotal;
             }
         }
         
@@ -357,9 +387,10 @@ async function deleteTransactionFromServer(id) {
         // Decrement category transactions_count in database
         if (transaction) {
             const category = allCategories.find(cat => cat.id === transaction.category);
-            if (category && category.transactions_count > 0) {
-                const updatedCount = (category.transactions_count || 0) - 1;
-                const updatedTotal = (category.totalAmount || 0) - transaction.amount;
+            if (category) {
+                const updatedCount = Math.max(0, (category.transactions_count || 0) - 1);
+                const updatedTotal = Math.max(0, (category.totalAmount || 0) - transaction.amount);
+                
                 // Update in database
                 await categoryService.updateCategory(category.id, {
                     ...category,
@@ -369,6 +400,7 @@ async function deleteTransactionFromServer(id) {
                 
                 // Update local array
                 category.transactions_count = updatedCount;
+                category.totalAmount = updatedTotal;
             }
         }
         
