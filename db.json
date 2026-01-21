@@ -181,6 +181,32 @@
       "notes": "Lugaw /w laman + Toge (4)",
       "tags": [],
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-891455cb-f3b2-426b-bad3-9f87ff0e0f3d",
+      "title": "Black Dress",
+      "amount": 250,
+      "type": "expense",
+      "category": "ctg-4530913b-92a7-4296-a98f-41a3b5c13d1b",
+      "date": "2026-01-21",
+      "paymentMethod": "cash",
+      "status": "completed",
+      "notes": "wala lang masuot para bukas",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-7a4af545-8305-41a9-9f6a-447c5cda976f",
+      "title": "Ulam BBQ & Snack Hotdog",
+      "amount": 90,
+      "type": "expense",
+      "category": "ctg-30dd1566-d39b-4017-9583-fc71bb42acd6",
+      "date": "2026-01-21",
+      "paymentMethod": "cash",
+      "status": "completed",
+      "notes": "Gutom na gutom na at ayaw sa paksiw",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ],
   "users": [
@@ -351,8 +377,8 @@
       "subtype": "other",
       "icon": "utensils",
       "color": "#ef4444",
-      "transactions_count": 1,
-      "totalAmount": 90,
+      "transactions_count": 2,
+      "totalAmount": 180,
       "lastUsed": "2026-01-14",
       "monthlyAverage": 0,
       "description": "",
@@ -478,6 +504,23 @@
       "budget": null,
       "isCustom": false,
       "order": 10,
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "ctg-4530913b-92a7-4296-a98f-41a3b5c13d1b",
+      "name": "Clothes",
+      "type": "expense",
+      "subtype": "essential",
+      "icon": "shopping-bag",
+      "color": "#8b5cf6",
+      "transactions_count": 1,
+      "totalAmount": 250,
+      "lastUsed": "2026-01-21",
+      "monthlyAverage": 0,
+      "description": "",
+      "budget": null,
+      "isCustom": false,
+      "order": 11,
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ],
