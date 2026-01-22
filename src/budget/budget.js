@@ -16,6 +16,8 @@ let currentBudget = null;
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let isEditingBudget = false;
+let isEditingCategory = false;
+let editingCategoryId = null;
 
 // DOM Elements
 const toggleSidebarBtn = document.getElementById('toggleSidebar');
@@ -36,6 +38,8 @@ const addCategoryModal = document.getElementById('addCategoryModal');
 const closeAddCategoryModal = document.getElementById('closeAddCategoryModal');
 const cancelAddCategory = document.getElementById('cancelAddCategory');
 const addCategoryForm = document.getElementById('addCategoryForm');
+const categoryModalTitle = document.getElementById('categoryModalTitle');
+const submitCategoryBtn = document.getElementById('submitCategoryBtn');
 const addGoalBtn = document.getElementById('addGoalBtn');
 const addGoalModal = document.getElementById('addGoalModal');
 const closeAddGoalModal = document.getElementById('closeAddGoalModal');
@@ -532,15 +536,25 @@ function setupEventListeners() {
     
     // Add category modal
     addCategoryBtn?.addEventListener('click', () => {
+        isEditingCategory = false;
+        editingCategoryId = null;
+        addCategoryForm.reset();
+        updateCategoryModalForCreate();
         addCategoryModal.classList.remove('hidden');
     });
     
     closeAddCategoryModal?.addEventListener('click', () => {
         addCategoryModal.classList.add('hidden');
+        addCategoryForm.reset();
+        isEditingCategory = false;
+        editingCategoryId = null;
     });
     
     cancelAddCategory?.addEventListener('click', () => {
         addCategoryModal.classList.add('hidden');
+        addCategoryForm.reset();
+        isEditingCategory = false;
+        editingCategoryId = null;
     });
     
     // Close modal when clicking outside
@@ -573,15 +587,33 @@ function setupEventListeners() {
                 return;
             }
             
+            // If editing, update the existing category
+            if (isEditingCategory && editingCategoryId) {
+                await budgetService.updateBudgetCategory(editingCategoryId, categoryData);
+                showNotification('Category updated successfully!', 'success');
+                addCategoryModal.classList.add('hidden');
+                addCategoryForm.reset();
+                isEditingCategory = false;
+                editingCategoryId = null;
+                await loadData();
+                populateCategories();
+                updateBudgetSummary();
+                initializeCharts();
+                return;
+            }
+            
+            // Otherwise, create a new category
             await budgetService.createBudgetCategory(categoryData);
             showNotification('Category added successfully!', 'success');
             addCategoryModal.classList.add('hidden');
             addCategoryForm.reset();
             await loadData();
             populateCategories();
+            updateBudgetSummary();
+            initializeCharts();
         } catch (error) {
-            console.error('Error adding category:', error);
-            showNotification('Failed to add category', 'error');
+            console.error('Error adding/updating category:', error);
+            showNotification('Failed to save category', 'error');
         }
     });
     
@@ -1175,7 +1207,7 @@ function populateCategories() {
     document.querySelectorAll('.edit-category').forEach(button => {
         button.addEventListener('click', function() {
             const categoryId = this.getAttribute('data-id');
-            showNotification(`Editing category ${categoryId}`, 'info');
+            editCategory(categoryId);
         });
     });
     
@@ -1194,6 +1226,50 @@ function populateCategories() {
             }
         });
     });
+}
+
+function editCategory(categoryId) {
+    const category = budgetCategories.find(cat => cat.id === categoryId);
+    if (!category) {
+        showNotification('Category not found', 'error');
+        return;
+    }
+    
+    isEditingCategory = true;
+    editingCategoryId = categoryId;
+    
+    // Populate form with category data
+    const nameInput = addCategoryForm.querySelector('input[name="name"]');
+    const amountInput = addCategoryForm.querySelector('input[name="amount"]');
+    const typeSelect = addCategoryForm.querySelector('select[name="type"]');
+    const iconInputs = addCategoryForm.querySelectorAll('input[name="icon"]');
+    
+    if (nameInput) nameInput.value = category.name || '';
+    if (amountInput) amountInput.value = category.budget || '';
+    if (typeSelect) typeSelect.value = category.type || '';
+    
+    // Set the icon radio button
+    iconInputs.forEach(input => {
+        if (input.value === (category.icon || 'tag')) {
+            input.checked = true;
+        }
+    });
+    
+    // Update modal title and button
+    updateCategoryModalForEdit();
+    
+    // Show modal
+    addCategoryModal.classList.remove('hidden');
+}
+
+function updateCategoryModalForCreate() {
+    if (categoryModalTitle) categoryModalTitle.textContent = 'Add Budget Category';
+    if (submitCategoryBtn) submitCategoryBtn.textContent = 'Add Category';
+}
+
+function updateCategoryModalForEdit() {
+    if (categoryModalTitle) categoryModalTitle.textContent = 'Edit Budget Category';
+    if (submitCategoryBtn) submitCategoryBtn.textContent = 'Update Category';
 }
 
 function populateGoals() {
