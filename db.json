@@ -667,7 +667,17 @@
       "startDate": "2026-01-01",
       "deadline": "2026-05-25",
       "monthly": 2000,
-      "saved": 0,
+      "saved": 16000,
+      "userId": "1766944218991"
+    },
+    {
+      "id": "54b2",
+      "name": "test",
+      "target": 10000,
+      "startDate": "2026-01-01",
+      "deadline": "2026-01-31",
+      "monthly": 100,
+      "saved": 400,
       "userId": "1766944218991"
     }
   ]

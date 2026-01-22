@@ -18,6 +18,9 @@ let currentYear = new Date().getFullYear();
 let isEditingBudget = false;
 let isEditingCategory = false;
 let editingCategoryId = null;
+let isEditingGoal = false;
+let editingGoalId = null;
+let currentContributionGoalId = null;
 
 // DOM Elements
 const toggleSidebarBtn = document.getElementById('toggleSidebar');
@@ -45,6 +48,11 @@ const addGoalModal = document.getElementById('addGoalModal');
 const closeAddGoalModal = document.getElementById('closeAddGoalModal');
 const cancelAddGoal = document.getElementById('cancelAddGoal');
 const addGoalForm = document.getElementById('addGoalForm');
+const addContributionModal = document.getElementById('addContributionModal');
+const addContributionForm = document.getElementById('addContributionForm');
+const closeContributionModal = document.getElementById('closeContributionModal');
+const cancelContribution = document.getElementById('cancelContribution');
+const useMonthlyAmount = document.getElementById('useMonthlyAmount');
 const prevMonthBtn = document.getElementById('prevMonth');
 const nextMonthBtn = document.getElementById('nextMonth');
 const monthSelect = document.getElementById('monthSelect');
@@ -620,21 +628,34 @@ function setupEventListeners() {
     
     // Add goal modal
     addGoalBtn?.addEventListener('click', () => {
+        isEditingGoal = false;
+        editingGoalId = null;
+        addGoalForm.reset();
+        updateGoalModalForCreate();
         addGoalModal.classList.remove('hidden');
     });
     
     closeAddGoalModal?.addEventListener('click', () => {
         addGoalModal.classList.add('hidden');
+        addGoalForm.reset();
+        isEditingGoal = false;
+        editingGoalId = null;
     });
     
     cancelAddGoal?.addEventListener('click', () => {
         addGoalModal.classList.add('hidden');
+        addGoalForm.reset();
+        isEditingGoal = false;
+        editingGoalId = null;
     });
     
     // Close modal when clicking outside
     addGoalModal?.addEventListener('click', (e) => {
         if (e.target === addGoalModal) {
             addGoalModal.classList.add('hidden');
+            addGoalForm.reset();
+            isEditingGoal = false;
+            editingGoalId = null;
         }
     });
     
@@ -647,8 +668,7 @@ function setupEventListeners() {
                 target: parseFloat(formData.get('target')),
                 startDate: formData.get('startDate'),
                 deadline: formData.get('deadline'),
-                monthly: parseFloat(formData.get('monthly')),
-                saved: 0
+                monthly: parseFloat(formData.get('monthly'))
             };
             
             if (!goalData.name || !goalData.target || !goalData.startDate || !goalData.deadline || !goalData.monthly) {
@@ -656,15 +676,107 @@ function setupEventListeners() {
                 return;
             }
             
-            await budgetService.createSavingsGoal(goalData);
-            showNotification('Savings goal added successfully!', 'success');
+            // If editing, preserve the saved amount
+            if (isEditingGoal && editingGoalId) {
+                const existingGoal = savingsGoals.find(g => g.id === editingGoalId);
+                if (existingGoal) {
+                    goalData.saved = existingGoal.saved || 0;
+                }
+                await budgetService.updateSavingsGoal(editingGoalId, goalData);
+                showNotification('Savings goal updated successfully!', 'success');
+            } else {
+                goalData.saved = 0;
+                await budgetService.createSavingsGoal(goalData);
+                showNotification('Savings goal added successfully!', 'success');
+            }
+            
             addGoalModal.classList.add('hidden');
             addGoalForm.reset();
+            isEditingGoal = false;
+            editingGoalId = null;
             await loadData();
             populateGoals();
         } catch (error) {
-            console.error('Error adding goal:', error);
-            showNotification('Failed to add savings goal', 'error');
+            console.error('Error saving goal:', error);
+            showNotification('Failed to save savings goal', 'error');
+        }
+    });
+    
+    // Add contribution modal
+    closeContributionModal?.addEventListener('click', () => {
+        addContributionModal.classList.add('hidden');
+        addContributionForm.reset();
+        currentContributionGoalId = null;
+    });
+    
+    cancelContribution?.addEventListener('click', () => {
+        addContributionModal.classList.add('hidden');
+        addContributionForm.reset();
+        currentContributionGoalId = null;
+    });
+    
+    addContributionModal?.addEventListener('click', (e) => {
+        if (e.target === addContributionModal) {
+            addContributionModal.classList.add('hidden');
+            addContributionForm.reset();
+            currentContributionGoalId = null;
+        }
+    });
+    
+    useMonthlyAmount?.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (currentContributionGoalId) {
+            const goal = savingsGoals.find(g => g.id === currentContributionGoalId);
+            if (goal && goal.monthly) {
+                const amountInput = document.getElementById('contributionAmount');
+                if (amountInput) {
+                    amountInput.value = goal.monthly;
+                }
+            }
+        }
+    });
+    
+    addContributionForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentContributionGoalId) return;
+        
+        const formData = new FormData(e.target);
+        const contributionAmount = parseFloat(formData.get('amount'));
+        
+        if (isNaN(contributionAmount) || contributionAmount <= 0) {
+            showNotification('Please enter a valid amount', 'error');
+            return;
+        }
+        
+        const goal = savingsGoals.find(g => g.id === currentContributionGoalId);
+        if (!goal) {
+            showNotification('Goal not found', 'error');
+            return;
+        }
+        
+        const oldSaved = goal.saved || 0;
+        const updatedSaved = oldSaved + contributionAmount;
+        
+        try {
+            await budgetService.updateSavingsGoal(currentContributionGoalId, {
+                ...goal,
+                saved: updatedSaved
+            });
+            
+            showNotification(`Added $${contributionAmount.toFixed(2)} to "${goal.name}"`, 'success');
+            addContributionModal.classList.add('hidden');
+            addContributionForm.reset();
+            
+            // Reload data and animate progress bar
+            await loadData();
+            populateGoals();
+            // Animate after a short delay to ensure DOM is updated
+            setTimeout(() => {
+                animateProgressBar(currentContributionGoalId, oldSaved, updatedSaved, goal.target);
+            }, 100);
+        } catch (error) {
+            console.error('Error adding contribution:', error);
+            showNotification('Failed to add contribution', 'error');
         }
     });
     
@@ -1322,16 +1434,17 @@ function populateGoals() {
         
         const goalCard = document.createElement('div');
         goalCard.className = 'budget-card p-5';
+        goalCard.setAttribute('data-goal-id', goal.id);
         goalCard.innerHTML = `
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <h4 class="font-medium text-gray-800">${goal.name}</h4>
-                    <p class="text-gray-500 text-sm">$${goal.saved.toFixed(2)} of $${goal.target.toFixed(2)}</p>
+                    <p class="text-gray-500 text-sm">$<span class="saved-amount">${goal.saved.toFixed(2)}</span> of $${goal.target.toFixed(2)}</p>
                 </div>
-                <span class="font-bold ${progress === 100 ? 'text-green-600' : progress >= 50 ? 'text-blue-600' : 'text-yellow-600'}">${Math.round(progress)}%</span>
+                <span class="font-bold progress-percentage ${progress === 100 ? 'text-green-600' : progress >= 50 ? 'text-blue-600' : 'text-yellow-600'}">${Math.round(progress)}%</span>
             </div>
-            <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
-                <div class="${progress === 100 ? 'bg-green-500' : progress >= 50 ? 'bg-blue-500' : 'bg-yellow-500'} h-2 rounded-full" style="width: ${progress}%"></div>
+            <div class="w-full bg-gray-200 rounded-full h-2 mb-3 overflow-hidden">
+                <div class="progress-bar-fill ${progress === 100 ? 'bg-green-500' : progress >= 50 ? 'bg-blue-500' : 'bg-yellow-500'} h-2 rounded-full" style="width: ${progress}%"></div>
             </div>
             <div class="flex justify-between items-center">
                 <div>
@@ -1356,16 +1469,158 @@ function populateGoals() {
     document.querySelectorAll('.add-contribution').forEach(button => {
         button.addEventListener('click', function() {
             const goalId = this.getAttribute('data-id');
-            showNotification(`Adding contribution to goal ${goalId}`, 'info');
+            addContribution(goalId);
         });
     });
     
     document.querySelectorAll('.edit-goal').forEach(button => {
         button.addEventListener('click', function() {
             const goalId = this.getAttribute('data-id');
-            showNotification(`Editing goal ${goalId}`, 'info');
+            editGoal(goalId);
         });
     });
+}
+
+function editGoal(goalId) {
+    const goal = savingsGoals.find(g => g.id === goalId);
+    if (!goal) {
+        showNotification('Goal not found', 'error');
+        return;
+    }
+    
+    isEditingGoal = true;
+    editingGoalId = goalId;
+    
+    // Populate form with goal data
+    const nameInput = addGoalForm.querySelector('input[name="name"]');
+    const targetInput = addGoalForm.querySelector('input[name="target"]');
+    const startDateInput = addGoalForm.querySelector('input[name="startDate"]');
+    const deadlineInput = addGoalForm.querySelector('input[name="deadline"]');
+    const monthlyInput = addGoalForm.querySelector('input[name="monthly"]');
+    
+    if (nameInput) nameInput.value = goal.name || '';
+    if (targetInput) targetInput.value = goal.target || '';
+    if (startDateInput) startDateInput.value = goal.startDate || '';
+    if (deadlineInput) deadlineInput.value = goal.deadline || '';
+    if (monthlyInput) monthlyInput.value = goal.monthly || '';
+    
+    // Update modal title and button
+    updateGoalModalForEdit();
+    
+    // Show modal
+    addGoalModal.classList.remove('hidden');
+}
+
+function addContribution(goalId) {
+    const goal = savingsGoals.find(g => g.id === goalId);
+    if (!goal) {
+        showNotification('Goal not found', 'error');
+        return;
+    }
+    
+    currentContributionGoalId = goalId;
+    
+    // Populate modal with goal information
+    const goalNameEl = document.getElementById('contributionGoalName');
+    const currentSavedEl = document.getElementById('contributionCurrentSaved');
+    const targetEl = document.getElementById('contributionTarget');
+    const amountInput = document.getElementById('contributionAmount');
+    
+    if (goalNameEl) goalNameEl.textContent = goal.name;
+    if (currentSavedEl) currentSavedEl.textContent = `$${(goal.saved || 0).toFixed(2)}`;
+    if (targetEl) targetEl.textContent = `$${goal.target.toFixed(2)}`;
+    if (amountInput) {
+        amountInput.value = goal.monthly || '';
+        amountInput.focus();
+    }
+    
+    // Show modal
+    addContributionModal.classList.remove('hidden');
+}
+
+async function animateProgressBar(goalId, oldSaved, newSaved, target) {
+    return new Promise((resolve) => {
+        // Find the goal card
+        const goalCard = document.querySelector(`[data-goal-id="${goalId}"]`);
+        if (!goalCard) {
+            resolve();
+            return;
+        }
+        
+        const progressBar = goalCard.querySelector('.progress-bar-fill');
+        const progressText = goalCard.querySelector('.progress-percentage');
+        const savedText = goalCard.querySelector('.saved-amount');
+        
+        if (!progressBar) {
+            resolve();
+            return;
+        }
+        
+        const oldProgress = (oldSaved / target) * 100;
+        const newProgress = (newSaved / target) * 100;
+        
+        // Set initial state
+        progressBar.style.width = `${oldProgress}%`;
+        progressBar.style.transition = 'width 0.8s ease-out';
+        
+        // Trigger animation
+        setTimeout(() => {
+            progressBar.style.width = `${newProgress}%`;
+            
+            // Animate text values
+            if (progressText) {
+                animateValue(parseInt(oldProgress), parseInt(newProgress), 800, (value) => {
+                    progressText.textContent = `${Math.round(value)}%`;
+                });
+            }
+            
+            if (savedText) {
+                animateValue(oldSaved, newSaved, 800, (value) => {
+                    savedText.textContent = `$${value.toFixed(2)}`;
+                });
+            }
+            
+            setTimeout(() => {
+                resolve();
+            }, 800);
+        }, 50);
+    });
+}
+
+function animateValue(start, end, duration, callback) {
+    const startTime = performance.now();
+    const difference = end - start;
+    
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function (ease-out)
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const current = start + (difference * easeOut);
+        
+        callback(current);
+        
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    
+    requestAnimationFrame(update);
+}
+
+function updateGoalModalForCreate() {
+    const goalModalTitle = document.getElementById('goalModalTitle');
+    const submitGoalBtn = document.getElementById('submitGoalBtn');
+    if (goalModalTitle) goalModalTitle.textContent = 'Add Savings Goal';
+    if (submitGoalBtn) submitGoalBtn.textContent = 'Add Goal';
+}
+
+function updateGoalModalForEdit() {
+    const goalModalTitle = document.getElementById('goalModalTitle');
+    const submitGoalBtn = document.getElementById('submitGoalBtn');
+    if (goalModalTitle) goalModalTitle.textContent = 'Edit Savings Goal';
+    if (submitGoalBtn) submitGoalBtn.textContent = 'Update Goal';
 }
 
 function populateBudgetHistory() {
