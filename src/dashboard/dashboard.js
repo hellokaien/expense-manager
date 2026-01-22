@@ -4,6 +4,7 @@ import categoryService from '../shared/services/categoryService.js';
 import transactionService from '../shared/services/transactionService.js';  
 import { logout } from '../app.js';
 import { formatCurrency, getCurrencySymbol } from '../shared/currencyUtils.js';
+    import { getUserAvatar, saveUserAvatar, fileToBase64, validateImageFile, deleteUserAvatar } from '../shared/imageStorage.js';
 
 // Payment method labels
 const paymentMethods = {
@@ -171,39 +172,75 @@ async function loadTransactions() {
     renderTransactions();
 }
 
-function updateUserInfo(currentUser) {
-
-    if (!currentUser) return;
-    //console.log(currentUser);
-    // Get user initials
-    const firstName = currentUser.firstName || 'John';
-    const lastName = currentUser.lastName || 'Doe';
-    const initials = getInitials(firstName, lastName);
-    
-    // Update sidebar user info
-    const userProfile = document.querySelector('.flex.items-center.mb-8');
-    if (userProfile) {
-        const initialsDiv = userProfile.querySelector('.w-10.h-10');
-        const nameDiv = userProfile.querySelector('.ml-3');
+async function updateUserInfo(currentUser) {
+        if (!currentUser) return;
         
-        if (initialsDiv) {
-            initialsDiv.innerHTML = `<span class="font-bold">${initials}</span>`;
+        // Get user initials
+        const firstName = currentUser.firstName || 'John';
+        const lastName = currentUser.lastName || 'Doe';
+        const initials = getInitials(firstName, lastName);
+        
+        // Load avatar from user object (from db.json) or cache
+        let avatarData = null;
+        if (currentUser.id) {
+            avatarData = await getUserAvatar(currentUser.id, currentUser);
         }
         
-        if (nameDiv) {
-            nameDiv.innerHTML = `
-                <p class="font-medium">${firstName} ${lastName}</p>
-                <p class="text-gray-400 text-sm">${currentUser.premiumTrial ? 'Premium User' : 'Free User'}</p>
-            `;
+        // Update sidebar user info
+        const userProfile = document.querySelector('.flex.items-center.mb-8');
+        if (userProfile) {
+            const initialsDiv = userProfile.querySelector('.w-10.h-10');
+            const nameDiv = userProfile.querySelector('.ml-3');
+            
+            if (initialsDiv) {
+                if (avatarData) {
+                    displayAvatar(initialsDiv, avatarData);
+                } else {
+                initialsDiv.innerHTML = `<span class="font-bold">${initials}</span>`;
+                    initialsDiv.classList.add('bg-blue-500', 'flex', 'items-center', 'justify-center');
+                }
+            }
+            
+            if (nameDiv) {
+                const userName = nameDiv.querySelector('.font-medium');
+                const userType = nameDiv.querySelector('.text-gray-400');
+                
+                if (userName) {
+                    userName.textContent = `${firstName} ${lastName}`;
+                } else {
+                    nameDiv.innerHTML = `
+                        <p class="font-medium user-name">${firstName} ${lastName}</p>
+                        <p class="text-gray-400 text-sm">${currentUser.premiumTrial ? 'Premium User' : 'Free User'}</p>
+                    `;
+                }
+                
+                if (userType) {
+                    userType.textContent = currentUser.premiumTrial ? 'Premium User' : 'Free User';
+                }
+            }
+        }
+        
+        // Update profile picture in settings
+        const profileAvatar = document.getElementById('profileAvatarDisplay');
+        if (profileAvatar) {
+            if (avatarData) {
+                displayAvatar(profileAvatar, avatarData);
+            } else {
+            profileAvatar.textContent = initials;
+                profileAvatar.classList.add('bg-gradient-to-br', 'from-blue-400', 'to-purple-500', 'flex', 'items-center', 'justify-center');
+            }
+        }
+        
+        // Update avatar in modal if exists
+        const avatarPreview = document.getElementById('avatarPreview');
+        if (avatarPreview) {
+            if (avatarData) {
+                displayAvatar(avatarPreview, avatarData);
+            } else {
+            avatarPreview.textContent = initials;
+            }
         }
     }
-    
-    // Update avatar in modal if exists
-    const avatarPreview = document.getElementById('avatarPreview');
-    if (avatarPreview) {
-        avatarPreview.textContent = initials;
-    }
-}
 
 function setupEventListeners() {
     // Open modal
@@ -1160,3 +1197,24 @@ async function deleteTransactionFromServer(id) {
         throw error;
     }
 }
+
+function displayAvatar(avatarDiv, imageData) {
+        if (!avatarDiv || !imageData) return;
+        
+        // Clear existing content
+        avatarDiv.innerHTML = '';
+        
+        // Create image element
+        const img = document.createElement('img');
+        img.src = imageData;
+        img.classList.add('w-full', 'h-full', 'rounded-full', 'object-cover');
+        img.style.display = 'block';
+        
+        // Add to div
+        avatarDiv.appendChild(img);
+        
+        // Remove gradient background classes if present
+        avatarDiv.classList.remove('bg-gradient-to-br', 'from-blue-400', 'to-purple-500', 'bg-blue-500');
+    }
+
+
