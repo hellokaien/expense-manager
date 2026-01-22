@@ -209,7 +209,7 @@ function calculateCategorySpending(categoryId) {
             const tDate = new Date(t.date);
             return tDate >= currentMonthStart && tDate <= currentMonthEnd;
         })
-        .reduce((sum, t) => sum + (t.amount || 0), 0);
+        .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
 }
 
 function calculateBudgetHistory() {
@@ -539,6 +539,7 @@ function setupEventListeners() {
         isEditingCategory = false;
         editingCategoryId = null;
         addCategoryForm.reset();
+        populateTransactionCategoriesDropdown();
         updateCategoryModalForCreate();
         addCategoryModal.classList.remove('hidden');
     });
@@ -582,8 +583,8 @@ function setupEventListeners() {
                 icon: formData.get('icon') || 'tag'
             };
             
-            if (!categoryData.name || !categoryData.budget || !categoryData.type) {
-                showNotification('Please fill in all required fields', 'error');
+            if (!categoryData.name || !categoryData.budget || !categoryData.type || !categoryData.categoryId) {
+                showNotification('Please fill in all required fields, including linking to a transaction category', 'error');
                 return;
             }
             
@@ -1238,15 +1239,20 @@ function editCategory(categoryId) {
     isEditingCategory = true;
     editingCategoryId = categoryId;
     
+    // Populate transaction categories dropdown first
+    populateTransactionCategoriesDropdown();
+    
     // Populate form with category data
     const nameInput = addCategoryForm.querySelector('input[name="name"]');
     const amountInput = addCategoryForm.querySelector('input[name="amount"]');
     const typeSelect = addCategoryForm.querySelector('select[name="type"]');
+    const categorySelect = document.getElementById('budgetCategorySelect');
     const iconInputs = addCategoryForm.querySelectorAll('input[name="icon"]');
     
     if (nameInput) nameInput.value = category.name || '';
     if (amountInput) amountInput.value = category.budget || '';
     if (typeSelect) typeSelect.value = category.type || '';
+    if (categorySelect) categorySelect.value = category.categoryId || '';
     
     // Set the icon radio button
     iconInputs.forEach(input => {
@@ -1270,6 +1276,34 @@ function updateCategoryModalForCreate() {
 function updateCategoryModalForEdit() {
     if (categoryModalTitle) categoryModalTitle.textContent = 'Edit Budget Category';
     if (submitCategoryBtn) submitCategoryBtn.textContent = 'Update Category';
+}
+
+function populateTransactionCategoriesDropdown() {
+    const categorySelect = document.getElementById('budgetCategorySelect');
+    if (!categorySelect) return;
+    
+    // Clear existing options
+    categorySelect.innerHTML = '<option value="">Select a transaction category...</option>';
+    
+    // Get expense categories from allCategories
+    const expenseCategories = allCategories.filter(cat => cat.type === 'expense');
+    
+    if (expenseCategories.length === 0) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No expense categories found - Create one in Categories tab first';
+        option.disabled = true;
+        categorySelect.appendChild(option);
+        return;
+    }
+    
+    // Populate dropdown with expense categories
+    expenseCategories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.id;
+        option.textContent = category.name;
+        categorySelect.appendChild(option);
+    });
 }
 
 function populateGoals() {
