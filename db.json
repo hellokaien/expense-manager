@@ -526,12 +526,12 @@
   ],
   "budgets": [
     {
-      "id": "c09b",
-      "name": "January 1st Cutoff",
-      "totalAmount": 7500,
+      "id": "63c0",
+      "name": "January 2026 Budget",
+      "totalAmount": 15000,
       "startDate": "2026-01-01",
-      "endDate": "2026-01-15",
-      "description": "Orange Apps",
+      "endDate": "2026-01-31",
+      "description": "Orange apps money",
       "recurring": true,
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
@@ -542,6 +542,33 @@
       "budgetId": "c327",
       "name": "asdasd",
       "budget": 150,
+      "categoryId": "",
+      "type": "essential",
+      "icon": "tag"
+    },
+    {
+      "id": "6cb4",
+      "budgetId": "63c0",
+      "name": "Rent/Mortgage",
+      "budget": 6100,
+      "categoryId": "",
+      "type": "essential",
+      "icon": "tag"
+    },
+    {
+      "id": "d27b",
+      "budgetId": "63c0",
+      "name": "Groceries",
+      "budget": 500,
+      "categoryId": "",
+      "type": "essential",
+      "icon": "utensils"
+    },
+    {
+      "id": "6e5c",
+      "budgetId": "63c0",
+      "name": "Transportation",
+      "budget": 500,
       "categoryId": "",
       "type": "essential",
       "icon": "tag"

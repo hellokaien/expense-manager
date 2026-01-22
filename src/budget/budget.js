@@ -15,6 +15,7 @@ let allCategories = [];
 let currentBudget = null;
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
+let isEditingBudget = false;
 
 // DOM Elements
 const toggleSidebarBtn = document.getElementById('toggleSidebar');
@@ -43,6 +44,13 @@ const addGoalForm = document.getElementById('addGoalForm');
 const prevMonthBtn = document.getElementById('prevMonth');
 const nextMonthBtn = document.getElementById('nextMonth');
 const monthSelect = document.getElementById('monthSelect');
+const deleteBudgetBtn = document.getElementById('deleteBudgetBtn');
+const editBudgetBtn = document.getElementById('editBudgetBtn');
+const budgetActions = document.getElementById('budgetActions');
+const currentBudgetName = document.getElementById('currentBudgetName');
+const currentBudgetPeriod = document.getElementById('currentBudgetPeriod');
+const budgetModalTitle = document.getElementById('budgetModalTitle');
+const submitBudgetBtn = document.getElementById('submitBudgetBtn');
 
 // Navigation elements
 const dashboardNav = document.getElementById('dashboardNav');
@@ -81,6 +89,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         setupEventListeners();
         initializeDragAndDrop();
         updateMonthSelector();
+        updateCreateBudgetButton();
     } catch (error) {
         console.error('Error initializing budget planner:', error);
         showNotification('Failed to load budget data', 'error');
@@ -98,17 +107,47 @@ async function loadData() {
         // Load budgets - handle 404 gracefully
         try {
             const budgets = await budgetService.getBudgets();
-            if (budgets && budgets.length > 0) {
-                currentBudget = budgets.find(b => {
-                    const budgetDate = new Date(b.startDate);
-                    return budgetDate.getMonth() === currentMonth && budgetDate.getFullYear() === currentYear;
-                }) || budgets[0];
+            console.log('Loaded budgets:', budgets);
+            console.log('Current month/year:', currentMonth, currentYear);
+            
+            if (budgets && Array.isArray(budgets) && budgets.length > 0) {
+                // Find budget for the selected month/year - don't fall back to first budget
+                // A budget belongs to a month if its startDate or endDate falls within that month
+                const budgetForMonth = budgets.find(b => {
+                    if (!b || !b.startDate || !b.endDate) return false;
+                    
+                    const budgetStart = new Date(b.startDate);
+                    const budgetEnd = new Date(b.endDate);
+                    
+                    if (isNaN(budgetStart.getTime()) || isNaN(budgetEnd.getTime())) return false;
+                    
+                    const budgetStartMonth = budgetStart.getMonth();
+                    const budgetStartYear = budgetStart.getFullYear();
+                    const budgetEndMonth = budgetEnd.getMonth();
+                    const budgetEndYear = budgetEnd.getFullYear();
+                    
+                    // Check if budget's primary month matches (use start date as primary indicator)
+                    // But also check if end date is in the same month
+                    const isStartInTargetMonth = budgetStartMonth === currentMonth && budgetStartYear === currentYear;
+                    const isEndInTargetMonth = budgetEndMonth === currentMonth && budgetEndYear === currentYear;
+                    
+                    console.log(`Checking budget: ${b.name} - Start: ${budgetStartMonth}/${budgetStartYear}, End: ${budgetEndMonth}/${budgetEndYear} vs Current: ${currentMonth}/${currentYear}`);
+                    
+                    return isStartInTargetMonth || isEndInTargetMonth;
+                });
+                
+                // Only set currentBudget if we found one for this month
+                currentBudget = budgetForMonth || null;
+                console.log('Selected budget for month:', currentBudget);
+            } else {
+                currentBudget = null;
             }
             
-            // Load budget categories
+            // Load budget categories only if we have a budget for this month
             if (currentBudget) {
                 try {
                     budgetCategories = await budgetService.getBudgetCategories(currentBudget.id);
+                    console.log('Loaded budget categories:', budgetCategories);
                     // Calculate actual spending from transactions
                     budgetCategories = budgetCategories.map(cat => {
                         const spent = calculateCategorySpending(cat.categoryId || cat.category);
@@ -118,6 +157,9 @@ async function loadData() {
                     console.warn('No budget categories found:', error);
                     budgetCategories = [];
                 }
+            } else {
+                // No budget for this month - clear categories
+                budgetCategories = [];
             }
         } catch (error) {
             console.warn('Budgets endpoint not available, using defaults:', error);
@@ -289,6 +331,7 @@ function setupEventListeners() {
             populateCategories();
             populateBudgetHistory();
             initializeCharts();
+            updateCreateBudgetButton();
         });
     });
     
@@ -304,6 +347,7 @@ function setupEventListeners() {
             populateCategories();
             populateBudgetHistory();
             initializeCharts();
+            updateCreateBudgetButton();
         });
     });
     
@@ -317,20 +361,37 @@ function setupEventListeners() {
             populateCategories();
             populateBudgetHistory();
             initializeCharts();
+            updateCreateBudgetButton();
         });
     });
     
     // Create budget modal
     createBudgetBtn?.addEventListener('click', () => {
+        isEditingBudget = false;
+        prefillBudgetForm();
+        updateBudgetModalForCreate();
+        createBudgetModal.classList.remove('hidden');
+    });
+    
+    // Edit budget button
+    editBudgetBtn?.addEventListener('click', () => {
+        if (!currentBudget) return;
+        isEditingBudget = true;
+        populateBudgetFormForEdit();
+        updateBudgetModalForEdit();
         createBudgetModal.classList.remove('hidden');
     });
     
     closeCreateBudgetModal?.addEventListener('click', () => {
         createBudgetModal.classList.add('hidden');
+        createBudgetForm.reset();
+        isEditingBudget = false;
     });
     
     cancelCreateBudget?.addEventListener('click', () => {
         createBudgetModal.classList.add('hidden');
+        createBudgetForm.reset();
+        isEditingBudget = false;
     });
     
     // Close modal when clicking outside
@@ -344,26 +405,125 @@ function setupEventListeners() {
         e.preventDefault();
         try {
             const formData = new FormData(e.target);
+            
+            // Format dates as YYYY-MM-DD without timezone conversion
+            const formatDateString = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+            
+            let startDate, endDate;
+            
+            // If editing, use existing budget dates; otherwise calculate new dates
+            if (isEditingBudget && currentBudget) {
+                startDate = currentBudget.startDate;
+                endDate = currentBudget.endDate;
+            } else {
+                // Automatically set dates to first and last day of current month
+                const firstDay = new Date(currentYear, currentMonth, 1);
+                const lastDay = new Date(currentYear, currentMonth + 1, 0);
+                startDate = formatDateString(firstDay);
+                endDate = formatDateString(lastDay);
+            }
+            
             const budgetData = {
                 name: formData.get('name'),
                 totalAmount: parseFloat(formData.get('amount')),
-                startDate: formData.get('startDate'),
-                endDate: formData.get('endDate'),
+                startDate: startDate,
+                endDate: endDate,
                 description: formData.get('description') || '',
                 recurring: formData.get('recurring') === 'on'
             };
             
-            if (!budgetData.name || !budgetData.totalAmount || !budgetData.startDate || !budgetData.endDate) {
+            if (!budgetData.name || !budgetData.totalAmount) {
                 showNotification('Please fill in all required fields', 'error');
                 return;
             }
             
-            await budgetService.createBudget(budgetData);
+            // Check if budget already exists for this month
+            const budgets = await budgetService.getBudgets();
+            if (!budgets || !Array.isArray(budgets)) {
+                console.error('Invalid budgets response:', budgets);
+                showNotification('Error checking for existing budgets', 'error');
+                return;
+            }
+            
+            // If editing, update the existing budget
+            if (isEditingBudget && currentBudget) {
+                await budgetService.updateBudget(currentBudget.id, budgetData);
+                showNotification('Budget updated successfully!', 'success');
+                createBudgetModal.classList.add('hidden');
+                createBudgetForm.reset();
+                isEditingBudget = false;
+                
+                // Reload all data to get the updated budget
+                await loadData();
+                updateBudgetSummary();
+                populateCategories();
+                populateBudgetHistory();
+                initializeCharts();
+                updateCreateBudgetButton();
+                return;
+            }
+            
+            // If creating, check for existing budget
+            // Check for existing budget for this month/year
+            // A budget belongs to a month if its startDate or endDate falls within that month
+            const targetMonthStart = new Date(currentYear, currentMonth, 1);
+            const targetMonthEnd = new Date(currentYear, currentMonth + 1, 0);
+            
+            const existingBudget = budgets.find(b => {
+                if (!b || !b.startDate || !b.endDate) return false;
+                
+                const budgetStart = new Date(b.startDate);
+                const budgetEnd = new Date(b.endDate);
+                
+                // Check if the dates are valid
+                if (isNaN(budgetStart.getTime()) || isNaN(budgetEnd.getTime())) return false;
+                
+                // Check if the budget overlaps with the target month
+                // Budget belongs to a month if:
+                // 1. Budget start date is in the target month, OR
+                // 2. Budget end date is in the target month, OR
+                // 3. Budget spans the entire target month
+                const budgetStartMonth = budgetStart.getMonth();
+                const budgetStartYear = budgetStart.getFullYear();
+                const budgetEndMonth = budgetEnd.getMonth();
+                const budgetEndYear = budgetEnd.getFullYear();
+                
+                // Check if budget's primary month matches (use start date as primary indicator)
+                // But also check if end date is in the same month
+                const isStartInTargetMonth = budgetStartMonth === currentMonth && budgetStartYear === currentYear;
+                const isEndInTargetMonth = budgetEndMonth === currentMonth && budgetEndYear === currentYear;
+                
+                return isStartInTargetMonth || isEndInTargetMonth;
+            });
+            
+            if (existingBudget) {
+                const monthName = firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                showNotification(`A budget already exists for ${monthName}. You can only create one budget per month. Please delete the existing budget first or select a different month.`, 'error');
+                return;
+            }
+            
+            const newBudget = await budgetService.createBudget(budgetData);
+            console.log('Budget created:', newBudget);
             showNotification('Budget created successfully!', 'success');
             createBudgetModal.classList.add('hidden');
             createBudgetForm.reset();
+            
+            // Reload all data to get the newly created budget
             await loadData();
+            console.log('After loadData - currentBudget:', currentBudget);
+            console.log('After loadData - budgetCategories:', budgetCategories);
+            
+            // Update UI components
             updateBudgetSummary();
+            populateCategories();
+            populateBudgetHistory();
+            initializeCharts();
+            updateCreateBudgetButton();
         } catch (error) {
             console.error('Error creating budget:', error);
             showNotification('Failed to create budget', 'error');
@@ -501,6 +661,42 @@ function setupEventListeners() {
         showNotification('Budget allocation saved successfully!', 'success');
     });
     
+    // Delete budget button
+    deleteBudgetBtn?.addEventListener('click', async () => {
+        if (!currentBudget) return;
+        
+        const monthName = new Date(currentYear, currentMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        const confirmed = confirm(`Are you sure you want to delete the budget for ${monthName}? This will also delete all associated budget categories. This action cannot be undone.`);
+        
+        if (!confirmed) return;
+        
+        try {
+            // First, delete all budget categories associated with this budget
+            if (budgetCategories.length > 0) {
+                const deleteCategoryPromises = budgetCategories.map(cat => 
+                    budgetService.deleteBudgetCategory(cat.id)
+                );
+                await Promise.all(deleteCategoryPromises);
+            }
+            
+            // Then delete the budget
+            await budgetService.deleteBudget(currentBudget.id);
+            
+            showNotification('Budget deleted successfully', 'success');
+            
+            // Reload data to refresh UI
+            await loadData();
+            updateBudgetSummary();
+            populateCategories();
+            populateBudgetHistory();
+            initializeCharts();
+            updateCreateBudgetButton();
+        } catch (error) {
+            console.error('Error deleting budget:', error);
+            showNotification('Failed to delete budget', 'error');
+        }
+    });
+    
     // Logout functionality
     logoutBtn?.addEventListener('click', () => {
         document.getElementById('logoutModal').classList.remove('hidden');
@@ -529,48 +725,207 @@ function updateMonthSelector() {
     }
 }
 
+function prefillBudgetForm() {
+    if (!createBudgetForm) return;
+    
+    // Calculate first and last day of current month
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    
+    // Format dates as YYYY-MM-DD without timezone conversion
+    const formatDateString = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+    
+    // Set hidden date inputs
+    const hiddenStartDate = document.getElementById('hiddenStartDate');
+    const hiddenEndDate = document.getElementById('hiddenEndDate');
+    if (hiddenStartDate) hiddenStartDate.value = formatDateString(firstDay);
+    if (hiddenEndDate) hiddenEndDate.value = formatDateString(lastDay);
+    
+    // Update budget period display
+    const budgetPeriodDisplay = document.getElementById('budgetPeriodDisplay');
+    if (budgetPeriodDisplay) {
+        const monthName = firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        const startDateStr = firstDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const endDateStr = lastDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        budgetPeriodDisplay.textContent = `${monthName} (${startDateStr} - ${endDateStr})`;
+    }
+    
+    // Pre-fill budget name
+    const budgetNameInput = document.getElementById('budgetNameInput');
+    if (budgetNameInput) {
+        const monthName = firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        budgetNameInput.value = `${monthName} Budget`;
+    }
+}
+
+function populateBudgetFormForEdit() {
+    if (!createBudgetForm || !currentBudget) return;
+    
+    // Populate form fields with current budget data
+    const budgetNameInput = document.getElementById('budgetNameInput');
+    const amountInput = createBudgetForm.querySelector('input[name="amount"]');
+    const descriptionInput = createBudgetForm.querySelector('textarea[name="description"]');
+    const recurringInput = createBudgetForm.querySelector('input[name="recurring"]');
+    const hiddenStartDate = document.getElementById('hiddenStartDate');
+    const hiddenEndDate = document.getElementById('hiddenEndDate');
+    const budgetPeriodDisplay = document.getElementById('budgetPeriodDisplay');
+    
+    if (budgetNameInput) budgetNameInput.value = currentBudget.name || '';
+    if (amountInput) amountInput.value = currentBudget.totalAmount || '';
+    if (descriptionInput) descriptionInput.value = currentBudget.description || '';
+    if (recurringInput) recurringInput.checked = currentBudget.recurring || false;
+    
+    // Set dates from current budget
+    if (hiddenStartDate) hiddenStartDate.value = currentBudget.startDate || '';
+    if (hiddenEndDate) hiddenEndDate.value = currentBudget.endDate || '';
+    
+    // Update budget period display
+    if (budgetPeriodDisplay && currentBudget.startDate && currentBudget.endDate) {
+        const startDate = new Date(currentBudget.startDate);
+        const endDate = new Date(currentBudget.endDate);
+        const monthName = startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        const startDateStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const endDateStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        budgetPeriodDisplay.textContent = `${monthName} (${startDateStr} - ${endDateStr})`;
+    }
+}
+
+function updateBudgetModalForCreate() {
+    if (budgetModalTitle) budgetModalTitle.textContent = 'Create New Budget';
+    if (submitBudgetBtn) submitBudgetBtn.textContent = 'Create Budget';
+}
+
+function updateBudgetModalForEdit() {
+    if (budgetModalTitle) budgetModalTitle.textContent = 'Edit Budget';
+    if (submitBudgetBtn) submitBudgetBtn.textContent = 'Update Budget';
+}
+
+async function updateCreateBudgetButton() {
+    if (!createBudgetBtn) return;
+    
+    try {
+        const budgets = await budgetService.getBudgets();
+        const existingBudget = budgets.find(b => {
+            const budgetDate = new Date(b.startDate);
+            return budgetDate.getMonth() === currentMonth && budgetDate.getFullYear() === currentYear;
+        });
+        
+        if (existingBudget) {
+            createBudgetBtn.disabled = true;
+            createBudgetBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            createBudgetBtn.title = 'A budget already exists for this month';
+        } else {
+            createBudgetBtn.disabled = false;
+            createBudgetBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            createBudgetBtn.title = '';
+        }
+    } catch (error) {
+        // If error, enable button anyway
+        createBudgetBtn.disabled = false;
+        createBudgetBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+}
+
 function updateBudgetSummary() {
-    if (!currentBudget) {
-        // Set default values
-        const defaultCard = document.querySelector('#overviewContent [class*="text-2xl"]');
-        if (defaultCard) {
-            const h3 = defaultCard.parentElement?.parentElement?.querySelector('h3');
-            if (h3) {
-                h3.textContent = '$0';
+    console.log('updateBudgetSummary called - currentBudget:', currentBudget);
+    console.log('updateBudgetSummary - budgetCategories:', budgetCategories);
+    
+    // Show/hide budget actions based on whether budget exists
+    if (budgetActions) {
+        if (currentBudget) {
+            budgetActions.classList.remove('hidden');
+            // Update budget name and period
+            if (currentBudgetName) {
+                currentBudgetName.textContent = currentBudget.name || 'Current Budget';
             }
+            if (currentBudgetPeriod) {
+                const startDate = new Date(currentBudget.startDate);
+                const endDate = new Date(currentBudget.endDate);
+                const period = `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                currentBudgetPeriod.textContent = period;
+            }
+        } else {
+            budgetActions.classList.add('hidden');
+        }
+    }
+    
+    if (!currentBudget) {
+        console.log('No current budget - setting to $0');
+        // Set default values - target only the summary cards grid
+        const summaryGrid = document.getElementById('budgetSummaryGrid');
+        if (summaryGrid) {
+            const summaryCards = summaryGrid.querySelectorAll('.budget-card');
+            summaryCards.forEach((card) => {
+                const h3 = card.querySelector('h3');
+                if (h3) {
+                    h3.textContent = '$0';
+                }
+            });
         }
         return;
     }
     
-    const totalBudget = currentBudget.totalAmount || 0;
-    const totalSpent = budgetCategories.reduce((sum, cat) => sum + (cat.spent || 0), 0);
+    const totalBudget = parseFloat(currentBudget.totalAmount) || 0;
+    const totalSpent = budgetCategories.reduce((sum, cat) => sum + (parseFloat(cat.spent) || 0), 0);
     const remaining = totalBudget - totalSpent;
-    const dailyAverage = totalSpent / new Date(currentYear, currentMonth + 1, 0).getDate();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const daysPassed = Math.min(new Date().getDate(), daysInMonth);
+    const dailyAverage = daysPassed > 0 ? totalSpent / daysPassed : 0;
     
-    // Update summary cards
-    const summaryCards = document.querySelectorAll('#overviewContent .budget-card');
+    console.log('Budget Summary:', { totalBudget, totalSpent, remaining, dailyAverage });
+    
+    // Update summary cards - target only the summary cards grid
+    const summaryGrid = document.getElementById('budgetSummaryGrid');
+    if (!summaryGrid) {
+        console.error('budgetSummaryGrid not found!');
+        return;
+    }
+    
+    const summaryCards = summaryGrid.querySelectorAll('.budget-card');
+    console.log('Found summary cards:', summaryCards.length);
+    
+    // Total Budget
     if (summaryCards[0]) {
         const h3 = summaryCards[0].querySelector('h3');
         if (h3) {
             h3.textContent = `$${totalBudget.toLocaleString()}`;
+            console.log('Updated Total Budget to:', h3.textContent);
+        } else {
+            console.error('Total Budget h3 not found in card 0');
         }
+    } else {
+        console.error('Summary card 0 not found');
     }
+    
+    // Spent This Month
     if (summaryCards[1]) {
         const h3 = summaryCards[1].querySelector('h3');
         if (h3) {
             h3.textContent = `$${totalSpent.toLocaleString()}`;
+            console.log('Updated Spent to:', h3.textContent);
         }
     }
+    
+    // Remaining
     if (summaryCards[2]) {
         const h3 = summaryCards[2].querySelector('h3');
         if (h3) {
             h3.textContent = `$${remaining.toLocaleString()}`;
+            console.log('Updated Remaining to:', h3.textContent);
         }
     }
+    
+    // Daily Average
     if (summaryCards[3]) {
         const h3 = summaryCards[3].querySelector('h3');
         if (h3) {
             h3.textContent = `$${dailyAverage.toFixed(0)}`;
+            console.log('Updated Daily Average to:', h3.textContent);
         }
     }
 }
