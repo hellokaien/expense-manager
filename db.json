@@ -665,7 +665,7 @@
       "startDate": "2026-01-19",
       "deadline": "2026-05-26",
       "monthly": 200,
-      "saved": 400,
+      "saved": 600,
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     },
     {
@@ -687,6 +687,16 @@
       "monthly": 100,
       "saved": 400,
       "userId": "1766944218991"
+    },
+    {
+      "id": "d86a",
+      "name": "Iphone 12",
+      "target": 24000,
+      "startDate": "2026-01-01",
+      "deadline": "2026-06-30",
+      "monthly": 4000,
+      "saved": 24000,
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ]
 }

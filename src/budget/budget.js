@@ -5,6 +5,7 @@ import { logout } from '../app.js';
 import budgetService from '../shared/services/budgetService.js';
 import transactionService from '../shared/services/transactionService.js';
 import categoryService from '../shared/services/categoryService.js';
+import { formatCurrency, getCurrencySymbol } from '../shared/currencyUtils.js';
 
 // Global data
 let budgetCategories = [];
@@ -1420,6 +1421,7 @@ function populateTransactionCategoriesDropdown() {
 
 function populateGoals() {
     const goalsGrid = document.querySelector('#goalsContent .grid');
+    const userCurrency = getCurrencySymbol();
     if (!goalsGrid) return;
     
     goalsGrid.innerHTML = '';
@@ -1439,7 +1441,7 @@ function populateGoals() {
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <h4 class="font-medium text-gray-800">${goal.name}</h4>
-                    <p class="text-gray-500 text-sm">$<span class="saved-amount">${goal.saved.toFixed(2)}</span> of $${goal.target.toFixed(2)}</p>
+                    <p class="text-gray-500 text-sm">${userCurrency}<span class="saved-amount">${goal.saved.toFixed(2)}</span> of ${formatCurrency(goal.target)}</p>
                 </div>
                 <span class="font-bold progress-percentage ${progress === 100 ? 'text-green-600' : progress >= 50 ? 'text-blue-600' : 'text-yellow-600'}">${Math.round(progress)}%</span>
             </div>
@@ -1448,7 +1450,7 @@ function populateGoals() {
             </div>
             <div class="flex justify-between items-center">
                 <div>
-                    <p class="text-gray-500 text-sm">$${goal.monthly.toFixed(2)}/month</p>
+                    <p class="text-gray-500 text-sm">${formatCurrency(goal.monthly)}/month</p>
                     <p class="text-gray-500 text-sm">Due: ${new Date(goal.deadline).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>
                 </div>
                 <div class="flex space-x-2">
@@ -1576,7 +1578,7 @@ async function animateProgressBar(goalId, oldSaved, newSaved, target) {
             
             if (savedText) {
                 animateValue(oldSaved, newSaved, 800, (value) => {
-                    savedText.textContent = `$${value.toFixed(2)}`;
+                    savedText.textContent = `${formatCurrency(value)}`;
                 });
             }
             
