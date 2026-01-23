@@ -293,8 +293,26 @@
             <div class="p-8">
                 <!-- Overview Tab Content -->
                 <div id="overviewContent" class="budget-tab-content">
+                    <!-- Budget Actions (Only shown when budget exists) -->
+                    <div id="budgetActions" class="mb-6 hidden">
+                        <div class="budget-card p-4 flex justify-between items-center">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-800" id="currentBudgetName">Current Budget</h3>
+                                <p class="text-gray-600 text-sm" id="currentBudgetPeriod">Period</p>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <button id="editBudgetBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-5 rounded-lg flex items-center transition">
+                                    <i class="fas fa-edit mr-2"></i> Edit Budget
+                                </button>
+                                <button id="deleteBudgetBtn" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-5 rounded-lg flex items-center transition">
+                                    <i class="fas fa-trash mr-2"></i> Delete Budget
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Budget Summary -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div id="budgetSummaryGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                         <div class="budget-card p-6">
                             <div class="flex items-center justify-between mb-4">
                                 <div>
@@ -841,32 +859,36 @@
         <div class="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div class="p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold text-gray-800">Create New Budget</h3>
+                    <h3 class="text-2xl font-bold text-gray-800" id="budgetModalTitle">Create New Budget</h3>
                     <button id="closeCreateBudgetModal" class="text-gray-400 hover:text-gray-600">
                         <i class="fas fa-times text-2xl"></i>
                     </button>
                 </div>
                 
                 <form id="createBudgetForm">
+                    <!-- Budget Period Info (Read-only) -->
+                    <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-calendar-alt text-blue-600 mr-2"></i>
+                            <label class="text-sm font-medium text-blue-900">Budget Period</label>
+                        </div>
+                        <p class="text-blue-800 font-medium" id="budgetPeriodDisplay">Month will be automatically selected</p>
+                        <p class="text-blue-600 text-sm mt-1">The budget will cover the entire month from the 1st to the last day.</p>
+                    </div>
+                    
+                    <!-- Hidden date inputs (auto-filled) -->
+                    <input type="hidden" name="startDate" id="hiddenStartDate">
+                    <input type="hidden" name="endDate" id="hiddenEndDate">
+                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <label class="block text-gray-700 mb-2">Budget Name</label>
-                            <input type="text" name="name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="e.g., May 2023 Budget" required>
+                            <input type="text" name="name" id="budgetNameInput" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="e.g., May 2023 Budget" required>
                         </div>
                         
                         <div>
                             <label class="block text-gray-700 mb-2">Total Amount ($)</label>
                             <input type="number" name="amount" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="0.00" step="0.01" required>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-gray-700 mb-2">Start Date</label>
-                            <input type="date" name="startDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-gray-700 mb-2">End Date</label>
-                            <input type="date" name="endDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
                         </div>
                     </div>
                     
@@ -884,7 +906,7 @@
                     
                     <div class="flex justify-end space-x-4">
                         <button type="button" id="cancelCreateBudget" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">Cancel</button>
-                        <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                        <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium" id="submitBudgetBtn">
                             Create Budget
                         </button>
                     </div>
@@ -898,7 +920,7 @@
         <div class="bg-white rounded-xl w-full max-w-md">
             <div class="p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold text-gray-800">Add Budget Category</h3>
+                    <h3 class="text-2xl font-bold text-gray-800" id="categoryModalTitle">Add Budget Category</h3>
                     <button id="closeAddCategoryModal" class="text-gray-400 hover:text-gray-600">
                         <i class="fas fa-times text-2xl"></i>
                     </button>
@@ -913,6 +935,15 @@
                     <div class="mb-4">
                         <label class="block text-gray-700 mb-2">Budget Amount ($)</label>
                         <input type="number" name="amount" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="0.00" step="0.01" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Link to Transaction Category <span class="text-red-500">*</span></label>
+                        <select name="category" id="budgetCategorySelect" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" required>
+                            <option value="">Select a transaction category...</option>
+                            <!-- Expense categories will be populated here -->
+                        </select>
+                        <p class="text-gray-500 text-xs mt-1">Select a transaction category to automatically track spending from your transactions. If you don't have a matching category, create one in the Categories tab first.</p>
                     </div>
                     
                     <div class="mb-4">
@@ -964,7 +995,7 @@
                     
                     <div class="flex justify-end space-x-4">
                         <button type="button" id="cancelAddCategory" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">Cancel</button>
-                        <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                        <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium" id="submitCategoryBtn">
                             Add Category
                         </button>
                     </div>
@@ -978,7 +1009,7 @@
         <div class="bg-white rounded-xl w-full max-w-md">
             <div class="p-6">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-2xl font-bold text-gray-800">Add Savings Goal</h3>
+                    <h3 class="text-2xl font-bold text-gray-800" id="goalModalTitle">Add Savings Goal</h3>
                     <button id="closeAddGoalModal" class="text-gray-400 hover:text-gray-600">
                         <i class="fas fa-times text-2xl"></i>
                     </button>
@@ -1013,8 +1044,43 @@
                     
                     <div class="flex justify-end space-x-4">
                         <button type="button" id="cancelAddGoal" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">Cancel</button>
-                        <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+                        <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium" id="submitGoalBtn">
                             Add Goal
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Contribution Modal -->
+    <div id="addContributionModal" class="fixed inset-0 modal-overlay flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl w-full max-w-md">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">Add Contribution</h3>
+                    <button id="closeContributionModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-2">Goal: <span class="font-semibold text-gray-800" id="contributionGoalName"></span></p>
+                    <p class="text-sm text-gray-600 mb-2">Current saved: <span class="font-semibold text-green-600" id="contributionCurrentSaved">$0.00</span></p>
+                    <p class="text-sm text-gray-600">Target: <span class="font-semibold text-blue-600" id="contributionTarget">$0.00</span></p>
+                </div>
+                
+                <form id="addContributionForm">
+                    <div class="mb-6">
+                        <label class="block text-gray-700 mb-2">Contribution Amount ($)</label>
+                        <input type="number" id="contributionAmount" name="amount" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="0.00" step="0.01" min="0.01" required>
+                        <p class="text-gray-500 text-xs mt-2">Suggested: <button type="button" id="useMonthlyAmount" class="text-blue-600 hover:text-blue-800 underline">Use monthly contribution</button></p>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" id="cancelContribution" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">Cancel</button>
+                        <button type="submit" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
+                            <i class="fas fa-plus-circle mr-2"></i> Add Contribution
                         </button>
                     </div>
                 </form>

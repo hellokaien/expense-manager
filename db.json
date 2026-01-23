@@ -144,19 +144,6 @@
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     },
     {
-      "id": "txn-b5046b1f-e1c6-49d0-999a-5087f6df5766",
-      "title": "test",
-      "amount": 1,
-      "type": "income",
-      "category": "ctg-e25668d8-9b3c-41b2-8a18-6eccd8e51432",
-      "date": "2026-01-19",
-      "paymentMethod": "cash",
-      "status": "completed",
-      "notes": "1",
-      "tags": [],
-      "userId": "1766944218991"
-    },
-    {
       "id": "txn-6fbdfc61-5ef5-44ed-af8c-aae407da618f",
       "title": "Full Tank ",
       "amount": 94,
@@ -207,6 +194,58 @@
       "notes": "Gutom na gutom na at ayaw sa paksiw",
       "tags": [],
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-0058fdb1-12ec-4e87-9639-ae4583c59cba",
+      "title": "Sample income",
+      "amount": 15000,
+      "type": "income",
+      "category": "ctg-e25668d8-9b3c-41b2-8a18-6eccd8e51432",
+      "date": "2026-01-22",
+      "paymentMethod": "digital_wallet",
+      "status": "completed",
+      "notes": "",
+      "tags": [],
+      "userId": "1766944218991"
+    },
+    {
+      "id": "txn-f1da311b-8e43-4aec-b3e6-841fdabcce6c",
+      "title": "Sent to Mama",
+      "amount": 4000,
+      "type": "expense",
+      "category": "ctg-3366f741-7941-4a3b-a779-6a2411624f1e",
+      "date": "2026-01-22",
+      "paymentMethod": "digital_wallet",
+      "status": "completed",
+      "notes": "",
+      "tags": [],
+      "userId": "1766944218991"
+    },
+    {
+      "id": "txn-a0b76e7b-2dd3-4ac7-a724-b982b51c6a4b",
+      "title": "test",
+      "amount": 4000,
+      "type": "expense",
+      "category": "ctg-3366f741-7941-4a3b-a779-6a2411624f1e",
+      "date": "2026-01-22",
+      "paymentMethod": "credit_card",
+      "status": "completed",
+      "notes": "",
+      "tags": [],
+      "userId": "1766944218991"
+    },
+    {
+      "id": "txn-c4a3dbaf-6518-484a-8808-2956840eadc8",
+      "title": "sdsds",
+      "amount": 500,
+      "type": "expense",
+      "category": "ctg-3366f741-7941-4a3b-a779-6a2411624f1e",
+      "date": "2026-01-22",
+      "paymentMethod": "digital_wallet",
+      "status": "completed",
+      "notes": "",
+      "tags": [],
+      "userId": "1766944218991"
     }
   ],
   "users": [
@@ -221,7 +260,7 @@
       "accountId": "MF176694421784318",
       "phone": "0909",
       "country": "US",
-      "currency": "USD",
+      "currency": "PHP",
       "initials": "TT",
       "profileCompleted": false,
       "goals": [
@@ -234,7 +273,7 @@
       "trialStartDate": "2025-12-28T17:50:18.949Z",
       "trialEndDate": "2026-01-27T17:50:18.949Z",
       "status": "active",
-      "lastLogin": "2026-01-19T14:07:09.123Z",
+      "lastLogin": "2026-01-22T16:58:10.796Z",
       "bio": "",
       "location": "",
       "dateFormat": "MM/DD/YYYY"
@@ -522,18 +561,45 @@
       "isCustom": false,
       "order": 11,
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "ctg-3366f741-7941-4a3b-a779-6a2411624f1e",
+      "name": "Rent/Mortgage",
+      "type": "expense",
+      "subtype": "essential",
+      "icon": "home",
+      "color": "#ef4444",
+      "transactions_count": 1,
+      "totalAmount": 4000,
+      "lastUsed": "2026-01-22",
+      "monthlyAverage": 0,
+      "description": "",
+      "budget": null,
+      "isCustom": false,
+      "order": 2,
+      "userId": "1766944218991"
     }
   ],
   "budgets": [
     {
-      "id": "c09b",
-      "name": "January 1st Cutoff",
-      "totalAmount": 7500,
+      "id": "63c0",
+      "name": "January 2026 Budget",
+      "totalAmount": 15000,
       "startDate": "2026-01-01",
-      "endDate": "2026-01-15",
-      "description": "Orange Apps",
+      "endDate": "2026-01-31",
+      "description": "Orange apps money",
       "recurring": true,
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "2674",
+      "name": "January 2026 Budget",
+      "totalAmount": 15000,
+      "startDate": "2026-01-01",
+      "endDate": "2026-01-31",
+      "description": "",
+      "recurring": false,
+      "userId": "1766944218991"
     }
   ],
   "budgetCategories": [
@@ -545,6 +611,42 @@
       "categoryId": "",
       "type": "essential",
       "icon": "tag"
+    },
+    {
+      "id": "6cb4",
+      "budgetId": "63c0",
+      "name": "Rent/Mortgage",
+      "budget": 6100,
+      "categoryId": "",
+      "type": "essential",
+      "icon": "tag"
+    },
+    {
+      "id": "d27b",
+      "budgetId": "63c0",
+      "name": "Groceries",
+      "budget": 500,
+      "categoryId": "",
+      "type": "essential",
+      "icon": "utensils"
+    },
+    {
+      "id": "6e5c",
+      "budgetId": "63c0",
+      "name": "Transportation",
+      "budget": 500,
+      "categoryId": "",
+      "type": "essential",
+      "icon": "tag"
+    },
+    {
+      "id": "5f2b",
+      "budgetId": "2674",
+      "name": "Rent/Mortage",
+      "budget": 8000,
+      "categoryId": "ctg-3366f741-7941-4a3b-a779-6a2411624f1e",
+      "type": "essential",
+      "icon": "home"
     }
   ],
   "savingsGoals": [
@@ -557,6 +659,26 @@
       "monthly": 200,
       "saved": 0,
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "823f",
+      "name": "Vacation to Baguio",
+      "target": 15000,
+      "startDate": "2026-01-01",
+      "deadline": "2026-05-25",
+      "monthly": 2000,
+      "saved": 16000,
+      "userId": "1766944218991"
+    },
+    {
+      "id": "54b2",
+      "name": "test",
+      "target": 10000,
+      "startDate": "2026-01-01",
+      "deadline": "2026-01-31",
+      "monthly": 100,
+      "saved": 400,
+      "userId": "1766944218991"
     }
   ]
 }

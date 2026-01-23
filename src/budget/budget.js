@@ -15,6 +15,12 @@ let allCategories = [];
 let currentBudget = null;
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
+let isEditingBudget = false;
+let isEditingCategory = false;
+let editingCategoryId = null;
+let isEditingGoal = false;
+let editingGoalId = null;
+let currentContributionGoalId = null;
 
 // DOM Elements
 const toggleSidebarBtn = document.getElementById('toggleSidebar');
@@ -35,14 +41,28 @@ const addCategoryModal = document.getElementById('addCategoryModal');
 const closeAddCategoryModal = document.getElementById('closeAddCategoryModal');
 const cancelAddCategory = document.getElementById('cancelAddCategory');
 const addCategoryForm = document.getElementById('addCategoryForm');
+const categoryModalTitle = document.getElementById('categoryModalTitle');
+const submitCategoryBtn = document.getElementById('submitCategoryBtn');
 const addGoalBtn = document.getElementById('addGoalBtn');
 const addGoalModal = document.getElementById('addGoalModal');
 const closeAddGoalModal = document.getElementById('closeAddGoalModal');
 const cancelAddGoal = document.getElementById('cancelAddGoal');
 const addGoalForm = document.getElementById('addGoalForm');
+const addContributionModal = document.getElementById('addContributionModal');
+const addContributionForm = document.getElementById('addContributionForm');
+const closeContributionModal = document.getElementById('closeContributionModal');
+const cancelContribution = document.getElementById('cancelContribution');
+const useMonthlyAmount = document.getElementById('useMonthlyAmount');
 const prevMonthBtn = document.getElementById('prevMonth');
 const nextMonthBtn = document.getElementById('nextMonth');
 const monthSelect = document.getElementById('monthSelect');
+const deleteBudgetBtn = document.getElementById('deleteBudgetBtn');
+const editBudgetBtn = document.getElementById('editBudgetBtn');
+const budgetActions = document.getElementById('budgetActions');
+const currentBudgetName = document.getElementById('currentBudgetName');
+const currentBudgetPeriod = document.getElementById('currentBudgetPeriod');
+const budgetModalTitle = document.getElementById('budgetModalTitle');
+const submitBudgetBtn = document.getElementById('submitBudgetBtn');
 
 // Navigation elements
 const dashboardNav = document.getElementById('dashboardNav');
@@ -81,6 +101,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         setupEventListeners();
         initializeDragAndDrop();
         updateMonthSelector();
+        updateCreateBudgetButton();
     } catch (error) {
         console.error('Error initializing budget planner:', error);
         showNotification('Failed to load budget data', 'error');
@@ -98,17 +119,47 @@ async function loadData() {
         // Load budgets - handle 404 gracefully
         try {
             const budgets = await budgetService.getBudgets();
-            if (budgets && budgets.length > 0) {
-                currentBudget = budgets.find(b => {
-                    const budgetDate = new Date(b.startDate);
-                    return budgetDate.getMonth() === currentMonth && budgetDate.getFullYear() === currentYear;
-                }) || budgets[0];
+            console.log('Loaded budgets:', budgets);
+            console.log('Current month/year:', currentMonth, currentYear);
+            
+            if (budgets && Array.isArray(budgets) && budgets.length > 0) {
+                // Find budget for the selected month/year - don't fall back to first budget
+                // A budget belongs to a month if its startDate or endDate falls within that month
+                const budgetForMonth = budgets.find(b => {
+                    if (!b || !b.startDate || !b.endDate) return false;
+                    
+                    const budgetStart = new Date(b.startDate);
+                    const budgetEnd = new Date(b.endDate);
+                    
+                    if (isNaN(budgetStart.getTime()) || isNaN(budgetEnd.getTime())) return false;
+                    
+                    const budgetStartMonth = budgetStart.getMonth();
+                    const budgetStartYear = budgetStart.getFullYear();
+                    const budgetEndMonth = budgetEnd.getMonth();
+                    const budgetEndYear = budgetEnd.getFullYear();
+                    
+                    // Check if budget's primary month matches (use start date as primary indicator)
+                    // But also check if end date is in the same month
+                    const isStartInTargetMonth = budgetStartMonth === currentMonth && budgetStartYear === currentYear;
+                    const isEndInTargetMonth = budgetEndMonth === currentMonth && budgetEndYear === currentYear;
+                    
+                    console.log(`Checking budget: ${b.name} - Start: ${budgetStartMonth}/${budgetStartYear}, End: ${budgetEndMonth}/${budgetEndYear} vs Current: ${currentMonth}/${currentYear}`);
+                    
+                    return isStartInTargetMonth || isEndInTargetMonth;
+                });
+                
+                // Only set currentBudget if we found one for this month
+                currentBudget = budgetForMonth || null;
+                console.log('Selected budget for month:', currentBudget);
+            } else {
+                currentBudget = null;
             }
             
-            // Load budget categories
+            // Load budget categories only if we have a budget for this month
             if (currentBudget) {
                 try {
                     budgetCategories = await budgetService.getBudgetCategories(currentBudget.id);
+                    console.log('Loaded budget categories:', budgetCategories);
                     // Calculate actual spending from transactions
                     budgetCategories = budgetCategories.map(cat => {
                         const spent = calculateCategorySpending(cat.categoryId || cat.category);
@@ -118,6 +169,9 @@ async function loadData() {
                     console.warn('No budget categories found:', error);
                     budgetCategories = [];
                 }
+            } else {
+                // No budget for this month - clear categories
+                budgetCategories = [];
             }
         } catch (error) {
             console.warn('Budgets endpoint not available, using defaults:', error);
@@ -163,7 +217,7 @@ function calculateCategorySpending(categoryId) {
             const tDate = new Date(t.date);
             return tDate >= currentMonthStart && tDate <= currentMonthEnd;
         })
-        .reduce((sum, t) => sum + (t.amount || 0), 0);
+        .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
 }
 
 function calculateBudgetHistory() {
@@ -289,6 +343,7 @@ function setupEventListeners() {
             populateCategories();
             populateBudgetHistory();
             initializeCharts();
+            updateCreateBudgetButton();
         });
     });
     
@@ -304,6 +359,7 @@ function setupEventListeners() {
             populateCategories();
             populateBudgetHistory();
             initializeCharts();
+            updateCreateBudgetButton();
         });
     });
     
@@ -317,20 +373,37 @@ function setupEventListeners() {
             populateCategories();
             populateBudgetHistory();
             initializeCharts();
+            updateCreateBudgetButton();
         });
     });
     
     // Create budget modal
     createBudgetBtn?.addEventListener('click', () => {
+        isEditingBudget = false;
+        prefillBudgetForm();
+        updateBudgetModalForCreate();
+        createBudgetModal.classList.remove('hidden');
+    });
+    
+    // Edit budget button
+    editBudgetBtn?.addEventListener('click', () => {
+        if (!currentBudget) return;
+        isEditingBudget = true;
+        populateBudgetFormForEdit();
+        updateBudgetModalForEdit();
         createBudgetModal.classList.remove('hidden');
     });
     
     closeCreateBudgetModal?.addEventListener('click', () => {
         createBudgetModal.classList.add('hidden');
+        createBudgetForm.reset();
+        isEditingBudget = false;
     });
     
     cancelCreateBudget?.addEventListener('click', () => {
         createBudgetModal.classList.add('hidden');
+        createBudgetForm.reset();
+        isEditingBudget = false;
     });
     
     // Close modal when clicking outside
@@ -344,26 +417,125 @@ function setupEventListeners() {
         e.preventDefault();
         try {
             const formData = new FormData(e.target);
+            
+            // Format dates as YYYY-MM-DD without timezone conversion
+            const formatDateString = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+            
+            let startDate, endDate;
+            
+            // If editing, use existing budget dates; otherwise calculate new dates
+            if (isEditingBudget && currentBudget) {
+                startDate = currentBudget.startDate;
+                endDate = currentBudget.endDate;
+            } else {
+                // Automatically set dates to first and last day of current month
+                const firstDay = new Date(currentYear, currentMonth, 1);
+                const lastDay = new Date(currentYear, currentMonth + 1, 0);
+                startDate = formatDateString(firstDay);
+                endDate = formatDateString(lastDay);
+            }
+            
             const budgetData = {
                 name: formData.get('name'),
                 totalAmount: parseFloat(formData.get('amount')),
-                startDate: formData.get('startDate'),
-                endDate: formData.get('endDate'),
+                startDate: startDate,
+                endDate: endDate,
                 description: formData.get('description') || '',
                 recurring: formData.get('recurring') === 'on'
             };
             
-            if (!budgetData.name || !budgetData.totalAmount || !budgetData.startDate || !budgetData.endDate) {
+            if (!budgetData.name || !budgetData.totalAmount) {
                 showNotification('Please fill in all required fields', 'error');
                 return;
             }
             
-            await budgetService.createBudget(budgetData);
+            // Check if budget already exists for this month
+            const budgets = await budgetService.getBudgets();
+            if (!budgets || !Array.isArray(budgets)) {
+                console.error('Invalid budgets response:', budgets);
+                showNotification('Error checking for existing budgets', 'error');
+                return;
+            }
+            
+            // If editing, update the existing budget
+            if (isEditingBudget && currentBudget) {
+                await budgetService.updateBudget(currentBudget.id, budgetData);
+                showNotification('Budget updated successfully!', 'success');
+                createBudgetModal.classList.add('hidden');
+                createBudgetForm.reset();
+                isEditingBudget = false;
+                
+                // Reload all data to get the updated budget
+                await loadData();
+                updateBudgetSummary();
+                populateCategories();
+                populateBudgetHistory();
+                initializeCharts();
+                updateCreateBudgetButton();
+                return;
+            }
+            
+            // If creating, check for existing budget
+            // Check for existing budget for this month/year
+            // A budget belongs to a month if its startDate or endDate falls within that month
+            const targetMonthStart = new Date(currentYear, currentMonth, 1);
+            const targetMonthEnd = new Date(currentYear, currentMonth + 1, 0);
+            
+            const existingBudget = budgets.find(b => {
+                if (!b || !b.startDate || !b.endDate) return false;
+                
+                const budgetStart = new Date(b.startDate);
+                const budgetEnd = new Date(b.endDate);
+                
+                // Check if the dates are valid
+                if (isNaN(budgetStart.getTime()) || isNaN(budgetEnd.getTime())) return false;
+                
+                // Check if the budget overlaps with the target month
+                // Budget belongs to a month if:
+                // 1. Budget start date is in the target month, OR
+                // 2. Budget end date is in the target month, OR
+                // 3. Budget spans the entire target month
+                const budgetStartMonth = budgetStart.getMonth();
+                const budgetStartYear = budgetStart.getFullYear();
+                const budgetEndMonth = budgetEnd.getMonth();
+                const budgetEndYear = budgetEnd.getFullYear();
+                
+                // Check if budget's primary month matches (use start date as primary indicator)
+                // But also check if end date is in the same month
+                const isStartInTargetMonth = budgetStartMonth === currentMonth && budgetStartYear === currentYear;
+                const isEndInTargetMonth = budgetEndMonth === currentMonth && budgetEndYear === currentYear;
+                
+                return isStartInTargetMonth || isEndInTargetMonth;
+            });
+            
+            if (existingBudget) {
+                const monthName = firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                showNotification(`A budget already exists for ${monthName}. You can only create one budget per month. Please delete the existing budget first or select a different month.`, 'error');
+                return;
+            }
+            
+            const newBudget = await budgetService.createBudget(budgetData);
+            console.log('Budget created:', newBudget);
             showNotification('Budget created successfully!', 'success');
             createBudgetModal.classList.add('hidden');
             createBudgetForm.reset();
+            
+            // Reload all data to get the newly created budget
             await loadData();
+            console.log('After loadData - currentBudget:', currentBudget);
+            console.log('After loadData - budgetCategories:', budgetCategories);
+            
+            // Update UI components
             updateBudgetSummary();
+            populateCategories();
+            populateBudgetHistory();
+            initializeCharts();
+            updateCreateBudgetButton();
         } catch (error) {
             console.error('Error creating budget:', error);
             showNotification('Failed to create budget', 'error');
@@ -372,15 +544,26 @@ function setupEventListeners() {
     
     // Add category modal
     addCategoryBtn?.addEventListener('click', () => {
+        isEditingCategory = false;
+        editingCategoryId = null;
+        addCategoryForm.reset();
+        populateTransactionCategoriesDropdown();
+        updateCategoryModalForCreate();
         addCategoryModal.classList.remove('hidden');
     });
     
     closeAddCategoryModal?.addEventListener('click', () => {
         addCategoryModal.classList.add('hidden');
+        addCategoryForm.reset();
+        isEditingCategory = false;
+        editingCategoryId = null;
     });
     
     cancelAddCategory?.addEventListener('click', () => {
         addCategoryModal.classList.add('hidden');
+        addCategoryForm.reset();
+        isEditingCategory = false;
+        editingCategoryId = null;
     });
     
     // Close modal when clicking outside
@@ -408,40 +591,71 @@ function setupEventListeners() {
                 icon: formData.get('icon') || 'tag'
             };
             
-            if (!categoryData.name || !categoryData.budget || !categoryData.type) {
-                showNotification('Please fill in all required fields', 'error');
+            if (!categoryData.name || !categoryData.budget || !categoryData.type || !categoryData.categoryId) {
+                showNotification('Please fill in all required fields, including linking to a transaction category', 'error');
                 return;
             }
             
+            // If editing, update the existing category
+            if (isEditingCategory && editingCategoryId) {
+                await budgetService.updateBudgetCategory(editingCategoryId, categoryData);
+                showNotification('Category updated successfully!', 'success');
+                addCategoryModal.classList.add('hidden');
+                addCategoryForm.reset();
+                isEditingCategory = false;
+                editingCategoryId = null;
+                await loadData();
+                populateCategories();
+                updateBudgetSummary();
+                initializeCharts();
+                return;
+            }
+            
+            // Otherwise, create a new category
             await budgetService.createBudgetCategory(categoryData);
             showNotification('Category added successfully!', 'success');
             addCategoryModal.classList.add('hidden');
             addCategoryForm.reset();
             await loadData();
             populateCategories();
+            updateBudgetSummary();
+            initializeCharts();
         } catch (error) {
-            console.error('Error adding category:', error);
-            showNotification('Failed to add category', 'error');
+            console.error('Error adding/updating category:', error);
+            showNotification('Failed to save category', 'error');
         }
     });
     
     // Add goal modal
     addGoalBtn?.addEventListener('click', () => {
+        isEditingGoal = false;
+        editingGoalId = null;
+        addGoalForm.reset();
+        updateGoalModalForCreate();
         addGoalModal.classList.remove('hidden');
     });
     
     closeAddGoalModal?.addEventListener('click', () => {
         addGoalModal.classList.add('hidden');
+        addGoalForm.reset();
+        isEditingGoal = false;
+        editingGoalId = null;
     });
     
     cancelAddGoal?.addEventListener('click', () => {
         addGoalModal.classList.add('hidden');
+        addGoalForm.reset();
+        isEditingGoal = false;
+        editingGoalId = null;
     });
     
     // Close modal when clicking outside
     addGoalModal?.addEventListener('click', (e) => {
         if (e.target === addGoalModal) {
             addGoalModal.classList.add('hidden');
+            addGoalForm.reset();
+            isEditingGoal = false;
+            editingGoalId = null;
         }
     });
     
@@ -454,8 +668,7 @@ function setupEventListeners() {
                 target: parseFloat(formData.get('target')),
                 startDate: formData.get('startDate'),
                 deadline: formData.get('deadline'),
-                monthly: parseFloat(formData.get('monthly')),
-                saved: 0
+                monthly: parseFloat(formData.get('monthly'))
             };
             
             if (!goalData.name || !goalData.target || !goalData.startDate || !goalData.deadline || !goalData.monthly) {
@@ -463,15 +676,107 @@ function setupEventListeners() {
                 return;
             }
             
-            await budgetService.createSavingsGoal(goalData);
-            showNotification('Savings goal added successfully!', 'success');
+            // If editing, preserve the saved amount
+            if (isEditingGoal && editingGoalId) {
+                const existingGoal = savingsGoals.find(g => g.id === editingGoalId);
+                if (existingGoal) {
+                    goalData.saved = existingGoal.saved || 0;
+                }
+                await budgetService.updateSavingsGoal(editingGoalId, goalData);
+                showNotification('Savings goal updated successfully!', 'success');
+            } else {
+                goalData.saved = 0;
+                await budgetService.createSavingsGoal(goalData);
+                showNotification('Savings goal added successfully!', 'success');
+            }
+            
             addGoalModal.classList.add('hidden');
             addGoalForm.reset();
+            isEditingGoal = false;
+            editingGoalId = null;
             await loadData();
             populateGoals();
         } catch (error) {
-            console.error('Error adding goal:', error);
-            showNotification('Failed to add savings goal', 'error');
+            console.error('Error saving goal:', error);
+            showNotification('Failed to save savings goal', 'error');
+        }
+    });
+    
+    // Add contribution modal
+    closeContributionModal?.addEventListener('click', () => {
+        addContributionModal.classList.add('hidden');
+        addContributionForm.reset();
+        currentContributionGoalId = null;
+    });
+    
+    cancelContribution?.addEventListener('click', () => {
+        addContributionModal.classList.add('hidden');
+        addContributionForm.reset();
+        currentContributionGoalId = null;
+    });
+    
+    addContributionModal?.addEventListener('click', (e) => {
+        if (e.target === addContributionModal) {
+            addContributionModal.classList.add('hidden');
+            addContributionForm.reset();
+            currentContributionGoalId = null;
+        }
+    });
+    
+    useMonthlyAmount?.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (currentContributionGoalId) {
+            const goal = savingsGoals.find(g => g.id === currentContributionGoalId);
+            if (goal && goal.monthly) {
+                const amountInput = document.getElementById('contributionAmount');
+                if (amountInput) {
+                    amountInput.value = goal.monthly;
+                }
+            }
+        }
+    });
+    
+    addContributionForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentContributionGoalId) return;
+        
+        const formData = new FormData(e.target);
+        const contributionAmount = parseFloat(formData.get('amount'));
+        
+        if (isNaN(contributionAmount) || contributionAmount <= 0) {
+            showNotification('Please enter a valid amount', 'error');
+            return;
+        }
+        
+        const goal = savingsGoals.find(g => g.id === currentContributionGoalId);
+        if (!goal) {
+            showNotification('Goal not found', 'error');
+            return;
+        }
+        
+        const oldSaved = goal.saved || 0;
+        const updatedSaved = oldSaved + contributionAmount;
+        
+        try {
+            await budgetService.updateSavingsGoal(currentContributionGoalId, {
+                ...goal,
+                saved: updatedSaved
+            });
+            
+            showNotification(`Added $${contributionAmount.toFixed(2)} to "${goal.name}"`, 'success');
+            addContributionModal.classList.add('hidden');
+            addContributionForm.reset();
+            
+            // Reload data and animate progress bar
+            await loadData();
+            populateGoals();
+            // Animate after a short delay to ensure DOM is updated
+            setTimeout(() => {
+                animateProgressBar(currentContributionGoalId, oldSaved, updatedSaved, goal.target);
+            }, 100);
+        } catch (error) {
+            console.error('Error adding contribution:', error);
+            showNotification('Failed to add contribution', 'error');
         }
     });
     
@@ -499,6 +804,42 @@ function setupEventListeners() {
     // Save allocation button
     document.getElementById('saveAllocationBtn')?.addEventListener('click', () => {
         showNotification('Budget allocation saved successfully!', 'success');
+    });
+    
+    // Delete budget button
+    deleteBudgetBtn?.addEventListener('click', async () => {
+        if (!currentBudget) return;
+        
+        const monthName = new Date(currentYear, currentMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        const confirmed = confirm(`Are you sure you want to delete the budget for ${monthName}? This will also delete all associated budget categories. This action cannot be undone.`);
+        
+        if (!confirmed) return;
+        
+        try {
+            // First, delete all budget categories associated with this budget
+            if (budgetCategories.length > 0) {
+                const deleteCategoryPromises = budgetCategories.map(cat => 
+                    budgetService.deleteBudgetCategory(cat.id)
+                );
+                await Promise.all(deleteCategoryPromises);
+            }
+            
+            // Then delete the budget
+            await budgetService.deleteBudget(currentBudget.id);
+            
+            showNotification('Budget deleted successfully', 'success');
+            
+            // Reload data to refresh UI
+            await loadData();
+            updateBudgetSummary();
+            populateCategories();
+            populateBudgetHistory();
+            initializeCharts();
+            updateCreateBudgetButton();
+        } catch (error) {
+            console.error('Error deleting budget:', error);
+            showNotification('Failed to delete budget', 'error');
+        }
     });
     
     // Logout functionality
@@ -529,48 +870,207 @@ function updateMonthSelector() {
     }
 }
 
+function prefillBudgetForm() {
+    if (!createBudgetForm) return;
+    
+    // Calculate first and last day of current month
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    
+    // Format dates as YYYY-MM-DD without timezone conversion
+    const formatDateString = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+    
+    // Set hidden date inputs
+    const hiddenStartDate = document.getElementById('hiddenStartDate');
+    const hiddenEndDate = document.getElementById('hiddenEndDate');
+    if (hiddenStartDate) hiddenStartDate.value = formatDateString(firstDay);
+    if (hiddenEndDate) hiddenEndDate.value = formatDateString(lastDay);
+    
+    // Update budget period display
+    const budgetPeriodDisplay = document.getElementById('budgetPeriodDisplay');
+    if (budgetPeriodDisplay) {
+        const monthName = firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        const startDateStr = firstDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const endDateStr = lastDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        budgetPeriodDisplay.textContent = `${monthName} (${startDateStr} - ${endDateStr})`;
+    }
+    
+    // Pre-fill budget name
+    const budgetNameInput = document.getElementById('budgetNameInput');
+    if (budgetNameInput) {
+        const monthName = firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        budgetNameInput.value = `${monthName} Budget`;
+    }
+}
+
+function populateBudgetFormForEdit() {
+    if (!createBudgetForm || !currentBudget) return;
+    
+    // Populate form fields with current budget data
+    const budgetNameInput = document.getElementById('budgetNameInput');
+    const amountInput = createBudgetForm.querySelector('input[name="amount"]');
+    const descriptionInput = createBudgetForm.querySelector('textarea[name="description"]');
+    const recurringInput = createBudgetForm.querySelector('input[name="recurring"]');
+    const hiddenStartDate = document.getElementById('hiddenStartDate');
+    const hiddenEndDate = document.getElementById('hiddenEndDate');
+    const budgetPeriodDisplay = document.getElementById('budgetPeriodDisplay');
+    
+    if (budgetNameInput) budgetNameInput.value = currentBudget.name || '';
+    if (amountInput) amountInput.value = currentBudget.totalAmount || '';
+    if (descriptionInput) descriptionInput.value = currentBudget.description || '';
+    if (recurringInput) recurringInput.checked = currentBudget.recurring || false;
+    
+    // Set dates from current budget
+    if (hiddenStartDate) hiddenStartDate.value = currentBudget.startDate || '';
+    if (hiddenEndDate) hiddenEndDate.value = currentBudget.endDate || '';
+    
+    // Update budget period display
+    if (budgetPeriodDisplay && currentBudget.startDate && currentBudget.endDate) {
+        const startDate = new Date(currentBudget.startDate);
+        const endDate = new Date(currentBudget.endDate);
+        const monthName = startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        const startDateStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const endDateStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        budgetPeriodDisplay.textContent = `${monthName} (${startDateStr} - ${endDateStr})`;
+    }
+}
+
+function updateBudgetModalForCreate() {
+    if (budgetModalTitle) budgetModalTitle.textContent = 'Create New Budget';
+    if (submitBudgetBtn) submitBudgetBtn.textContent = 'Create Budget';
+}
+
+function updateBudgetModalForEdit() {
+    if (budgetModalTitle) budgetModalTitle.textContent = 'Edit Budget';
+    if (submitBudgetBtn) submitBudgetBtn.textContent = 'Update Budget';
+}
+
+async function updateCreateBudgetButton() {
+    if (!createBudgetBtn) return;
+    
+    try {
+        const budgets = await budgetService.getBudgets();
+        const existingBudget = budgets.find(b => {
+            const budgetDate = new Date(b.startDate);
+            return budgetDate.getMonth() === currentMonth && budgetDate.getFullYear() === currentYear;
+        });
+        
+        if (existingBudget) {
+            createBudgetBtn.disabled = true;
+            createBudgetBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            createBudgetBtn.title = 'A budget already exists for this month';
+        } else {
+            createBudgetBtn.disabled = false;
+            createBudgetBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            createBudgetBtn.title = '';
+        }
+    } catch (error) {
+        // If error, enable button anyway
+        createBudgetBtn.disabled = false;
+        createBudgetBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+}
+
 function updateBudgetSummary() {
-    if (!currentBudget) {
-        // Set default values
-        const defaultCard = document.querySelector('#overviewContent [class*="text-2xl"]');
-        if (defaultCard) {
-            const h3 = defaultCard.parentElement?.parentElement?.querySelector('h3');
-            if (h3) {
-                h3.textContent = '$0';
+    console.log('updateBudgetSummary called - currentBudget:', currentBudget);
+    console.log('updateBudgetSummary - budgetCategories:', budgetCategories);
+    
+    // Show/hide budget actions based on whether budget exists
+    if (budgetActions) {
+        if (currentBudget) {
+            budgetActions.classList.remove('hidden');
+            // Update budget name and period
+            if (currentBudgetName) {
+                currentBudgetName.textContent = currentBudget.name || 'Current Budget';
             }
+            if (currentBudgetPeriod) {
+                const startDate = new Date(currentBudget.startDate);
+                const endDate = new Date(currentBudget.endDate);
+                const period = `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                currentBudgetPeriod.textContent = period;
+            }
+        } else {
+            budgetActions.classList.add('hidden');
+        }
+    }
+    
+    if (!currentBudget) {
+        console.log('No current budget - setting to $0');
+        // Set default values - target only the summary cards grid
+        const summaryGrid = document.getElementById('budgetSummaryGrid');
+        if (summaryGrid) {
+            const summaryCards = summaryGrid.querySelectorAll('.budget-card');
+            summaryCards.forEach((card) => {
+                const h3 = card.querySelector('h3');
+                if (h3) {
+                    h3.textContent = '$0';
+                }
+            });
         }
         return;
     }
     
-    const totalBudget = currentBudget.totalAmount || 0;
-    const totalSpent = budgetCategories.reduce((sum, cat) => sum + (cat.spent || 0), 0);
+    const totalBudget = parseFloat(currentBudget.totalAmount) || 0;
+    const totalSpent = budgetCategories.reduce((sum, cat) => sum + (parseFloat(cat.spent) || 0), 0);
     const remaining = totalBudget - totalSpent;
-    const dailyAverage = totalSpent / new Date(currentYear, currentMonth + 1, 0).getDate();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const daysPassed = Math.min(new Date().getDate(), daysInMonth);
+    const dailyAverage = daysPassed > 0 ? totalSpent / daysPassed : 0;
     
-    // Update summary cards
-    const summaryCards = document.querySelectorAll('#overviewContent .budget-card');
+    console.log('Budget Summary:', { totalBudget, totalSpent, remaining, dailyAverage });
+    
+    // Update summary cards - target only the summary cards grid
+    const summaryGrid = document.getElementById('budgetSummaryGrid');
+    if (!summaryGrid) {
+        console.error('budgetSummaryGrid not found!');
+        return;
+    }
+    
+    const summaryCards = summaryGrid.querySelectorAll('.budget-card');
+    console.log('Found summary cards:', summaryCards.length);
+    
+    // Total Budget
     if (summaryCards[0]) {
         const h3 = summaryCards[0].querySelector('h3');
         if (h3) {
             h3.textContent = `$${totalBudget.toLocaleString()}`;
+            console.log('Updated Total Budget to:', h3.textContent);
+        } else {
+            console.error('Total Budget h3 not found in card 0');
         }
+    } else {
+        console.error('Summary card 0 not found');
     }
+    
+    // Spent This Month
     if (summaryCards[1]) {
         const h3 = summaryCards[1].querySelector('h3');
         if (h3) {
             h3.textContent = `$${totalSpent.toLocaleString()}`;
+            console.log('Updated Spent to:', h3.textContent);
         }
     }
+    
+    // Remaining
     if (summaryCards[2]) {
         const h3 = summaryCards[2].querySelector('h3');
         if (h3) {
             h3.textContent = `$${remaining.toLocaleString()}`;
+            console.log('Updated Remaining to:', h3.textContent);
         }
     }
+    
+    // Daily Average
     if (summaryCards[3]) {
         const h3 = summaryCards[3].querySelector('h3');
         if (h3) {
             h3.textContent = `$${dailyAverage.toFixed(0)}`;
+            console.log('Updated Daily Average to:', h3.textContent);
         }
     }
 }
@@ -820,7 +1320,7 @@ function populateCategories() {
     document.querySelectorAll('.edit-category').forEach(button => {
         button.addEventListener('click', function() {
             const categoryId = this.getAttribute('data-id');
-            showNotification(`Editing category ${categoryId}`, 'info');
+            editCategory(categoryId);
         });
     });
     
@@ -841,6 +1341,83 @@ function populateCategories() {
     });
 }
 
+function editCategory(categoryId) {
+    const category = budgetCategories.find(cat => cat.id === categoryId);
+    if (!category) {
+        showNotification('Category not found', 'error');
+        return;
+    }
+    
+    isEditingCategory = true;
+    editingCategoryId = categoryId;
+    
+    // Populate transaction categories dropdown first
+    populateTransactionCategoriesDropdown();
+    
+    // Populate form with category data
+    const nameInput = addCategoryForm.querySelector('input[name="name"]');
+    const amountInput = addCategoryForm.querySelector('input[name="amount"]');
+    const typeSelect = addCategoryForm.querySelector('select[name="type"]');
+    const categorySelect = document.getElementById('budgetCategorySelect');
+    const iconInputs = addCategoryForm.querySelectorAll('input[name="icon"]');
+    
+    if (nameInput) nameInput.value = category.name || '';
+    if (amountInput) amountInput.value = category.budget || '';
+    if (typeSelect) typeSelect.value = category.type || '';
+    if (categorySelect) categorySelect.value = category.categoryId || '';
+    
+    // Set the icon radio button
+    iconInputs.forEach(input => {
+        if (input.value === (category.icon || 'tag')) {
+            input.checked = true;
+        }
+    });
+    
+    // Update modal title and button
+    updateCategoryModalForEdit();
+    
+    // Show modal
+    addCategoryModal.classList.remove('hidden');
+}
+
+function updateCategoryModalForCreate() {
+    if (categoryModalTitle) categoryModalTitle.textContent = 'Add Budget Category';
+    if (submitCategoryBtn) submitCategoryBtn.textContent = 'Add Category';
+}
+
+function updateCategoryModalForEdit() {
+    if (categoryModalTitle) categoryModalTitle.textContent = 'Edit Budget Category';
+    if (submitCategoryBtn) submitCategoryBtn.textContent = 'Update Category';
+}
+
+function populateTransactionCategoriesDropdown() {
+    const categorySelect = document.getElementById('budgetCategorySelect');
+    if (!categorySelect) return;
+    
+    // Clear existing options
+    categorySelect.innerHTML = '<option value="">Select a transaction category...</option>';
+    
+    // Get expense categories from allCategories
+    const expenseCategories = allCategories.filter(cat => cat.type === 'expense');
+    
+    if (expenseCategories.length === 0) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No expense categories found - Create one in Categories tab first';
+        option.disabled = true;
+        categorySelect.appendChild(option);
+        return;
+    }
+    
+    // Populate dropdown with expense categories
+    expenseCategories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.id;
+        option.textContent = category.name;
+        categorySelect.appendChild(option);
+    });
+}
+
 function populateGoals() {
     const goalsGrid = document.querySelector('#goalsContent .grid');
     if (!goalsGrid) return;
@@ -857,16 +1434,17 @@ function populateGoals() {
         
         const goalCard = document.createElement('div');
         goalCard.className = 'budget-card p-5';
+        goalCard.setAttribute('data-goal-id', goal.id);
         goalCard.innerHTML = `
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <h4 class="font-medium text-gray-800">${goal.name}</h4>
-                    <p class="text-gray-500 text-sm">$${goal.saved.toFixed(2)} of $${goal.target.toFixed(2)}</p>
+                    <p class="text-gray-500 text-sm">$<span class="saved-amount">${goal.saved.toFixed(2)}</span> of $${goal.target.toFixed(2)}</p>
                 </div>
-                <span class="font-bold ${progress === 100 ? 'text-green-600' : progress >= 50 ? 'text-blue-600' : 'text-yellow-600'}">${Math.round(progress)}%</span>
+                <span class="font-bold progress-percentage ${progress === 100 ? 'text-green-600' : progress >= 50 ? 'text-blue-600' : 'text-yellow-600'}">${Math.round(progress)}%</span>
             </div>
-            <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
-                <div class="${progress === 100 ? 'bg-green-500' : progress >= 50 ? 'bg-blue-500' : 'bg-yellow-500'} h-2 rounded-full" style="width: ${progress}%"></div>
+            <div class="w-full bg-gray-200 rounded-full h-2 mb-3 overflow-hidden">
+                <div class="progress-bar-fill ${progress === 100 ? 'bg-green-500' : progress >= 50 ? 'bg-blue-500' : 'bg-yellow-500'} h-2 rounded-full" style="width: ${progress}%"></div>
             </div>
             <div class="flex justify-between items-center">
                 <div>
@@ -891,16 +1469,158 @@ function populateGoals() {
     document.querySelectorAll('.add-contribution').forEach(button => {
         button.addEventListener('click', function() {
             const goalId = this.getAttribute('data-id');
-            showNotification(`Adding contribution to goal ${goalId}`, 'info');
+            addContribution(goalId);
         });
     });
     
     document.querySelectorAll('.edit-goal').forEach(button => {
         button.addEventListener('click', function() {
             const goalId = this.getAttribute('data-id');
-            showNotification(`Editing goal ${goalId}`, 'info');
+            editGoal(goalId);
         });
     });
+}
+
+function editGoal(goalId) {
+    const goal = savingsGoals.find(g => g.id === goalId);
+    if (!goal) {
+        showNotification('Goal not found', 'error');
+        return;
+    }
+    
+    isEditingGoal = true;
+    editingGoalId = goalId;
+    
+    // Populate form with goal data
+    const nameInput = addGoalForm.querySelector('input[name="name"]');
+    const targetInput = addGoalForm.querySelector('input[name="target"]');
+    const startDateInput = addGoalForm.querySelector('input[name="startDate"]');
+    const deadlineInput = addGoalForm.querySelector('input[name="deadline"]');
+    const monthlyInput = addGoalForm.querySelector('input[name="monthly"]');
+    
+    if (nameInput) nameInput.value = goal.name || '';
+    if (targetInput) targetInput.value = goal.target || '';
+    if (startDateInput) startDateInput.value = goal.startDate || '';
+    if (deadlineInput) deadlineInput.value = goal.deadline || '';
+    if (monthlyInput) monthlyInput.value = goal.monthly || '';
+    
+    // Update modal title and button
+    updateGoalModalForEdit();
+    
+    // Show modal
+    addGoalModal.classList.remove('hidden');
+}
+
+function addContribution(goalId) {
+    const goal = savingsGoals.find(g => g.id === goalId);
+    if (!goal) {
+        showNotification('Goal not found', 'error');
+        return;
+    }
+    
+    currentContributionGoalId = goalId;
+    
+    // Populate modal with goal information
+    const goalNameEl = document.getElementById('contributionGoalName');
+    const currentSavedEl = document.getElementById('contributionCurrentSaved');
+    const targetEl = document.getElementById('contributionTarget');
+    const amountInput = document.getElementById('contributionAmount');
+    
+    if (goalNameEl) goalNameEl.textContent = goal.name;
+    if (currentSavedEl) currentSavedEl.textContent = `$${(goal.saved || 0).toFixed(2)}`;
+    if (targetEl) targetEl.textContent = `$${goal.target.toFixed(2)}`;
+    if (amountInput) {
+        amountInput.value = goal.monthly || '';
+        amountInput.focus();
+    }
+    
+    // Show modal
+    addContributionModal.classList.remove('hidden');
+}
+
+async function animateProgressBar(goalId, oldSaved, newSaved, target) {
+    return new Promise((resolve) => {
+        // Find the goal card
+        const goalCard = document.querySelector(`[data-goal-id="${goalId}"]`);
+        if (!goalCard) {
+            resolve();
+            return;
+        }
+        
+        const progressBar = goalCard.querySelector('.progress-bar-fill');
+        const progressText = goalCard.querySelector('.progress-percentage');
+        const savedText = goalCard.querySelector('.saved-amount');
+        
+        if (!progressBar) {
+            resolve();
+            return;
+        }
+        
+        const oldProgress = (oldSaved / target) * 100;
+        const newProgress = (newSaved / target) * 100;
+        
+        // Set initial state
+        progressBar.style.width = `${oldProgress}%`;
+        progressBar.style.transition = 'width 0.8s ease-out';
+        
+        // Trigger animation
+        setTimeout(() => {
+            progressBar.style.width = `${newProgress}%`;
+            
+            // Animate text values
+            if (progressText) {
+                animateValue(parseInt(oldProgress), parseInt(newProgress), 800, (value) => {
+                    progressText.textContent = `${Math.round(value)}%`;
+                });
+            }
+            
+            if (savedText) {
+                animateValue(oldSaved, newSaved, 800, (value) => {
+                    savedText.textContent = `$${value.toFixed(2)}`;
+                });
+            }
+            
+            setTimeout(() => {
+                resolve();
+            }, 800);
+        }, 50);
+    });
+}
+
+function animateValue(start, end, duration, callback) {
+    const startTime = performance.now();
+    const difference = end - start;
+    
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function (ease-out)
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const current = start + (difference * easeOut);
+        
+        callback(current);
+        
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    
+    requestAnimationFrame(update);
+}
+
+function updateGoalModalForCreate() {
+    const goalModalTitle = document.getElementById('goalModalTitle');
+    const submitGoalBtn = document.getElementById('submitGoalBtn');
+    if (goalModalTitle) goalModalTitle.textContent = 'Add Savings Goal';
+    if (submitGoalBtn) submitGoalBtn.textContent = 'Add Goal';
+}
+
+function updateGoalModalForEdit() {
+    const goalModalTitle = document.getElementById('goalModalTitle');
+    const submitGoalBtn = document.getElementById('submitGoalBtn');
+    if (goalModalTitle) goalModalTitle.textContent = 'Edit Savings Goal';
+    if (submitGoalBtn) submitGoalBtn.textContent = 'Update Goal';
 }
 
 function populateBudgetHistory() {
