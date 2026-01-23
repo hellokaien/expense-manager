@@ -1,5 +1,8 @@
 json-server --watch db.json --port 3000
 
+PURSENALLY | Tally | Pocket | Minty
+Fidget 
+
 # Expense Management System Roadmap
 
 ## 📋 **Phase 1: Project Setup & Planning**
