@@ -272,6 +272,32 @@
       "notes": "sa Office ni Love",
       "tags": [],
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-c7daa6b1-4387-40fe-afb9-da47f1f2c84f",
+      "title": "Breakfast",
+      "amount": 72,
+      "type": "expense",
+      "category": "ctg-30dd1566-d39b-4017-9583-fc71bb42acd6",
+      "date": "2026-01-24T09:30:00",
+      "paymentMethod": "cash",
+      "status": "completed",
+      "notes": "Lugaw, Egg, Lumpia\n",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-506fe601-61c4-4884-9c96-9a0f5ca933a6",
+      "title": "Snack",
+      "amount": 185,
+      "type": "expense",
+      "category": "ctg-30dd1566-d39b-4017-9583-fc71bb42acd6",
+      "date": "2026-01-24T18:00:00",
+      "paymentMethod": "cash",
+      "status": "completed",
+      "notes": "Corn w Cheese and Hotdog Barbeque",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ],
   "users": [
@@ -324,7 +350,7 @@
       "newsletter": false,
       "experience": "beginner",
       "status": "active",
-      "lastLogin": "2026-01-23T16:01:09.468Z",
+      "lastLogin": "2026-01-24T13:13:53.616Z",
       "createdAt": "2026-01-14T06:16:40.881Z",
       "accountId": "MF1768371400881812",
       "premiumTrial": true,
@@ -442,8 +468,8 @@
       "subtype": "other",
       "icon": "utensils",
       "color": "#ef4444",
-      "transactions_count": 2,
-      "totalAmount": 180,
+      "transactions_count": 4,
+      "totalAmount": 437,
       "lastUsed": "2026-01-14",
       "monthlyAverage": 0,
       "description": "",
@@ -695,7 +721,7 @@
       "startDate": "2026-01-01",
       "deadline": "2026-06-30",
       "monthly": 4000,
-      "saved": 24000,
+      "saved": 28000,
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ]
