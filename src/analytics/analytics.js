@@ -5,6 +5,8 @@ import { logout } from '../app.js';
 import transactionService from '../shared/services/transactionService.js';
 import categoryService from '../shared/services/categoryService.js';
 import budgetService from '../shared/services/budgetService.js';
+import { formatCurrency, getCurrencySymbol } from '../shared/currencyUtils.js';
+
 
 // Global data
 let transactions = [];
@@ -411,7 +413,7 @@ function updateMetrics() {
     const metricCards = document.querySelectorAll('.analytics-card');
     if (metricCards[0]) {
         const h3 = metricCards[0].querySelector('h3');
-        if (h3) h3.textContent = `$${currentIncome.toLocaleString()}`;
+        if (h3) h3.textContent = formatCurrency(currentIncome);
         const changeEl = metricCards[0].querySelector('.text-green-600, .text-red-600');
         if (changeEl) {
             changeEl.innerHTML = `<i class="fas fa-arrow-${parseFloat(incomeChange) >= 0 ? 'up' : 'down'} mr-1"></i> ${Math.abs(parseFloat(incomeChange))}%`;
@@ -421,7 +423,7 @@ function updateMetrics() {
     
     if (metricCards[1]) {
         const h3 = metricCards[1].querySelector('h3');
-        if (h3) h3.textContent = `$${currentExpenses.toLocaleString()}`;
+        if (h3) h3.textContent = formatCurrency(currentExpenses);
         const changeEl = metricCards[1].querySelector('.text-green-600, .text-red-600');
         if (changeEl) {
             changeEl.innerHTML = `<i class="fas fa-arrow-${parseFloat(expenseChange) >= 0 ? 'up' : 'down'} mr-1"></i> ${Math.abs(parseFloat(expenseChange))}%`;
@@ -431,7 +433,7 @@ function updateMetrics() {
     
     if (metricCards[2]) {
         const h3 = metricCards[2].querySelector('h3');
-        if (h3) h3.textContent = `$${currentSavings.toLocaleString()}`;
+        if (h3) h3.textContent = formatCurrency(currentSavings);
         const changeEl = metricCards[2].querySelector('.text-green-600, .text-red-600');
         if (changeEl) {
             changeEl.innerHTML = `<i class="fas fa-arrow-${parseFloat(savingsChange) >= 0 ? 'up' : 'down'} mr-1"></i> ${Math.abs(parseFloat(savingsChange))}%`;
@@ -472,7 +474,7 @@ function updateCategorySpending() {
             <div>
                 <div class="flex justify-between mb-1">
                     <span class="text-gray-700">${cat.name}</span>
-                    <span class="font-medium text-gray-800">$${cat.amount.toFixed(2)}</span>
+                    <span class="font-medium text-gray-800">${formatCurrency(cat.amount)}</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2">
                     <div class="h-2 rounded-full" style="width: ${percentage}%; background-color: ${cat.color}"></div>
@@ -508,7 +510,7 @@ function updateIncomeSources() {
             <div>
                 <div class="flex justify-between mb-1">
                     <span class="text-gray-700">${src.name}</span>
-                    <span class="font-medium text-gray-800">$${src.amount.toFixed(2)}</span>
+                    <span class="font-medium text-gray-800">${formatCurrency(src.amount)}</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2">
                     <div class="h-2 rounded-full" style="width: ${percentage}%; background-color: ${src.color}"></div>
@@ -575,12 +577,12 @@ async function updateSavingsProgress() {
             // Update goal text
             const annualGoal = document.getElementById('annualSavingsGoal');
             if (annualGoal) {
-                annualGoal.textContent = `$${totalTarget.toLocaleString()}`;
+                annualGoal.textContent = `${formatCurrency(totalTarget)}`;
             }
             
             const currentSavings = document.getElementById('currentSavings');
             if (currentSavings) {
-                currentSavings.textContent = `$${totalSaved.toLocaleString()}`;
+                currentSavings.textContent = `${formatCurrency(totalSaved)}`;
             }
             
             // Update goals list
@@ -594,13 +596,13 @@ async function updateSavingsProgress() {
                         <div>
                             <div class="flex justify-between mb-1">
                                 <span class="text-gray-700">${goal.name}</span>
-                                <span class="font-medium text-gray-800">$${goal.saved.toFixed(2)} / $${goal.target.toFixed(2)}</span>
+                                <span class="font-medium text-gray-800">${formatCurrency(goal.saved)} / ${formatCurrency(goal.target)}</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2">
                                 <div class="h-2 rounded-full ${isComplete ? 'bg-green-500' : 'bg-blue-500'}" style="width: ${Math.min(goalProgress, 100)}%"></div>
                             </div>
                             <p class="${isComplete ? 'text-green-600' : 'text-blue-600'} text-sm mt-1 text-right">
-                                ${isComplete ? 'Complete!' : `$${remaining.toFixed(2)} remaining`}
+                                ${isComplete ? 'Complete!' : `${formatCurrency(remaining)} remaining`}
                             </p>
                         </div>
                     `;
@@ -705,7 +707,7 @@ function initializeCharts() {
                         intersect: false,
                         callbacks: {
                             label: function(context) {
-                                return `${context.dataset.label}: $${context.parsed.y.toLocaleString()}`;
+                                return `${context.dataset.label}: ${formatCurrency(context.parsed.y)}`;
                             }
                         }
                     }
@@ -718,7 +720,7 @@ function initializeCharts() {
                         },
                         ticks: {
                             callback: function(value) {
-                                return '$' + value.toLocaleString();
+                                return getCurrencySymbol() + value.toLocaleString();
                             }
                         }
                     },

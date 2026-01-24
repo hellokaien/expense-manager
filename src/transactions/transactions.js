@@ -470,8 +470,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     await fetchCategories();
 
-    // Set today's date as default in the form
-    document.getElementById('transactionDate').valueAsDate = new Date();
+    // Set today's date and current time as default in the form
+    const now = new Date();
+    document.getElementById('transactionDate').valueAsDate = now;
+    // Format time as HH:mm for time input
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('transactionTime').value = `${hours}:${minutes}`;
     
     // Initialize with income categories
     updateCategoryOptions('income');
@@ -778,7 +783,12 @@ function setTransactionType(type) {
 function closeTransactionModal() {
     transactionModal.classList.add('hidden');
     transactionForm.reset();
-    document.getElementById('transactionDate').valueAsDate = new Date();
+    const now = new Date();
+    document.getElementById('transactionDate').valueAsDate = now;
+    // Format time as HH:mm for time input
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('transactionTime').value = `${hours}:${minutes}`;
     setTransactionType('income');
     isEditing = false;
     editingTransactionId = null;
@@ -793,20 +803,24 @@ async function saveTransaction(e) {
     const amount = parseFloat(document.getElementById('transactionAmount').value);
     const category = document.getElementById('transactionCategory').value;
     const date = document.getElementById('transactionDate').value;
+    const time = document.getElementById('transactionTime').value;
     const paymentMethod = document.getElementById('transactionPaymentMethod').value;
     const notes = document.getElementById('transactionNotes').value;
     
-    if (!title || !amount || !category || !date || !paymentMethod) {
+    if (!title || !amount || !category || !date || !time || !paymentMethod) {
         showNotification('Please fill in all required fields', 'error');
         return;
     }
+    
+    // Combine date and time into ISO datetime string
+    const dateTime = `${date}T${time}:00`;
     
     const transactionData = {
         title: title,
         amount: amount,
         type: currentTransactionType,
         category: category,
-        date: date,
+        date: dateTime,
         paymentMethod: paymentMethod,
         status: "completed",
         notes: notes,
@@ -899,9 +913,10 @@ function renderTransactions() {
         const categoryInfo = getCategoryInfo(transaction.category);
         const colorClass = getCategoryColorClass(categoryInfo.color);
         
-        // Format date
+        // Format date and time
         const dateObj = new Date(transaction.date);
         const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const formattedTime = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
         
         // Format amount with appropriate sign
         const amountSign = transaction.type === 'income' ? '+' : '-';
@@ -911,7 +926,10 @@ function renderTransactions() {
             <td class="py-4 px-6">
                 <input type="checkbox" class="transaction-checkbox checkbox-custom w-4 h-4 border border-gray-300 rounded" data-id="${transaction.id}">
             </td>
-            <td class="py-4 px-6 text-gray-700">${formattedDate}</td>
+            <td class="py-4 px-6 text-gray-700">
+                <div>${formattedDate}</div>
+                <div class="text-gray-500 text-sm">${formattedTime}</div>
+            </td>
             <td class="py-4 px-6">
                 <div class="font-medium text-gray-800">${transaction.title}</div>
                 <div class="text-gray-500 text-sm mt-1">${transaction.notes || ''}</div>
@@ -1150,10 +1168,30 @@ function editTransaction(id) {
     // Update modal title
     document.getElementById('modalTitle').textContent = 'Edit Transaction';
     
+    // Parse date and time from transaction.date
+    // Handle both datetime strings (YYYY-MM-DDTHH:mm:ss) and date-only strings (YYYY-MM-DD)
+    let dateObj;
+    if (transaction.date.includes('T')) {
+        // Already has time
+        dateObj = new Date(transaction.date);
+    } else {
+        // Date only - use current time as default
+        dateObj = new Date(transaction.date);
+        if (isNaN(dateObj.getTime())) {
+            dateObj = new Date();
+        }
+    }
+    
+    const dateStr = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+    const hours = String(dateObj.getHours()).padStart(2, '0');
+    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+    const timeStr = `${hours}:${minutes}`;
+    
     // Populate form with transaction data
     document.getElementById('transactionTitle').value = transaction.title;
     document.getElementById('transactionAmount').value = transaction.amount;
-    document.getElementById('transactionDate').value = transaction.date;
+    document.getElementById('transactionDate').value = dateStr;
+    document.getElementById('transactionTime').value = timeStr;
     document.getElementById('transactionPaymentMethod').value = transaction.paymentMethod;
     document.getElementById('transactionNotes').value = transaction.notes || '';
     
