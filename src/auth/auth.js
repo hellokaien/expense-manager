@@ -149,7 +149,10 @@ class AuthManager {
             avatar: user.avatar || null, // Store avatar from db.json
             phone: user.phone || null,
             bio: user.bio || null,
-            location: user.location || null
+            location: user.location || null,
+            // Include user preferences
+            defaultDashboardView: user.defaultDashboardView || null,
+            recentTransactionsCount: user.recentTransactionsCount || null
         };
 
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));

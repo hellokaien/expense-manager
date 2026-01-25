@@ -298,6 +298,19 @@
       "notes": "Corn w Cheese and Hotdog Barbeque",
       "tags": [],
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-6e2bca76-0f6f-4f9f-b5f2-ae0c537d5027",
+      "title": "Breakfast",
+      "amount": 40,
+      "type": "expense",
+      "category": "ctg-30dd1566-d39b-4017-9583-fc71bb42acd6",
+      "date": "2026-01-25T08:00:00",
+      "paymentMethod": "cash",
+      "status": "completed",
+      "notes": "Pandesal",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ],
   "users": [
@@ -350,7 +363,7 @@
       "newsletter": false,
       "experience": "beginner",
       "status": "active",
-      "lastLogin": "2026-01-24T13:13:53.616Z",
+      "lastLogin": "2026-01-25T15:10:11.449Z",
       "createdAt": "2026-01-14T06:16:40.881Z",
       "accountId": "MF1768371400881812",
       "premiumTrial": true,
@@ -358,7 +371,18 @@
       "trialEndDate": "2026-02-13T06:16:40.881Z",
       "bio": "I want to make a lot of money",
       "location": "B38 L10 Middle East",
-      "dateFormat": "MM/DD/YYYY"
+      "dateFormat": "MM/DD/YYYY",
+      "theme": "light",
+      "accentColor": "blue",
+      "compactMode": true,
+      "showAnimations": true,
+      "reduceMotion": false,
+      "autoSync": true,
+      "cloudBackup": true,
+      "dataAnalytics": true,
+      "autoCategorization": true,
+      "defaultDashboardView": "overview",
+      "recentTransactionsCount": 10
     },
     {
       "id": "user-959f505f-16a0-44b2-b28b-900258162eda",
@@ -468,8 +492,8 @@
       "subtype": "other",
       "icon": "utensils",
       "color": "#ef4444",
-      "transactions_count": 4,
-      "totalAmount": 437,
+      "transactions_count": 5,
+      "totalAmount": 477,
       "lastUsed": "2026-01-14",
       "monthlyAverage": 0,
       "description": "",

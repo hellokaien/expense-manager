@@ -1,9 +1,10 @@
-import { showNotification, API_BASE_URL, getInitials } from '../shared/utils.js';
+import { showNotification, API_BASE_URL, getInitials, STORAGE_KEYS } from '../shared/utils.js';
 import authManager from '../auth/auth.js';
 import categoryService from '../shared/services/categoryService.js';
 import transactionService from '../shared/services/transactionService.js';  
 import { logout } from '../app.js';
 import { formatCurrency, getCurrencySymbol } from '../shared/currencyUtils.js';
+import apiService from '../shared/apiService.js';
     import { getUserAvatar, saveUserAvatar, fileToBase64, validateImageFile, deleteUserAvatar } from '../shared/imageStorage.js';
 
 // Payment method labels
@@ -76,7 +77,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             return;
         }
 
-        const currentUser = authManager.getCurrentUser();
+        currentUser = authManager.getCurrentUser();
         //console.log('Current user:', currentUser);
 
         await fetchCategories();      
@@ -108,8 +109,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Set up event listeners
         setupEventListeners();
         
-        // Activate first tab
-        switchTab('overview');
+        // Get default dashboard view from user preferences
+        const preferredTab = currentUser?.defaultDashboardView || 'overview';
+        
+        // Validate that the preferred tab exists (valid tabs: overview, transactions, analytics, budget, reports)
+        const validTabs = ['overview', 'transactions', 'analytics', 'budget', 'reports'];
+        const defaultTab = validTabs.includes(preferredTab) ? preferredTab : 'overview';
+        
+        // Activate the preferred tab (or default to overview)
+        switchTab(defaultTab);
     } catch (error) {
         console.error('Error initializing dashboard:', error);
         // Ensure modals are closed even if there's an error
@@ -494,8 +502,14 @@ function renderTransactions(filter = 'all') {
     // Sort by date (newest first)
     filteredTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    // Take only the last 5 transactions for the recent list
-    const recentTransactions = filteredTransactions.slice(0, 5);
+    // Get the number of recent transactions to show from user preference (default to 10)
+    // Always get the latest user data from authManager to ensure we have the most recent preferences
+    const user = authManager.getCurrentUser() || currentUser;
+    const recentCount = 5;
+    // const recentCount = user?.recentTransactionsCount || 10;
+  
+    // Take only the specified number of recent transactions for the recent list
+    const recentTransactions = filteredTransactions.slice(0, recentCount);
     
     // Render each transaction
     recentTransactions.forEach(transaction => {
@@ -557,7 +571,12 @@ function renderAllTransactionsTable() {
     allTransactionsTable.innerHTML = '';
     
     // Sort by date (newest first)
+    const user = authManager.getCurrentUser() || currentUser;
+    const recentCount = user?.recentTransactionsCount || 10;
+    
+    // Take only the specified number of recent transactions for the recent list
     const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const recentTransactions = sortedTransactions.slice(0, recentCount);
     
     if (sortedTransactions.length === 0) {
         emptyState.classList.remove('hidden');
@@ -566,7 +585,7 @@ function renderAllTransactionsTable() {
     }
 
     // Render each transaction
-    sortedTransactions.forEach(transaction => {
+    recentTransactions.forEach(transaction => {
         // Find category label
         const categoryList = transaction.type === 'income' ? incomeCategories : expenseCategories;
         const categoryInfo = getCategoryInfo(transaction.category);

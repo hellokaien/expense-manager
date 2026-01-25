@@ -350,6 +350,18 @@
                 const id = toggle.id;
                 settings[id] = toggle.checked;
             });
+            
+            // Save default dashboard view preference
+            const defaultDashboardViewSelect = document.getElementById('defaultDashboardView');
+            if (defaultDashboardViewSelect) {
+                settings.defaultDashboardView = defaultDashboardViewSelect.value;
+            }
+            
+            // Save recent transactions count preference
+            const recentTransactionsCountSelect = document.getElementById('recentTransactionsCount');
+            if (recentTransactionsCountSelect) {
+                settings.recentTransactionsCount = parseInt(recentTransactionsCountSelect.value, 10);
+            }
         }
         
         if (Object.keys(settings).length > 0) {
@@ -379,6 +391,24 @@
         // Load currency
         if (currencySelect && user.currency) {
             currencySelect.value = user.currency;
+        }
+
+        // Load default dashboard view preference
+        const defaultDashboardViewSelect = document.getElementById('defaultDashboardView');
+        if (defaultDashboardViewSelect && user.defaultDashboardView) {
+            defaultDashboardViewSelect.value = user.defaultDashboardView;
+        } else if (defaultDashboardViewSelect) {
+            // Set default to 'overview' if not set
+            defaultDashboardViewSelect.value = 'overview';
+        }
+
+        // Load recent transactions count preference
+        const recentTransactionsCountSelect = document.getElementById('recentTransactionsCount');
+        if (recentTransactionsCountSelect && user.recentTransactionsCount) {
+            recentTransactionsCountSelect.value = user.recentTransactionsCount.toString();
+        } else if (recentTransactionsCountSelect) {
+            // Set default to 10 if not set
+            recentTransactionsCountSelect.value = '10';
         }
 
         // Update profile avatar
