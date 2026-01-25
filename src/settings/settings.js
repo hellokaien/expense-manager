@@ -356,6 +356,12 @@
             if (defaultDashboardViewSelect) {
                 settings.defaultDashboardView = defaultDashboardViewSelect.value;
             }
+            
+            // Save recent transactions count preference
+            const recentTransactionsCountSelect = document.getElementById('recentTransactionsCount');
+            if (recentTransactionsCountSelect) {
+                settings.recentTransactionsCount = parseInt(recentTransactionsCountSelect.value, 10);
+            }
         }
         
         if (Object.keys(settings).length > 0) {
@@ -394,6 +400,15 @@
         } else if (defaultDashboardViewSelect) {
             // Set default to 'overview' if not set
             defaultDashboardViewSelect.value = 'overview';
+        }
+
+        // Load recent transactions count preference
+        const recentTransactionsCountSelect = document.getElementById('recentTransactionsCount');
+        if (recentTransactionsCountSelect && user.recentTransactionsCount) {
+            recentTransactionsCountSelect.value = user.recentTransactionsCount.toString();
+        } else if (recentTransactionsCountSelect) {
+            // Set default to 10 if not set
+            recentTransactionsCountSelect.value = '10';
         }
 
         // Update profile avatar

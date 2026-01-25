@@ -363,7 +363,7 @@
       "newsletter": false,
       "experience": "beginner",
       "status": "active",
-      "lastLogin": "2026-01-24T13:13:53.616Z",
+      "lastLogin": "2026-01-25T15:10:11.449Z",
       "createdAt": "2026-01-14T06:16:40.881Z",
       "accountId": "MF1768371400881812",
       "premiumTrial": true,
@@ -381,7 +381,8 @@
       "cloudBackup": true,
       "dataAnalytics": true,
       "autoCategorization": true,
-      "defaultDashboardView": "analytics"
+      "defaultDashboardView": "overview",
+      "recentTransactionsCount": 10
     },
     {
       "id": "user-959f505f-16a0-44b2-b28b-900258162eda",
