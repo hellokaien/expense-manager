@@ -108,8 +108,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Set up event listeners
         setupEventListeners();
         
-        // Activate first tab
-        switchTab('overview');
+        // Get default dashboard view from user preferences
+        const preferredTab = currentUser?.defaultDashboardView || 'overview';
+        
+        // Validate that the preferred tab exists (valid tabs: overview, transactions, analytics, budget, reports)
+        const validTabs = ['overview', 'transactions', 'analytics', 'budget', 'reports'];
+        const defaultTab = validTabs.includes(preferredTab) ? preferredTab : 'overview';
+        
+        // Activate the preferred tab (or default to overview)
+        switchTab(defaultTab);
     } catch (error) {
         console.error('Error initializing dashboard:', error);
         // Ensure modals are closed even if there's an error

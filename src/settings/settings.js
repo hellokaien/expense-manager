@@ -350,6 +350,12 @@
                 const id = toggle.id;
                 settings[id] = toggle.checked;
             });
+            
+            // Save default dashboard view preference
+            const defaultDashboardViewSelect = document.getElementById('defaultDashboardView');
+            if (defaultDashboardViewSelect) {
+                settings.defaultDashboardView = defaultDashboardViewSelect.value;
+            }
         }
         
         if (Object.keys(settings).length > 0) {
@@ -379,6 +385,15 @@
         // Load currency
         if (currencySelect && user.currency) {
             currencySelect.value = user.currency;
+        }
+
+        // Load default dashboard view preference
+        const defaultDashboardViewSelect = document.getElementById('defaultDashboardView');
+        if (defaultDashboardViewSelect && user.defaultDashboardView) {
+            defaultDashboardViewSelect.value = user.defaultDashboardView;
+        } else if (defaultDashboardViewSelect) {
+            // Set default to 'overview' if not set
+            defaultDashboardViewSelect.value = 'overview';
         }
 
         // Update profile avatar
