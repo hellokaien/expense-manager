@@ -381,7 +381,7 @@
       "cloudBackup": true,
       "dataAnalytics": true,
       "autoCategorization": true,
-      "defaultDashboardView": "overview",
+      "defaultDashboardView": "transactions",
       "recentTransactionsCount": 10
     },
     {

@@ -1238,82 +1238,58 @@ function displayAvatar(avatarDiv, imageData) {
         avatarDiv.classList.remove('bg-gradient-to-br', 'from-blue-400', 'to-purple-500', 'bg-blue-500');
 }
 
+const TOP_COUNT = 3;
+const DEFAULT_COLOR = 'bg-gray-500';
+
+const expenseColors = ['bg-red-500', 'bg-blue-500', 'bg-green-500'];
+const incomeColors = ['bg-emerald-500', 'bg-amber-500', 'bg-purple-500'];
+
+function generateCategoryHTML(categories, colors, type) {
+    if (!categories.length) {
+        return `<p class="text-gray-500 text-center py-4">No ${type} data available.</p>`;
+    }
+    
+    return categories.map((category, index) => `
+        <div class="flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="w-3 h-3 rounded-full ${colors[index] || DEFAULT_COLOR} mr-3"></div>
+                <span>${category.name || 'Uncategorized'}</span>
+            </div>
+            <span class="font-medium">${formatCurrency(category.totalAmount || 0)}</span>
+        </div>
+    `).join('');
+}
+
+function getTopCategories(categories, type, limit = TOP_COUNT) {
+    return categories
+        .filter(cat => cat.type === type)
+        .sort((a, b) => (b.totalAmount || 0) - (a.totalAmount || 0))
+        .slice(0, limit);
+}
+
 async function monthlySummaryStats() {
-    const topExpenses = document.getElementById('topExpenses');
-    const topIncomes = document.getElementById('topIncomes');
-    topExpenses.innerHTML = '';
+    const topExpensesEl = document.getElementById('topExpenses');
+    const topIncomesEl = document.getElementById('topIncomes');
     
-    const categories = await categoryService.getCategories();
-    const expenseSources = categories.filter(cat => cat.type === 'expense');
-    const incomeSources = categories.filter(cat => cat.type === 'income');
-    console.log(incomeSources);
-    // Get top 3 categories by totalAmount (assuming totalAmount exists)
-    const top3Expenses = [...expenseSources]
-        .sort((a, b) => b.totalAmount - a.totalAmount)
-        .slice(0, 3);
-
-    const top3Incomes = [...incomeSources]
-        .sort((a, b) => b.totalAmount - a.totalAmount)
-        .slice(0, 3);
-
-    // If no categories, show a message
-    if (top3Expenses.length === 0) {
-        topExpenses.innerHTML = '<p class="text-gray-500 text-center py-4">No expense data available.</p>';
-        return;
-    }
-
-    if (top3Expenses.length === 0) {
-        topExpenses.innerHTML = '<p class="text-gray-500 text-center py-4">No expense data available.</p>';
-        return;
-    }
-
-    if (top3Incomes.length === 0) {
-        topIncomes.innerHTML = '<p class="text-gray-500 text-center py-4">No income data available.</p>';
-        return;
-    }
-
-    // Array of colors for the dots
-    const expenseColors = ['bg-red-500', 'bg-blue-500', 'bg-green-500'];
-    const incomeColors = ['bg-emerald-500', 'bg-amber-500', 'bg-purple-500'];
+    // Clear containers
+    topExpensesEl.innerHTML = '';
+    topIncomesEl.innerHTML = '';
     
-    // Build HTML string
-    let htmlExpense = '';
-    let htmlIncome = '';
-    
-    top3Expenses.forEach((category, index) => {
-        // Use the color from array or default to gray
-        const colorClass = expenseColors[index] || 'bg-gray-500';
-        const formattedAmount = formatCurrency(category.totalAmount || 0);
+    try {
+        const categories = await categoryService.getCategories();
         
-        htmlExpense += `
-            <div class="flex justify-between items-center">
-                <div class="flex items-center">
-                    <div class="w-3 h-3 rounded-full ${colorClass} mr-3"></div>
-                    <span>${category.name || 'Uncategorized'}</span>
-                </div>
-                <span class="font-medium">${formattedAmount}</span>
-            </div>
-        `;
-    });
-    
-    // Set the innerHTML
-    topExpenses.innerHTML = htmlExpense;
-
-    top3Incomes.forEach((category, index) => {
-
-        const incomeColorClass = incomeColors[index] || 'bg-gray-500';
-
-        htmlIncome += `
-            <div class="flex justify-between items-center">
-                <div class="flex items-center">
-                    <div class="w-3 h-3 rounded-full ${incomeColorClass} mr-3"></div>
-                    <span>${category.name || 'Uncategorized'}</span>
-                </div>
-                <span class="font-medium">${formatCurrency(category.totalAmount || 0)}</span>
-            </div>
-        `;
-    });
-
-    topIncomes.innerHTML = htmlIncome;
+        const top3Expenses = getTopCategories(categories, 'expense');
+        const top3Incomes = getTopCategories(categories, 'income');
+        
+        topExpensesEl.innerHTML = generateCategoryHTML(top3Expenses, expenseColors, 'expense');
+        topIncomesEl.innerHTML = generateCategoryHTML(top3Incomes, incomeColors, 'income');
+        
+    } catch (error) {
+        console.error('Failed to load summary stats:', error);
+        
+        const errorMessage = '<p class="text-red-500 text-center py-4">Failed to load data.</p>';
+        topExpensesEl.innerHTML = errorMessage;
+        topIncomesEl.innerHTML = errorMessage;
+    }
 }
 
