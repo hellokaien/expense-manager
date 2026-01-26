@@ -1348,8 +1348,6 @@ function editSelectedTransactions() {
     editTransaction(transactionId);
 }
 
-
-
 document.getElementById('notificationToast').addEventListener('click', function() {
     this.classList.remove('notification-slide-in');
     this.classList.add('notification-slide-out');

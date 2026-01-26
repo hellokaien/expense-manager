@@ -505,8 +505,8 @@ function renderTransactions(filter = 'all') {
     // Get the number of recent transactions to show from user preference (default to 10)
     // Always get the latest user data from authManager to ensure we have the most recent preferences
     const user = authManager.getCurrentUser() || currentUser;
-    const recentCount = 5;
-    // const recentCount = user?.recentTransactionsCount || 10;
+    // const recentCount = 7;
+    const recentCount = user?.recentTransactionsCount || 10;
   
     // Take only the specified number of recent transactions for the recent list
     const recentTransactions = filteredTransactions.slice(0, recentCount);
