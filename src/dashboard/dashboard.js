@@ -358,6 +358,8 @@ function setupEventListeners() {
         mainContent.classList.toggle('expanded');
         mainContent.classList.toggle('ml-64');
     });
+
+    monthlySummaryStats();
 }
 
 function switchTab(tabName) {
@@ -1234,6 +1236,48 @@ function displayAvatar(avatarDiv, imageData) {
         
         // Remove gradient background classes if present
         avatarDiv.classList.remove('bg-gradient-to-br', 'from-blue-400', 'to-purple-500', 'bg-blue-500');
-    }
+}
 
+async function monthlySummaryStats() {
+    const topExpenses = document.getElementById('topExpenses');
+    topExpenses.innerHTML = '';
+    
+    const categories = await categoryService.getCategories();
+    
+    // Get top 3 categories by totalAmount (assuming totalAmount exists)
+    const top3 = [...categories]
+        .sort((a, b) => b.totalAmount - a.totalAmount)
+        .slice(0, 3);
+    
+    // If no categories, show a message
+    if (top3.length === 0) {
+        topExpenses.innerHTML = '<p class="text-gray-500 text-center py-4">No expense data available</p>';
+        return;
+    }
+    
+    // Array of colors for the dots
+    const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500'];
+    
+    // Build HTML string
+    let html = '';
+    
+    top3.forEach((category, index) => {
+        // Use the color from array or default to gray
+        const colorClass = colors[index] || 'bg-gray-500';
+        const formattedAmount = formatCurrency(category.totalAmount || 0);
+        
+        html += `
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <div class="w-3 h-3 rounded-full ${colorClass} mr-3"></div>
+                    <span>${category.name || 'Uncategorized'}</span>
+                </div>
+                <span class="font-medium">${formattedAmount}</span>
+            </div>
+        `;
+    });
+    
+    // Set the innerHTML
+    topExpenses.innerHTML = html;
+}
 

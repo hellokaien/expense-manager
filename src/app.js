@@ -68,7 +68,3 @@ export function logout() {
         window.location.href = '../auth/login.html';
     }, 1500);
 }
-
-function dd(data){
-console.log(data);
-}
