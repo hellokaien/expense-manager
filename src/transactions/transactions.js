@@ -1284,8 +1284,20 @@ async function showCustomConfirm(message) {
 }   
 
 function toggleSelectAll() {
-    const isChecked = selectAllCheckbox.checked || headerCheckbox.checked;
+    // Get the checkbox that triggered the event
+    const triggeredCheckbox = event.target;
+    const isChecked = triggeredCheckbox.checked;
+    
+    // Sync both checkboxes
+    selectAllCheckbox.checked = isChecked;
+    headerCheckbox.checked = isChecked;
+    
     const checkboxes = document.querySelectorAll('.transaction-checkbox');
+    
+    // Clear the set first for consistency
+    if (!isChecked) {
+        selectedTransactions.clear();
+    }
     
     checkboxes.forEach(checkbox => {
         checkbox.checked = isChecked;
