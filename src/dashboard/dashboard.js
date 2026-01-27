@@ -358,6 +358,8 @@ function setupEventListeners() {
         mainContent.classList.toggle('expanded');
         mainContent.classList.toggle('ml-64');
     });
+
+    monthlySummaryStats();
 }
 
 function switchTab(tabName) {
@@ -660,8 +662,9 @@ function viewTransaction(id) {
     
     // Find category label
     const categoryList = transaction.type === 'income' ? incomeCategories : expenseCategories;
-    const categoryInfo = categoryList.find(c => c.value === transaction.category) || { label: transaction.category, color: 'category-other' };
-    
+    const categoryInfo = categoryList.find(c => c.id === transaction.category) || { name: transaction.category, color: 'category-other' };
+    const colorClass = getCategoryColorClass(categoryInfo.color);
+
     // Format date
     const dateObj = new Date(transaction.date);
     const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + ' • ' + 
@@ -671,8 +674,8 @@ function viewTransaction(id) {
     document.getElementById('detailDescription').textContent = transaction.title;
     document.getElementById('detailAmount').textContent = `${transaction.type === 'income' ? '+' : '-'}$${transaction.amount.toFixed(2)}`;
     document.getElementById('detailAmount').className = `text-3xl font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`;
-    document.getElementById('detailCategory').textContent = categoryInfo.label;
-    document.getElementById('detailCategory').className = `${categoryInfo.color} px-3 py-1.5 rounded-full text-sm font-medium`;
+    document.getElementById('detailCategory').textContent = categoryInfo.name;
+    document.getElementById('detailCategory').className = `${colorClass} px-3 py-1.5 rounded-full text-sm font-medium`;
     document.getElementById('detailType').textContent = transaction.type === 'income' ? 'Income' : 'Expense';
     document.getElementById('detailType').className = `px-3 py-1.5 ${transaction.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} rounded-full text-sm font-medium`;
     document.getElementById('detailDate').textContent = formattedDate;
@@ -1234,6 +1237,60 @@ function displayAvatar(avatarDiv, imageData) {
         
         // Remove gradient background classes if present
         avatarDiv.classList.remove('bg-gradient-to-br', 'from-blue-400', 'to-purple-500', 'bg-blue-500');
-    }
+}
 
+const TOP_COUNT = 3;
+const DEFAULT_COLOR = 'bg-gray-500';
+
+const expenseColors = ['bg-red-500', 'bg-blue-500', 'bg-green-500'];
+const incomeColors = ['bg-emerald-500', 'bg-amber-500', 'bg-purple-500'];
+
+function generateCategoryHTML(categories, colors, type) {
+    if (!categories.length) {
+        return `<p class="text-gray-500 text-center py-4">No ${type} data available.</p>`;
+    }
+    
+    return categories.map((category, index) => `
+        <div class="flex justify-between items-center">
+            <div class="flex items-center">
+                <div class="w-3 h-3 rounded-full ${colors[index] || DEFAULT_COLOR} mr-3"></div>
+                <span>${category.name || 'Uncategorized'}</span>
+            </div>
+            <span class="font-medium">${formatCurrency(category.totalAmount || 0)}</span>
+        </div>
+    `).join('');
+}
+
+function getTopCategories(categories, type, limit = TOP_COUNT) {
+    return categories
+        .filter(cat => cat.type === type)
+        .sort((a, b) => (b.totalAmount || 0) - (a.totalAmount || 0))
+        .slice(0, limit);
+}
+
+async function monthlySummaryStats() {
+    const topExpensesEl = document.getElementById('topExpenses');
+    const topIncomesEl = document.getElementById('topIncomes');
+    
+    // Clear containers
+    topExpensesEl.innerHTML = '';
+    topIncomesEl.innerHTML = '';
+    
+    try {
+        const categories = await categoryService.getCategories();
+        
+        const top3Expenses = getTopCategories(categories, 'expense');
+        const top3Incomes = getTopCategories(categories, 'income');
+        
+        topExpensesEl.innerHTML = generateCategoryHTML(top3Expenses, expenseColors, 'expense');
+        topIncomesEl.innerHTML = generateCategoryHTML(top3Incomes, incomeColors, 'income');
+        
+    } catch (error) {
+        console.error('Failed to load summary stats:', error);
+        
+        const errorMessage = '<p class="text-red-500 text-center py-4">Failed to load data.</p>';
+        topExpensesEl.innerHTML = errorMessage;
+        topIncomesEl.innerHTML = errorMessage;
+    }
+}
 

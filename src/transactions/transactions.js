@@ -1120,8 +1120,9 @@ function viewTransaction(id) {
     
     // Find category label
     const categoryList = transaction.type === 'income' ? incomeCategories : expenseCategories;
-    const categoryInfo = categoryList.find(c => c.value === transaction.category) || { label: transaction.category, color: 'category-other' };
-    
+    const categoryInfo = categoryList.find(c => c.id === transaction.category) || { name: transaction.name, color: 'category-other' };
+    const colorClass = getCategoryColorClass(categoryInfo.color);
+
     // Format date
     const dateObj = new Date(transaction.date);
     const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + ' • ' + 
@@ -1131,8 +1132,8 @@ function viewTransaction(id) {
     document.getElementById('detailDescription').textContent = transaction.title;
     document.getElementById('detailAmount').textContent = `${transaction.type === 'income' ? '+' : '-'}$${transaction.amount.toFixed(2)}`;
     document.getElementById('detailAmount').className = `text-3xl font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`;
-    document.getElementById('detailCategory').textContent = categoryInfo.label;
-    document.getElementById('detailCategory').className = `${categoryInfo.color} px-3 py-1.5 rounded-full text-sm font-medium`;
+    document.getElementById('detailCategory').textContent = categoryInfo.name;
+    document.getElementById('detailCategory').className = `${colorClass} px-3 py-1.5 rounded-full text-sm font-medium`;
     document.getElementById('detailType').textContent = transaction.type === 'income' ? 'Income' : 'Expense';
     document.getElementById('detailType').className = `px-3 py-1.5 ${transaction.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} rounded-full text-sm font-medium`;
     document.getElementById('detailDate').textContent = formattedDate;
@@ -1283,8 +1284,20 @@ async function showCustomConfirm(message) {
 }   
 
 function toggleSelectAll() {
-    const isChecked = selectAllCheckbox.checked || headerCheckbox.checked;
+    // Get the checkbox that triggered the event
+    const triggeredCheckbox = event.target;
+    const isChecked = triggeredCheckbox.checked;
+    
+    // Sync both checkboxes
+    selectAllCheckbox.checked = isChecked;
+    headerCheckbox.checked = isChecked;
+    
     const checkboxes = document.querySelectorAll('.transaction-checkbox');
+    
+    // Clear the set first for consistency
+    if (!isChecked) {
+        selectedTransactions.clear();
+    }
     
     checkboxes.forEach(checkbox => {
         checkbox.checked = isChecked;
