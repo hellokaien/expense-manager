@@ -84,12 +84,16 @@ document.addEventListener('DOMContentLoaded', async function() {
           
         // Update UI with user info
         updateUserInfo(currentUser);
-
+        const now = new Date();
         // Set today's date as default in the form
         const transactionDateInput = document.getElementById('transactionDate');
         if (transactionDateInput) {
             transactionDateInput.valueAsDate = new Date();
         }
+
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('transactionTime').value = `${hours}:${minutes}`;
         
         // Initialize with income categories
         updateCategoryOptions('income');
@@ -442,6 +446,7 @@ async function saveTransaction(e) {
     const amount = parseFloat(document.getElementById('transactionAmount').value);
     const category = document.getElementById('transactionCategory').value;
     const date = document.getElementById('transactionDate').value;
+    const time = document.getElementById('transactionTime').value;
     const paymentMethod = document.getElementById('transactionPaymentMethod').value;
     const notes = document.getElementById('transactionNotes').value;
     
@@ -453,13 +458,15 @@ async function saveTransaction(e) {
     // Check if we're editing an existing transaction
     const saveBtn = document.getElementById('saveTransactionBtn');
     const editingId = saveBtn.dataset.editingId;
+
+    const dateTime = `${date}T${time}:00`;
     
     const transactionData = {
         title: title,
         amount: amount,
         type: currentTransactionType,
         category: category,
-        date: date,
+        date: dateTime,
         paymentMethod: paymentMethod,
         status: "completed",
         notes: notes,
@@ -744,11 +751,29 @@ function editTransaction(id) {
     
     // Update modal title
     document.getElementById('modalTitle').textContent = 'Edit Transaction';
+
+    let dateObj;
+    if (transaction.date.includes('T')) {
+        // Already has time
+        dateObj = new Date(transaction.date);
+    } else {
+        // Date only - use current time as default
+        dateObj = new Date(transaction.date);
+        if (isNaN(dateObj.getTime())) {
+            dateObj = new Date();
+        }
+    }
+
+    const dateStr = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD
+    const hours = String(dateObj.getHours()).padStart(2, '0');
+    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+    const timeStr = `${hours}:${minutes}`;
     
     // Populate form with transaction data
     document.getElementById('transactionTitle').value = transaction.title;
     document.getElementById('transactionAmount').value = transaction.amount;
-    document.getElementById('transactionDate').value = transaction.date;
+    document.getElementById('transactionDate').value = dateStr;
+    document.getElementById('transactionTime').value = timeStr;
     document.getElementById('transactionPaymentMethod').value = transaction.paymentMethod;
     document.getElementById('transactionNotes').value = transaction.notes || '';
     
@@ -1114,6 +1139,10 @@ function closeTransactionModal() {
     transactionModal.classList.add('hidden');
     transactionForm.reset();
     document.getElementById('transactionDate').valueAsDate = new Date();
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('transactionTime').value = `${hours}:${minutes}`;
     setTransactionType('income');
     isEditing = false;
     editingTransactionId = null;
