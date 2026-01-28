@@ -337,6 +337,19 @@
       "notes": "Nova",
       "tags": [],
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-04a51d8c-a1cc-470f-95ae-73af30fb83c3",
+      "title": "Breakfast",
+      "amount": 40,
+      "type": "expense",
+      "category": "ctg-30dd1566-d39b-4017-9583-fc71bb42acd6",
+      "date": "2026-01-29T08:19:00",
+      "paymentMethod": "cash",
+      "status": "completed",
+      "notes": "Pandesal",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ],
   "users": [
@@ -518,8 +531,8 @@
       "subtype": "other",
       "icon": "utensils",
       "color": "#ef4444",
-      "transactions_count": 6,
-      "totalAmount": 493,
+      "transactions_count": 7,
+      "totalAmount": 533,
       "lastUsed": "2026-01-14",
       "monthlyAverage": 0,
       "description": "",
