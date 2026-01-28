@@ -43,6 +43,8 @@ const loadingState = document.getElementById('loadingState');
 const tabButtons = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 
+const searchInput = document.getElementById('searchInput');
+
 // Chart variables
 let incomeExpenseChart, categoryChart, trendChart, ratioChart;
 
@@ -334,6 +336,11 @@ function setupEventListeners() {
             renderTransactions(filter);
         });
     });
+
+    searchInput.addEventListener('input', debounce(() => {
+        currentPage = 1; // Reset to first page on search
+        renderAllTransactionsTable();
+    }, 300));
     
     // View all transactions
     document.getElementById('viewAllBtn').addEventListener('click', () => {
@@ -586,13 +593,30 @@ function renderAllTransactionsTable() {
     
     // Clear current table
     allTransactionsTable.innerHTML = '';
+
+    // Get search term
+    const searchTerm = searchInput.value.toLowerCase().trim();
     
     // Get user preference for items per page
     const user = authManager.getCurrentUser() || currentUser;
     itemsPerPage = user?.recentTransactionsCount || 10;
     
-    // Sort by date (newest first)
-    const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+    // Sort by date (newest first) - work on a copy of the original array
+    let sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Filter by search term if provided
+    if (searchTerm) {
+        sortedTransactions = sortedTransactions.filter(transaction => {
+            // Search in multiple fields
+            return transaction.title.toLowerCase().includes(searchTerm) || 
+                   (transaction.notes && transaction.notes.toLowerCase().includes(searchTerm)) ||
+                   transaction.category.toLowerCase().includes(searchTerm) ||
+                   transaction.type.toLowerCase().includes(searchTerm) ||
+                   transaction.amount.toString().includes(searchTerm) ||
+                   transaction.paymentMethod.toLowerCase().includes(searchTerm);
+        });
+    }
+    
     totalTransactions = sortedTransactions.length;
     
     if (totalTransactions === 0) {
@@ -700,9 +724,14 @@ function updatePaginationUI() {
     
     const showingText = document.querySelector('.flex.justify-between.items-center.mt-6.pt-6.border-t.border-gray-200 .text-gray-600');
     if (showingText) {
+        const searchTerm = searchInput.value.trim();
+        const searchInfo = searchTerm ? 
+            ` (${totalTransactions} found for "${searchTerm}")` : 
+            '';
+        
         showingText.innerHTML = `
             Showing <span class="font-medium">${totalTransactions > 0 ? startIndex : 0}-${endIndex}</span> 
-            of <span class="font-medium">${totalTransactions}</span> transactions
+            of <span class="font-medium">${totalTransactions}</span> transactions${searchInfo}
         `;
     }
     
@@ -1257,7 +1286,8 @@ async function deleteTransaction(id) {
         // Reset to first page after deletion
         currentPage = 1;
         
-        // Update UI
+        // Update UI - reload transactions to get fresh data
+        await loadTransactions();
         renderAllTransactionsTable();
         updateSummary();
         
@@ -1418,3 +1448,14 @@ async function monthlySummaryStats() {
     }
 }
 
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
