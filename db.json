@@ -337,18 +337,6 @@
       "notes": "Nova",
       "tags": [],
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
-    },
-    {
-      "title": "test",
-      "amount": 1,
-      "type": "income",
-      "category": "ctg-f41abc9f-9777-49f6-8c81-a7983d52a2ad",
-      "date": "2026-01-28T21:22:00",
-      "paymentMethod": "credit_card",
-      "status": "completed",
-      "notes": "",
-      "tags": [],
-      "id": "txn-2c890cba-05cf-475c-987a-9161d7c58e91"
     }
   ],
   "users": [
@@ -401,7 +389,7 @@
       "newsletter": false,
       "experience": "beginner",
       "status": "active",
-      "lastLogin": "2026-01-28T13:18:57.860Z",
+      "lastLogin": "2026-01-28T17:23:40.664Z",
       "createdAt": "2026-01-14T06:16:40.881Z",
       "accountId": "MF1768371400881812",
       "premiumTrial": true,
@@ -420,7 +408,7 @@
       "dataAnalytics": true,
       "autoCategorization": true,
       "defaultDashboardView": "transactions",
-      "recentTransactionsCount": 10
+      "recentTransactionsCount": 5
     },
     {
       "id": "user-959f505f-16a0-44b2-b28b-900258162eda",

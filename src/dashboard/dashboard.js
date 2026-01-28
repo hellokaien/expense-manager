@@ -589,7 +589,7 @@ function renderAllTransactionsTable() {
     
     // Get user preference for items per page
     const user = authManager.getCurrentUser() || currentUser;
-    itemsPerPage = user?.itemsPerPage || 10;
+    itemsPerPage = user?.recentTransactionsCount || 10;
     
     // Sort by date (newest first)
     const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
