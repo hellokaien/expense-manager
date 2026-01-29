@@ -43,6 +43,8 @@ const loadingState = document.getElementById('loadingState');
 const tabButtons = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
 
+const searchInput = document.getElementById('searchInput');
+
 // Chart variables
 let incomeExpenseChart, categoryChart, trendChart, ratioChart;
 
@@ -59,6 +61,11 @@ let editingTransactionId = null;
 // Categories for income and expenses
 let incomeCategories = [];
 let expenseCategories = [];
+
+let currentPage = 1;
+let itemsPerPage = 10;
+let totalTransactions = 0;
+let paginatedTransactions = [];
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', async function() {
@@ -329,6 +336,11 @@ function setupEventListeners() {
             renderTransactions(filter);
         });
     });
+
+    searchInput.addEventListener('input', debounce(() => {
+        currentPage = 1; // Reset to first page on search
+        renderAllTransactionsTable();
+    }, 300));
     
     // View all transactions
     document.getElementById('viewAllBtn').addEventListener('click', () => {
@@ -391,6 +403,7 @@ function switchTab(tabName) {
     
     // If switching to transactions tab, update the table
     if (tabName === 'transactions') {
+        currentPage = 1; // Reset to first page
         renderAllTransactionsTable();
     }
     
@@ -483,7 +496,9 @@ async function saveTransaction(e) {
             await addTransaction(transactionData);
             showNotification('Transaction added successfully!', 'success');
         }
-        
+        // Reset to first page after saving
+        currentPage = 1;
+
         // Update UI
         await loadTransactions();
         renderAllTransactionsTable();
@@ -494,7 +509,7 @@ async function saveTransaction(e) {
         closeTransactionModal();
     } catch (error) {
         showNotification('Failed to save transaction.', error);
-        dd(error);
+        // dd(error);
     }
 }
 
@@ -569,39 +584,74 @@ function renderTransactions(filter = 'all') {
 }
 
 function renderAllTransactionsTable() {
-
     emptyState.classList.add('hidden');
     loadingState.classList.add('hidden');
     
     if (!loadingState.classList.contains('hidden')) {
         return;
     }
+    
     // Clear current table
     allTransactionsTable.innerHTML = '';
+
+    // Get search term
+    const searchTerm = searchInput.value.toLowerCase().trim();
     
-    // Sort by date (newest first)
+    // Get user preference for items per page
     const user = authManager.getCurrentUser() || currentUser;
-    const recentCount = user?.recentTransactionsCount || 10;
+    itemsPerPage = user?.recentTransactionsCount || 10;
     
-    // Take only the specified number of recent transactions for the recent list
-    const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-    const recentTransactions = sortedTransactions.slice(0, recentCount);
+    // Sort by date (newest first) - work on a copy of the original array
+    let sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    if (sortedTransactions.length === 0) {
+    // Filter by search term if provided
+    if (searchTerm) {
+        sortedTransactions = sortedTransactions.filter(transaction => {
+            // Search in multiple fields
+            return transaction.title.toLowerCase().includes(searchTerm) || 
+                   (transaction.notes && transaction.notes.toLowerCase().includes(searchTerm)) ||
+                   transaction.category.toLowerCase().includes(searchTerm) ||
+                   transaction.type.toLowerCase().includes(searchTerm) ||
+                   transaction.amount.toString().includes(searchTerm) ||
+                   transaction.paymentMethod.toLowerCase().includes(searchTerm);
+        });
+    }
+    
+    totalTransactions = sortedTransactions.length;
+    
+    if (totalTransactions === 0) {
         emptyState.classList.remove('hidden');
-        
+        updatePaginationUI(); // This will hide pagination when no transactions
         return;
     }
-
-    // Render each transaction
-    recentTransactions.forEach(transaction => {
+    
+    // Calculate pagination
+    const totalPages = Math.ceil(totalTransactions / itemsPerPage);
+    
+    // Ensure current page is valid
+    if (currentPage > totalPages) {
+        currentPage = totalPages || 1;
+    }
+    
+    // Get transactions for current page
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    paginatedTransactions = sortedTransactions.slice(startIndex, endIndex);
+    
+    // Render each transaction for current page
+    paginatedTransactions.forEach(transaction => {
         // Find category label
         const categoryList = transaction.type === 'income' ? incomeCategories : expenseCategories;
         const categoryInfo = getCategoryInfo(transaction.category);
         const colorClass = getCategoryColorClass(categoryInfo.color);
+        
         // Format date
         const dateObj = new Date(transaction.date);
-        const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const formattedDate = dateObj.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric' 
+        });
         
         const row = document.createElement('tr');
         row.className = 'border-b border-gray-100 hover:bg-gray-50';
@@ -649,7 +699,6 @@ function renderAllTransactionsTable() {
     document.querySelectorAll('.delete-btn-table').forEach(button => {
         button.addEventListener('click', function() {
             const transactionId = this.getAttribute('data-id');
-            console.log(transactionId);
             deleteTransaction(transactionId);
         });
     });
@@ -661,6 +710,83 @@ function renderAllTransactionsTable() {
             editTransaction(transactionId);
         });
     });
+    
+    // Update pagination UI
+    updatePaginationUI();
+}
+
+function updatePaginationUI() {
+    const totalPages = Math.ceil(totalTransactions / itemsPerPage);
+    
+    // Update showing text
+    const startIndex = (currentPage - 1) * itemsPerPage + 1;
+    const endIndex = Math.min(currentPage * itemsPerPage, totalTransactions);
+    
+    const showingText = document.querySelector('.flex.justify-between.items-center.mt-6.pt-6.border-t.border-gray-200 .text-gray-600');
+    if (showingText) {
+        const searchTerm = searchInput.value.trim();
+        const searchInfo = searchTerm ? 
+            ` (${totalTransactions} found for "${searchTerm}")` : 
+            '';
+        
+        showingText.innerHTML = `
+            Showing <span class="font-medium">${totalTransactions > 0 ? startIndex : 0}-${endIndex}</span> 
+            of <span class="font-medium">${totalTransactions}</span> transactions${searchInfo}
+        `;
+    }
+    
+    // Update pagination buttons
+    const paginationContainer = document.querySelector('.flex.justify-between.items-center.mt-6.pt-6.border-t.border-gray-200 .flex.space-x-2');
+    if (paginationContainer) {
+        paginationContainer.innerHTML = '';
+        
+        // Previous button
+        const prevButton = document.createElement('button');
+        prevButton.className = `px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`;
+        prevButton.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prevButton.disabled = currentPage === 1;
+        prevButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderAllTransactionsTable();
+            }
+        });
+        paginationContainer.appendChild(prevButton);
+        
+        // Page number buttons
+        const maxVisiblePages = 3;
+        let startPage = Math.max(1, currentPage - 1);
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        // Adjust if we're near the end
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.className = `px-3 py-2 rounded-lg font-medium ${i === currentPage ? 'bg-blue-600 text-white' : 'border border-gray-300 text-gray-700 hover:bg-gray-50'}`;
+            pageButton.textContent = i;
+            pageButton.addEventListener('click', () => {
+                currentPage = i;
+                renderAllTransactionsTable();
+            });
+            paginationContainer.appendChild(pageButton);
+        }
+        
+        // Next button
+        const nextButton = document.createElement('button');
+        nextButton.className = `px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 ${currentPage === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : ''}`;
+        nextButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        nextButton.disabled = currentPage === totalPages || totalPages === 0;
+        nextButton.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderAllTransactionsTable();
+            }
+        });
+        paginationContainer.appendChild(nextButton);
+    }
 }
 
 function viewTransaction(id) {
@@ -1150,7 +1276,6 @@ function closeTransactionModal() {
 }
 
 async function deleteTransaction(id) {
-    // First, prevent any default behavior by using a custom confirm
     const confirmed = await showCustomConfirm('Are you sure you want to delete this transaction?');
     
     if (!confirmed) return;
@@ -1158,16 +1283,16 @@ async function deleteTransaction(id) {
     try {
         await deleteTransactionFromServer(id);
         
-        // Update UI
-        renderAllTransactionsTable();
-        //updateStats();
-        //updateSelectedCount();
+        // Reset to first page after deletion
+        currentPage = 1;
         
-        // Show notification
-        showNotification('Transaction deleted successfully!', 'warning');
+        // Update UI - reload transactions to get fresh data
+        await loadTransactions();
+        renderAllTransactionsTable();
         updateSummary();
-        // Close detail modal if open
-        //transactionDetailModal.classList.add('hidden');
+        
+        showNotification('Transaction deleted successfully!', 'warning');
+        
     } catch (error) {
         showNotification('Failed to delete transaction', 'error');
         console.log(error);
@@ -1323,3 +1448,14 @@ async function monthlySummaryStats() {
     }
 }
 
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}

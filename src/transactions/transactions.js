@@ -67,16 +67,47 @@ function updateCategoryFilterDropdown() {
     // Add "All Categories" option
     const allLabel = document.createElement('label');
     allLabel.className = 'flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer';
-    allLabel.innerHTML = `
-        <input type="checkbox" class="checkbox-custom mr-2 w-4 h-4 border border-gray-300 rounded" data-category="all">
-        <span class="text-sm">All Categories</span>
-    `;
+    const allCheckbox = document.createElement('input');
+    allCheckbox.type = 'checkbox';
+    allCheckbox.className = 'checkbox-custom mr-2 w-4 h-4 border border-gray-300 rounded';
+    allCheckbox.value = 'all';
+    allCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            // Uncheck all other checkboxes
+            document.querySelectorAll('#categoryFilterDropdown input[type="checkbox"][value!="all"]').forEach(cb => {
+                cb.checked = false;
+            });
+        }
+        updateCategoryFilterButton();
+        renderTransactions();
+    });
+    allLabel.appendChild(allCheckbox);
+    const allSpan = document.createElement('span');
+    allSpan.className = 'text-sm';
+    allSpan.textContent = 'All Categories';
+    allLabel.appendChild(allSpan);
     categoryFilterContainer.appendChild(allLabel);
     
     // Add category options
     allCategories.forEach(category => {
         const label = document.createElement('label');
         label.className = 'flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer';
+        
+        // Create checkbox
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'checkbox-custom mr-2 w-4 h-4 border border-gray-300 rounded';
+        checkbox.value = category.id;
+        checkbox.addEventListener('change', function() {
+            // Uncheck "All" if any individual category is checked
+            if (this.checked) {
+                document.querySelector('#categoryFilterDropdown input[value="all"]').checked = false;
+            }
+            updateCategoryFilterButton();
+            currentPageNumber = 1;
+            renderTransactions();
+        });
+        label.appendChild(checkbox);
         
         // Create category badge with dynamic color
         const badge = document.createElement('span');
@@ -85,11 +116,7 @@ function updateCategoryFilterDropdown() {
         badge.style.color = category.color;
         badge.textContent = category.name;
         
-        label.innerHTML = `
-            <input type="checkbox" class="checkbox-custom mr-2 w-4 h-4 border border-gray-300 rounded" value="${category.id || category.name}">
-        `;
         label.appendChild(badge);
-        
         categoryFilterContainer.appendChild(label);
     });
 }
@@ -133,6 +160,46 @@ function getCategoryInfo(categoryValue) {
     }
     
     return category;
+}
+
+// Helper function to get selected categories from filter checkboxes
+function getSelectedCategories() {
+    const checkboxes = document.querySelectorAll('#categoryFilterDropdown input[type="checkbox"]:checked');
+    const selected = [];
+    
+    checkboxes.forEach(checkbox => {
+        const categoryBadge = checkbox.nextElementSibling;
+        if (categoryBadge && checkbox.value !== 'all') {
+            // Get category from the checkbox value or find it by name
+            const categoryId = checkbox.value;
+            if (categoryId) {
+                selected.push(categoryId);
+            }
+        }
+    });
+    
+    return selected;
+}
+
+// Helper function to update category filter button text
+function updateCategoryFilterButton() {
+    const selectedCategories = getSelectedCategories();
+    let buttonText = 'Category: All';
+    
+    if (selectedCategories.length > 0) {
+        if (selectedCategories.length === 1) {
+            const category = allCategories.find(c => c.id === selectedCategories[0]);
+            buttonText = `Category: ${category?.name || selectedCategories[0]}`;
+        } else {
+            buttonText = `Category: ${selectedCategories.length} selected`;
+        }
+    }
+    
+    categoryFilterBtn.innerHTML = `
+        <i class="fas fa-tag text-gray-500 mr-2"></i>
+        <span>${buttonText}</span>
+        <i class="fas fa-chevron-down text-gray-500 ml-2"></i>
+    `;
 }
 
 // Payment method labels
@@ -615,6 +682,16 @@ function setupEventListeners() {
         });
     });
     
+    // Category filter selection
+    const categoryCheckboxes = document.querySelectorAll('#categoryFilterDropdown input[type="checkbox"]');
+    categoryCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            currentPageNumber = 1; // Reset to first page on filter change
+            updateCategoryFilterButton();
+            renderTransactions();
+        });
+    });
+    
     // Date filter custom range
     document.querySelectorAll('input[name="dateFilter"]').forEach(radio => {
         radio.addEventListener('change', () => {
@@ -879,7 +956,11 @@ function renderTransactions() {
         // Type filter
         const matchesType = typeFilter === 'all' || transaction.type === typeFilter;
         
-        return matchesSearch && matchesType;
+        // Category filter
+        const selectedCategories = getSelectedCategories();
+        const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(transaction.category);
+        
+        return matchesSearch && matchesType && matchesCategory;
     });
     
     if (filteredTransactions.length === 0) {

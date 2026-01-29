@@ -339,16 +339,17 @@
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     },
     {
-      "title": "test",
-      "amount": 1,
-      "type": "income",
-      "category": "ctg-f41abc9f-9777-49f6-8c81-a7983d52a2ad",
-      "date": "2026-01-28T21:22:00",
-      "paymentMethod": "credit_card",
+      "id": "txn-04a51d8c-a1cc-470f-95ae-73af30fb83c3",
+      "title": "Breakfast",
+      "amount": 40,
+      "type": "expense",
+      "category": "ctg-30dd1566-d39b-4017-9583-fc71bb42acd6",
+      "date": "2026-01-29T08:19:00",
+      "paymentMethod": "cash",
       "status": "completed",
-      "notes": "",
+      "notes": "Pandesal",
       "tags": [],
-      "id": "txn-2c890cba-05cf-475c-987a-9161d7c58e91"
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ],
   "users": [
@@ -401,7 +402,7 @@
       "newsletter": false,
       "experience": "beginner",
       "status": "active",
-      "lastLogin": "2026-01-28T13:18:57.860Z",
+      "lastLogin": "2026-01-28T17:55:33.751Z",
       "createdAt": "2026-01-14T06:16:40.881Z",
       "accountId": "MF1768371400881812",
       "premiumTrial": true,
@@ -420,7 +421,7 @@
       "dataAnalytics": true,
       "autoCategorization": true,
       "defaultDashboardView": "transactions",
-      "recentTransactionsCount": 10
+      "recentTransactionsCount": 5
     },
     {
       "id": "user-959f505f-16a0-44b2-b28b-900258162eda",
@@ -530,8 +531,8 @@
       "subtype": "other",
       "icon": "utensils",
       "color": "#ef4444",
-      "transactions_count": 6,
-      "totalAmount": 493,
+      "transactions_count": 7,
+      "totalAmount": 533,
       "lastUsed": "2026-01-14",
       "monthlyAverage": 0,
       "description": "",
