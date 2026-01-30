@@ -2,6 +2,7 @@ import { showNotification, API_BASE_URL, getInitials, STORAGE_KEYS } from '../sh
 import authManager from '../auth/auth.js';
 import categoryService from '../shared/services/categoryService.js';
 import transactionService from '../shared/services/transactionService.js';  
+import budgetService from '../shared/services/budgetService.js';
 import { logout } from '../app.js';
 import { formatCurrency, getCurrencySymbol } from '../shared/currencyUtils.js';
 import apiService from '../shared/apiService.js';
@@ -62,6 +63,10 @@ let editingTransactionId = null;
 let incomeCategories = [];
 let expenseCategories = [];
 
+// Budget data
+let currentBudget = null;
+let budgetCategories = [];
+
 let currentPage = 1;
 let itemsPerPage = 10;
 let totalTransactions = 0;
@@ -108,10 +113,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Load user data and transactions
         await loadUserData();
         await loadTransactions();
+        await loadBudgetData();
         
         // Update UI
         renderAllTransactionsTable();
         updateSummary();
+        populateDashboardBudget();
         initializeCharts();
         
         // Update currency label in modal
@@ -1458,4 +1465,150 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
+}
+
+async function loadBudgetData() {
+    try {
+        // Load budgets
+        const budgets = await budgetService.getBudgets();
+        
+        if (budgets && Array.isArray(budgets) && budgets.length > 0) {
+            // Find budget for the current month
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            
+            const budgetForMonth = budgets.find(b => {
+                if (!b || !b.startDate || !b.endDate) return false;
+                
+                const budgetStart = new Date(b.startDate);
+                const budgetEnd = new Date(b.endDate);
+                
+                if (isNaN(budgetStart.getTime()) || isNaN(budgetEnd.getTime())) return false;
+                
+                const budgetStartMonth = budgetStart.getMonth();
+                const budgetStartYear = budgetStart.getFullYear();
+                const budgetEndMonth = budgetEnd.getMonth();
+                const budgetEndYear = budgetEnd.getFullYear();
+                
+                const isStartInTargetMonth = budgetStartMonth === currentMonth && budgetStartYear === currentYear;
+                const isEndInTargetMonth = budgetEndMonth === currentMonth && budgetEndYear === currentYear;
+                
+                return isStartInTargetMonth || isEndInTargetMonth;
+            });
+            
+            if (budgetForMonth) {
+                currentBudget = budgetForMonth;
+                
+                // Load budget categories
+                try {
+                    budgetCategories = await budgetService.getBudgetCategories(currentBudget.id);
+                    
+                    // Calculate spending for each category
+                    budgetCategories = budgetCategories.map(cat => {
+                        const spent = calculateCategorySpending(cat.categoryId || cat.category);
+                        return { ...cat, spent };
+                    });
+                } catch (error) {
+                    console.warn('No budget categories found:', error);
+                    budgetCategories = [];
+                }
+            }
+        }
+    } catch (error) {
+        console.warn('Error loading budget data:', error);
+    }
+}
+
+function calculateCategorySpending(categoryId) {
+    return transactions
+        .filter(t => t.category === categoryId && t.type === 'expense')
+        .reduce((sum, t) => sum + (t.amount || 0), 0);
+}
+
+function populateDashboardBudget() {
+    const overviewContainer = document.getElementById('dashboardBudgetOverview');
+    const suggestionsContainer = document.getElementById('dashboardBudgetSuggestions');
+    
+    if (!overviewContainer || !suggestionsContainer) return;
+    
+    overviewContainer.innerHTML = '';
+    suggestionsContainer.innerHTML = '';
+    
+    if (!currentBudget || budgetCategories.length === 0) {
+        overviewContainer.innerHTML = '<p class="text-gray-500 text-center py-8">No active budget. <a href="../budget/budget.html" class="text-blue-600 hover:underline">Create a budget</a> to get started.</p>';
+        suggestionsContainer.innerHTML = '<p class="text-gray-500 text-center py-8">Set up a budget to receive personalized suggestions.</p>';
+        return;
+    }
+    
+    const suggestions = [];
+    
+    // Populate budget overview
+    budgetCategories.forEach(category => {
+        const percentage = category.budget > 0 ? (category.spent / category.budget) * 100 : 0;
+        const remaining = category.budget - category.spent;
+        let statusColor = 'text-green-600';
+        let barColor = 'bg-green-500';
+        
+        if (percentage >= 90) {
+            statusColor = 'text-red-600';
+            barColor = 'bg-red-500';
+        } else if (percentage >= 75) {
+            statusColor = 'text-yellow-600';
+            barColor = 'bg-yellow-500';
+        }
+        
+        const budgetItem = document.createElement('div');
+        budgetItem.innerHTML = `
+            <div>
+                <div class="flex justify-between mb-1">
+                    <span>${category.name}</span>
+                    <span class="font-medium">${formatCurrency(category.spent)} / ${formatCurrency(category.budget)}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="${barColor} h-3 rounded-full" style="width: ${Math.min(percentage, 100)}%"></div>
+                </div>
+                <p class="${statusColor} text-sm mt-1">
+                    ${remaining >= 0 ? `${formatCurrency(remaining)} remaining` : `${formatCurrency(Math.abs(remaining))} over budget`}
+                </p>
+            </div>
+        `;
+        overviewContainer.appendChild(budgetItem);
+        
+        // Collect suggestions
+        if (percentage >= 90) {
+            suggestions.push({
+                type: 'warning',
+                title: `Reduce ${category.name} Spending`,
+                message: `You've spent ${Math.round(percentage)}% of your ${category.name} budget. Consider reducing expenses in this category.`,
+                color: 'bg-red-50 border-red-200'
+            });
+        } else if (percentage < 50) {
+            suggestions.push({
+                type: 'good',
+                title: `Great Job on ${category.name}`,
+                message: `You've only used ${Math.round(percentage)}% of your ${category.name} budget. Keep up the good spending habits!`,
+                color: 'bg-green-50 border-green-200'
+            });
+        }
+    });
+    
+    // Display suggestions
+    if (suggestions.length === 0) {
+        suggestionsContainer.innerHTML = '<p class="text-gray-500 text-center py-8">All budgets are on track!</p>';
+    } else {
+        suggestions.slice(0, 3).forEach(suggestion => {
+            const colors = suggestion.color === 'bg-red-50 border-red-200' 
+                ? 'bg-red-50 border-red-200 text-red-800 text-red-700' 
+                : 'bg-green-50 border-green-200 text-green-800 text-green-700';
+            
+            const suggestionDiv = document.createElement('div');
+            suggestionDiv.className = `border rounded-lg p-5 mb-6 ${suggestion.color}`;
+            suggestionDiv.innerHTML = `
+                <h4 class="font-medium ${colors.split(' ')[2]} mb-2">${suggestion.title}</h4>
+                <p class="${colors.split(' ')[3]} text-sm">${suggestion.message}</p>
+            `;
+            suggestionsContainer.appendChild(suggestionDiv);
+        });
+    }
 }

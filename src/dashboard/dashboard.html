@@ -583,78 +583,25 @@
                     <div class="bg-white rounded-xl shadow-md p-6">
                         <div class="flex justify-between items-center mb-6">
                             <h2 class="text-2xl font-bold text-gray-800">Budget Planner</h2>
-                            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <a href="../budget/budget.html" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                                 <i class="fas fa-plus mr-2"></i> Create New Budget
-                            </button>
+                            </a>
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div>
                                 <h3 class="text-lg font-medium text-gray-700 mb-4">Monthly Budget Overview</h3>
                                 
-                                <div class="space-y-6">
-                                    <div>
-                                        <div class="flex justify-between mb-1">
-                                            <span>Food & Dining</span>
-                                            <span class="font-medium">$645 / $700</span>
-                                        </div>
-                                        <div class="w-full bg-gray-200 rounded-full h-3">
-                                            <div class="bg-red-500 h-3 rounded-full" style="width: 92%"></div>
-                                        </div>
-                                        <p class="text-red-600 text-sm mt-1">$55 over budget</p>
-                                    </div>
-                                    
-                                    <div>
-                                        <div class="flex justify-between mb-1">
-                                            <span>Shopping</span>
-                                            <span class="font-medium">$420 / $500</span>
-                                        </div>
-                                        <div class="w-full bg-gray-200 rounded-full h-3">
-                                            <div class="bg-yellow-500 h-3 rounded-full" style="width: 84%"></div>
-                                        </div>
-                                        <p class="text-green-600 text-sm mt-1">$80 remaining</p>
-                                    </div>
-                                    
-                                    <div>
-                                        <div class="flex justify-between mb-1">
-                                            <span>Entertainment</span>
-                                            <span class="font-medium">$120 / $200</span>
-                                        </div>
-                                        <div class="w-full bg-gray-200 rounded-full h-3">
-                                            <div class="bg-green-500 h-3 rounded-full" style="width: 60%"></div>
-                                        </div>
-                                        <p class="text-green-600 text-sm mt-1">$80 remaining</p>
-                                    </div>
-                                    
-                                    <div>
-                                        <div class="flex justify-between mb-1">
-                                            <span>Transportation</span>
-                                            <span class="font-medium">$185 / $250</span>
-                                        </div>
-                                        <div class="w-full bg-gray-200 rounded-full h-3">
-                                            <div class="bg-blue-500 h-3 rounded-full" style="width: 74%"></div>
-                                        </div>
-                                        <p class="text-green-600 text-sm mt-1">$65 remaining</p>
-                                    </div>
+                                <div id="dashboardBudgetOverview" class="space-y-6">
+                                    <!-- Budget items will be dynamically populated here -->
                                 </div>
                             </div>
                             
                             <div>
                                 <h3 class="text-lg font-medium text-gray-700 mb-4">Budget Suggestions</h3>
                                 
-                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-5 mb-6">
-                                    <h4 class="font-medium text-blue-800 mb-2">Reduce Food Spending</h4>
-                                    <p class="text-blue-700 text-sm">You've spent 92% of your food budget. Consider cooking at home more often to stay within budget.</p>
-                                </div>
-                                
-                                <div class="bg-green-50 border border-green-200 rounded-lg p-5 mb-6">
-                                    <h4 class="font-medium text-green-800 mb-2">Great Job on Entertainment</h4>
-                                    <p class="text-green-700 text-sm">You've only used 60% of your entertainment budget. You're doing great at managing discretionary spending!</p>
-                                </div>
-                                
-                                <div class="bg-purple-50 border border-purple-200 rounded-lg p-5">
-                                    <h4 class="font-medium text-purple-800 mb-2">Increase Savings Rate</h4>
-                                    <p class="text-purple-700 text-sm">You're saving 24% of your income. Consider increasing this to 30% to reach your financial goals faster.</p>
+                                <div id="dashboardBudgetSuggestions">
+                                    <!-- Suggestions will be dynamically populated here -->
                                 </div>
                             </div>
                         </div>
