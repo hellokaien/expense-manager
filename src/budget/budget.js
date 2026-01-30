@@ -1039,7 +1039,7 @@ function updateBudgetSummary() {
     if (summaryCards[0]) {
         const h3 = summaryCards[0].querySelector('h3');
         if (h3) {
-            h3.textContent = `$${totalBudget.toLocaleString()}`;
+            h3.textContent = `${formatCurrency(totalBudget)}`;
             console.log('Updated Total Budget to:', h3.textContent);
         } else {
             console.error('Total Budget h3 not found in card 0');
@@ -1052,7 +1052,7 @@ function updateBudgetSummary() {
     if (summaryCards[1]) {
         const h3 = summaryCards[1].querySelector('h3');
         if (h3) {
-            h3.textContent = `$${totalSpent.toLocaleString()}`;
+            h3.textContent = `${formatCurrency(totalSpent)}`;
             console.log('Updated Spent to:', h3.textContent);
         }
     }
@@ -1061,7 +1061,7 @@ function updateBudgetSummary() {
     if (summaryCards[2]) {
         const h3 = summaryCards[2].querySelector('h3');
         if (h3) {
-            h3.textContent = `$${remaining.toLocaleString()}`;
+            h3.textContent = `${formatCurrency(remaining)}`;
             console.log('Updated Remaining to:', h3.textContent);
         }
     }
@@ -1070,7 +1070,7 @@ function updateBudgetSummary() {
     if (summaryCards[3]) {
         const h3 = summaryCards[3].querySelector('h3');
         if (h3) {
-            h3.textContent = `$${dailyAverage.toFixed(0)}`;
+            h3.textContent = `${formatCurrency(dailyAverage)}`;
             console.log('Updated Daily Average to:', h3.textContent);
         }
     }
@@ -1117,7 +1117,7 @@ function initializeCharts() {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return '$' + value;
+                                return formatCurrency(value);
                             }
                         }
                     },
@@ -1293,7 +1293,7 @@ function populateCategories() {
                     </div>
                     <div>
                         <h4 class="font-medium text-gray-800">${category.name}</h4>
-                        <p class="text-gray-500 text-sm">$${category.spent.toFixed(2)} of $${category.budget.toFixed(2)}</p>
+                        <p class="text-gray-500 text-sm">${formatCurrency(category.spent)} of ${formatCurrency(category.budget)}</p>
                     </div>
                 </div>
                 <span class="font-bold ${percentage >= 90 ? 'text-red-600' : percentage >= 75 ? 'text-yellow-600' : 'text-green-600'}">${Math.round(percentage)}%</span>
@@ -1302,7 +1302,7 @@ function populateCategories() {
                 <div class="${progressClass} h-2 rounded-full" style="width: ${Math.min(percentage, 100)}%"></div>
             </div>
             <div class="flex justify-between">
-                <span class="text-gray-500 text-sm">$${remaining.toFixed(2)} remaining</span>
+                <span class="text-gray-500 text-sm">${formatCurrency(remaining)} remaining</span>
                 <div class="flex space-x-2">
                     <button class="edit-category text-blue-600 hover:text-blue-800 text-sm" data-id="${category.id}">
                         <i class="fas fa-edit"></i>
@@ -1340,6 +1340,9 @@ function populateCategories() {
             }
         });
     });
+    
+    // Also populate the Budget Status by Category section
+    populateBudgetStatusByCategory();
 }
 
 function editCategory(categoryId) {
@@ -1730,6 +1733,117 @@ function initializeDragAndDrop() {
                 updateBudgetAllocation();
             }
         });
+    });
+}
+
+function populateBudgetStatusByCategory() {
+    const container = document.getElementById('budgetStatusContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (budgetCategories.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No budget categories yet. Add one in the Categories tab to track spending.</p>';
+        return;
+    }
+    
+    // Calculate days remaining in month
+    const now = new Date();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const daysRemaining = daysInMonth - now.getDate();
+    
+    budgetCategories.forEach(category => {
+        const percentage = category.budget > 0 ? (category.spent / category.budget) * 100 : 0;
+        const remaining = category.budget - category.spent;
+        const isOverBudget = category.spent > category.budget;
+        
+        let statusClass = 'budget-status-good';
+        let progressClass = 'budget-progress-good';
+        let statusColor = 'text-green-600';
+        
+        if (percentage >= 90) {
+            statusClass = 'budget-status-danger';
+            progressClass = 'budget-progress-danger';
+            statusColor = 'text-red-600';
+        } else if (percentage >= 75) {
+            statusClass = 'budget-status-warning';
+            progressClass = 'budget-progress-warning';
+            statusColor = 'text-yellow-600';
+        }
+        
+        // Get icon
+        let iconClass = 'fas fa-tag';
+        let bgColor = 'bg-gray-100';
+        let iconColor = 'text-gray-600';
+        
+        switch(category.icon) {
+            case 'utensils':
+                iconClass = 'fas fa-utensils';
+                bgColor = 'bg-yellow-100';
+                iconColor = 'text-yellow-600';
+                break;
+            case 'shopping-bag':
+                iconClass = 'fas fa-shopping-bag';
+                bgColor = 'bg-purple-100';
+                iconColor = 'text-purple-600';
+                break;
+            case 'home':
+                iconClass = 'fas fa-home';
+                bgColor = 'bg-green-100';
+                iconColor = 'text-green-600';
+                break;
+            case 'car':
+                iconClass = 'fas fa-car';
+                bgColor = 'bg-blue-100';
+                iconColor = 'text-blue-600';
+                break;
+            case 'film':
+                iconClass = 'fas fa-film';
+                bgColor = 'bg-pink-100';
+                iconColor = 'text-pink-600';
+                break;
+            case 'heartbeat':
+                iconClass = 'fas fa-heart';
+                bgColor = 'bg-red-100';
+                iconColor = 'text-red-600';
+                break;
+            case 'graduation-cap':
+                iconClass = 'fas fa-graduation-cap';
+                bgColor = 'bg-indigo-100';
+                iconColor = 'text-indigo-600';
+                break;
+        }
+        
+        const statusCard = document.createElement('div');
+        statusCard.className = `${statusClass} p-4 rounded-lg bg-white border border-gray-200`;
+        statusCard.innerHTML = `
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full ${bgColor} flex items-center justify-center mr-3">
+                        <i class="${iconClass} ${iconColor}"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800">${category.name}</h4>
+                        <p class="text-gray-500 text-sm">${formatCurrency(category.spent)} spent of ${formatCurrency(category.budget)} budget</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="font-bold ${statusColor}">${Math.round(percentage)}%</span>
+                    <p class="${isOverBudget ? 'text-red-600' : 'text-green-600'} text-sm">
+                        ${isOverBudget ? `$${Math.abs(remaining).toFixed(2)} over budget` : `$${remaining.toFixed(2)} remaining`}
+                    </p>
+                </div>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="${progressClass} h-2 rounded-full" style="width: ${Math.min(percentage, 100)}%"></div>
+            </div>
+            <div class="flex justify-between mt-2">
+                <span class="text-gray-500 text-sm">${Math.abs(remaining).toFixed(2)} ${isOverBudget ? 'over' : 'remaining'}</span>
+                <span class="text-gray-500 text-sm">Due in ${Math.max(daysRemaining, 0)} days</span>
+            </div>
+        `;
+        
+        container.appendChild(statusCard);
     });
 }
 

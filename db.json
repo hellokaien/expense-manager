@@ -350,6 +350,71 @@
       "notes": "Pandesal",
       "tags": [],
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-69045ac1-8326-48b8-9a77-3a5fa2b5af2f",
+      "title": "Orange Apps",
+      "amount": 7500,
+      "type": "income",
+      "category": "ctg-f41abc9f-9777-49f6-8c81-a7983d52a2ad",
+      "date": "2026-01-29T18:53:00",
+      "paymentMethod": "digital_wallet",
+      "status": "completed",
+      "notes": "",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-c486c7a6-ff6d-43e5-91f7-a3c915b0fb6e",
+      "title": "Mama",
+      "amount": 4200,
+      "type": "expense",
+      "category": "ctg-f4abeedc-f08f-4c44-a49a-bee9bcb42a87",
+      "date": "2026-01-30T06:14:00",
+      "paymentMethod": "digital_wallet",
+      "status": "completed",
+      "notes": "",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-fa01d123-0907-4434-8c24-5cc8d1585b8f",
+      "title": "Papa",
+      "amount": 500,
+      "type": "expense",
+      "category": "ctg-68268773-d2d6-4e52-a34f-6a32abb5e2fd",
+      "date": "2026-01-30T06:16:00",
+      "paymentMethod": "digital_wallet",
+      "status": "completed",
+      "notes": "",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-26677c71-8faa-496d-9677-b725bf47d452",
+      "title": "Spaylater",
+      "amount": 298,
+      "type": "expense",
+      "category": "ctg-b26e1037-a572-42cd-9751-0f56bcc032d3",
+      "date": "2026-01-30T07:19:00",
+      "paymentMethod": "digital_wallet",
+      "status": "completed",
+      "notes": "BedSheet + Lutein + Shoppee VIP",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "txn-cb6ab9fa-0203-4f46-86ef-eae87540f750",
+      "title": "Spaylater",
+      "amount": 4059.29,
+      "type": "expense",
+      "category": "ctg-b26e1037-a572-42cd-9751-0f56bcc032d3",
+      "date": "2026-01-30T07:24:00",
+      "paymentMethod": "digital_wallet",
+      "status": "completed",
+      "notes": "Iphone ",
+      "tags": [],
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ],
   "users": [
@@ -402,7 +467,7 @@
       "newsletter": false,
       "experience": "beginner",
       "status": "active",
-      "lastLogin": "2026-01-28T17:55:33.751Z",
+      "lastLogin": "2026-01-30T09:03:49.457Z",
       "createdAt": "2026-01-14T06:16:40.881Z",
       "accountId": "MF1768371400881812",
       "premiumTrial": true,
@@ -480,8 +545,8 @@
       "subtype": "essential",
       "icon": "money-bill-wave",
       "color": "#f97316",
-      "transactions_count": 0,
-      "totalAmount": 7499,
+      "transactions_count": 1,
+      "totalAmount": 14999,
       "lastUsed": "2026-01-14",
       "monthlyAverage": 0,
       "description": "",
@@ -497,8 +562,8 @@
       "subtype": "essential",
       "icon": "home",
       "color": "#ef4444",
-      "transactions_count": 0,
-      "totalAmount": 0,
+      "transactions_count": 1,
+      "totalAmount": 4200,
       "lastUsed": "2026-01-14",
       "monthlyAverage": 0,
       "description": "",
@@ -514,8 +579,8 @@
       "subtype": "other",
       "icon": "gift",
       "color": "#ec4899",
-      "transactions_count": 0,
-      "totalAmount": 0,
+      "transactions_count": 1,
+      "totalAmount": 500,
       "lastUsed": "2026-01-14",
       "monthlyAverage": 0,
       "description": "",
@@ -744,6 +809,15 @@
       "categoryId": "ctg-7df28431-d1b5-44cf-955a-32261b1229aa",
       "type": "essential",
       "icon": "car"
+    },
+    {
+      "id": "d426",
+      "budgetId": "6d76",
+      "name": "Food",
+      "budget": 1500,
+      "categoryId": "ctg-30dd1566-d39b-4017-9583-fc71bb42acd6",
+      "type": "essential",
+      "icon": "utensils"
     }
   ],
   "savingsGoals": [
@@ -755,36 +829,6 @@
       "deadline": "2026-05-26",
       "monthly": 200,
       "saved": 600,
-      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
-    },
-    {
-      "id": "823f",
-      "name": "Vacation to Baguio",
-      "target": 15000,
-      "startDate": "2026-01-01",
-      "deadline": "2026-05-25",
-      "monthly": 2000,
-      "saved": 16000,
-      "userId": "1766944218991"
-    },
-    {
-      "id": "54b2",
-      "name": "test",
-      "target": 10000,
-      "startDate": "2026-01-01",
-      "deadline": "2026-01-31",
-      "monthly": 100,
-      "saved": 400,
-      "userId": "1766944218991"
-    },
-    {
-      "id": "d86a",
-      "name": "Iphone 12",
-      "target": 24000,
-      "startDate": "2026-01-01",
-      "deadline": "2026-06-30",
-      "monthly": 4000,
-      "saved": 28000,
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ]
