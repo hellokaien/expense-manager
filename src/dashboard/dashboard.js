@@ -120,6 +120,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         updateSummary();
         populateDashboardBudget();
         initializeCharts();
+        populateOverviewCharts();
+        populateMonthlySummaryWithTransactionData();
         
         // Update currency label in modal
         updateAmountLabel();
@@ -1005,22 +1007,15 @@ function initializeCharts() {
         }
     });
     
-    // Category Chart
+    // Category Chart - Initialize with empty data (will be populated by populateOverviewCharts)
     const categoryCtx = document.getElementById('categoryChart').getContext('2d');
     categoryChart = new Chart(categoryCtx, {
         type: 'doughnut',
         data: {
-            labels: ['Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Other'],
+            labels: [],
             datasets: [{
-                data: [35, 20, 25, 15, 5, 10],
-                backgroundColor: [
-                    '#fbbf24', // Food - amber
-                    '#3b82f6', // Transport - blue
-                    '#8b5cf6', // Shopping - purple
-                    '#10b981', // Bills - green
-                    '#ef4444', // Entertainment - red
-                    '#6b7280'  // Other - gray
-                ],
+                data: [],
+                backgroundColor: [],
                 borderWidth: 0
             }]
         },
@@ -1610,5 +1605,163 @@ function populateDashboardBudget() {
             `;
             suggestionsContainer.appendChild(suggestionDiv);
         });
+    }
+}
+
+function populateOverviewCharts() {
+    // Populate the Spending by Category chart with real data
+    if (!categoryChart || !allCategories || allCategories.length === 0) return;
+    
+    try {
+        // Calculate spending by category
+        const categorySpending = {};
+        const categoryColors = {};
+        const colorPalette = ['#fbbf24', '#3b82f6', '#8b5cf6', '#10b981', '#ef4444', '#6b7280', '#ec4899', '#14b8a6'];
+        
+        allCategories.forEach((cat, index) => {
+            categorySpending[cat.id] = 0;
+            categoryColors[cat.id] = colorPalette[index % colorPalette.length];
+        });
+        
+        // Sum expenses by category
+        transactions.forEach(transaction => {
+            if (transaction.type === 'expense' && categorySpending.hasOwnProperty(transaction.category)) {
+                categorySpending[transaction.category] += transaction.amount;
+            }
+        });
+        
+        // Filter out categories with 0 spending
+        const categories = allCategories.filter(cat => categorySpending[cat.id] > 0);
+        const spending = categories.map(cat => categorySpending[cat.id]);
+        const labels = categories.map(cat => cat.name);
+        const colors = categories.map(cat => categoryColors[cat.id]);
+        
+        // Update chart
+        categoryChart.data.labels = labels;
+        categoryChart.data.datasets[0].data = spending;
+        categoryChart.data.datasets[0].backgroundColor = colors;
+        categoryChart.update();
+    } catch (error) {
+        console.warn('Error populating overview charts:', error);
+    }
+}
+
+function populateMonthlySummaryWithTransactionData() {
+    // Populate Monthly Summary section with real data from transactions
+    const topExpensesContainer = document.getElementById('topExpenses');
+    const topIncomesContainer = document.getElementById('topIncomes');
+    
+    if (!topExpensesContainer || !topIncomesContainer) return;
+    
+    try {
+        // Calculate top expenses by category
+        const expensesByCategory = {};
+        const incomesByCategory = {};
+        
+        transactions.forEach(transaction => {
+            const categoryName = allCategories.find(c => c.id === transaction.category)?.name || 'Other';
+            
+            if (transaction.type === 'expense') {
+                expensesByCategory[categoryName] = (expensesByCategory[categoryName] || 0) + transaction.amount;
+            } else {
+                incomesByCategory[categoryName] = (incomesByCategory[categoryName] || 0) + transaction.amount;
+            }
+        });
+        
+        // Sort and get top 3 expenses
+        const topExpenses = Object.entries(expensesByCategory)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3);
+        
+        // Sort and get top 3 incomes
+        const topIncomes = Object.entries(incomesByCategory)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3);
+        
+        // Clear and populate top expenses
+        topExpensesContainer.innerHTML = '';
+        const expenseColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500'];
+        
+        if (topExpenses.length === 0) {
+            topExpensesContainer.innerHTML = '<p class="text-gray-500 text-sm">No expenses yet</p>';
+        } else {
+            topExpenses.forEach((expense, index) => {
+                const [categoryName, amount] = expense;
+                const expenseDiv = document.createElement('div');
+                expenseDiv.className = 'flex justify-between items-center';
+                expenseDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full ${expenseColors[index]} mr-3"></div>
+                        <span>${categoryName}</span>
+                    </div>
+                    <span class="font-medium">${formatCurrency(amount)}</span>
+                `;
+                topExpensesContainer.appendChild(expenseDiv);
+            });
+        }
+        
+        // Clear and populate top incomes
+        topIncomesContainer.innerHTML = '';
+        const incomeColors = ['bg-emerald-500', 'bg-amber-500', 'bg-purple-500'];
+        
+        if (topIncomes.length === 0) {
+            topIncomesContainer.innerHTML = '<p class="text-gray-500 text-sm">No income yet</p>';
+        } else {
+            topIncomes.forEach((income, index) => {
+                const [categoryName, amount] = income;
+                const incomeDiv = document.createElement('div');
+                incomeDiv.className = 'flex justify-between items-center';
+                incomeDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 rounded-full ${incomeColors[index]} mr-3"></div>
+                        <span>${categoryName}</span>
+                    </div>
+                    <span class="font-medium">${formatCurrency(amount)}</span>
+                `;
+                topIncomesContainer.appendChild(incomeDiv);
+            });
+        }
+        
+        // Update Budget Status section with real data
+        if (currentBudget && budgetCategories.length > 0) {
+            // Find the Budget Status container - it's the 3rd column in the Monthly Summary grid
+            const monthlyGrid = topExpensesContainer.closest('div.grid');
+            if (monthlyGrid) {
+                const budgetStatusDiv = monthlyGrid.querySelector('div:nth-child(3) div.space-y-4');
+                
+                if (budgetStatusDiv) {
+                    // Clear existing budget items
+                    budgetStatusDiv.innerHTML = '';
+                    
+                    // Add budget items for each category (limit to 3)
+                    const budgetColors = ['bg-red-500', 'bg-blue-500', 'bg-purple-500'];
+                    
+                    budgetCategories.slice(0, 3).forEach((budgetCat, index) => {
+                        const percentage = budgetCat.budget > 0 ? (budgetCat.spent / budgetCat.budget) * 100 : 0;
+                        
+                        let barColor = 'bg-green-500';
+                        if (percentage >= 90) {
+                            barColor = 'bg-red-500';
+                        } else if (percentage >= 75) {
+                            barColor = 'bg-yellow-500';
+                        }
+                        
+                        const budgetDiv = document.createElement('div');
+                        budgetDiv.innerHTML = `
+                            <div class="flex justify-between mb-1">
+                                <span class="text-sm">${budgetCat.name}</span>
+                                <span class="text-sm font-medium">${formatCurrency(budgetCat.spent)} / ${formatCurrency(budgetCat.budget)}</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="${barColor} h-2 rounded-full" style="width: ${Math.min(percentage, 100)}%"></div>
+                            </div>
+                        `;
+                        budgetStatusDiv.appendChild(budgetDiv);
+                    });
+                }
+            }
+        }
+    } catch (error) {
+        console.warn('Error populating monthly summary:', error);
     }
 }
