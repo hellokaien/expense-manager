@@ -1484,6 +1484,64 @@ function populateGoals() {
             editGoal(goalId);
         });
     });
+    
+    // Populate the goal progress overview section
+    populateGoalProgressOverview();
+}
+
+function populateGoalProgressOverview() {
+    const container = document.getElementById('goalProgressContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (savingsGoals.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No goals yet. Add one to start tracking your progress!</p>';
+        return;
+    }
+    
+    savingsGoals.forEach(goal => {
+        const progress = goal.target > 0 ? (goal.saved / goal.target) * 100 : 0;
+        const remaining = goal.target - goal.saved;
+        const deadline = new Date(goal.deadline);
+        
+        // Determine progress color
+        let progressColor = 'text-yellow-600';
+        let barColor = 'bg-yellow-500';
+        let status = `${Math.round(progress)}% Complete`;
+        
+        if (progress >= 100) {
+            progressColor = 'text-green-600';
+            barColor = 'bg-green-500';
+            status = '100% Complete';
+        } else if (progress >= 75) {
+            progressColor = 'text-blue-600';
+            barColor = 'bg-blue-500';
+            status = `${Math.round(progress)}% Complete`;
+        }
+        
+        const goalProgressItem = document.createElement('div');
+        goalProgressItem.innerHTML = `
+            <div>
+                <div class="flex justify-between mb-2">
+                    <div>
+                        <span class="font-medium text-gray-800">${goal.name}</span>
+                        <span class="text-gray-500 text-sm ml-2">${formatCurrency(goal.target)} target</span>
+                    </div>
+                    <span class="font-bold ${progressColor}">${status}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="${barColor} h-3 rounded-full" style="width: ${Math.min(progress, 100)}%"></div>
+                </div>
+                <div class="flex justify-between mt-2">
+                    <span class="text-gray-500 text-sm">${formatCurrency(goal.saved)} saved ${remaining > 0 ? `• ${formatCurrency(remaining)} remaining` : `• Completed`}</span>
+                    <span class="text-gray-500 text-sm">Target: ${deadline.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(goalProgressItem);
+    });
 }
 
 function editGoal(goalId) {

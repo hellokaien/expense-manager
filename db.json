@@ -830,6 +830,36 @@
       "monthly": 200,
       "saved": 600,
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "b4db",
+      "name": "Personal Computer",
+      "target": 45000,
+      "startDate": "2026-01-01",
+      "deadline": "2027-01-01",
+      "monthly": 500,
+      "saved": 0,
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "60d6",
+      "name": "Debt to Mom",
+      "target": 5000,
+      "startDate": "2026-01-01",
+      "deadline": "2026-10-24",
+      "monthly": 500,
+      "saved": 0,
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
+    },
+    {
+      "id": "6b1f",
+      "name": "Love's House",
+      "target": 2000000,
+      "startDate": "2026-01-30",
+      "deadline": "2029-01-30",
+      "monthly": 1000,
+      "saved": 0,
+      "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     }
   ]
 }
