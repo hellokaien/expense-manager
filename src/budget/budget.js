@@ -1697,7 +1697,7 @@ function populateBudgetHistory() {
         return;
     }
     
-    budgetHistory.forEach(month => {
+    budgetHistory.forEach((month, index) => {
         const row = document.createElement('tr');
         row.className = 'border-b border-gray-100 hover:bg-gray-50';
         
@@ -1728,22 +1728,119 @@ function populateBudgetHistory() {
         
         row.innerHTML = `
             <td class="py-4 text-gray-700 font-medium">${month.month}</td>
-            <td class="py-4 text-gray-800">$${month.budget.toLocaleString()}</td>
-            <td class="py-4 text-gray-800">$${month.spent.toLocaleString()}</td>
-            <td class="py-4 font-medium ${savedClass}">${savedSign}$${Math.abs(month.saved).toLocaleString()}</td>
+            <td class="py-4 text-gray-800">${formatCurrency(month.budget)}</td>
+            <td class="py-4 text-gray-800">${formatCurrency(month.spent)}</td>
+            <td class="py-4 font-medium ${savedClass}">${savedSign}${formatCurrency(Math.abs(month.saved))}</td>
             <td class="py-4">
                 <span class="px-3 py-1 rounded-full text-xs font-medium ${statusColor}">
                     ${statusBadge}
                 </span>
             </td>
             <td class="py-4">
-                <button class="text-blue-600 hover:text-blue-800 text-sm">
+                <button class="view-budget-month text-blue-600 hover:text-blue-800 text-sm" data-index="${index}">
                     <i class="fas fa-eye"></i> View
                 </button>
             </td>
         `;
         
         historyTable.appendChild(row);
+    });
+    
+    // Add event listeners to View buttons
+    document.querySelectorAll('.view-budget-month').forEach(button => {
+        button.addEventListener('click', function() {
+            const index = this.getAttribute('data-index');
+            viewBudgetMonth(index);
+        });
+    });
+}
+
+function viewBudgetMonth(index) {
+    const month = budgetHistory[index];
+    if (!month) return;
+    
+    // Show a notification with month details
+    const percentageUsed = (month.spent / month.budget * 100).toFixed(1);
+    
+    let detailMessage = `
+<strong>${month.month} Budget Summary</strong>
+Budget: ${formatCurrency(month.budget)}
+Spent: ${formatCurrency(month.spent)}
+Saved: ${formatCurrency(month.saved)}
+Usage: ${percentageUsed}%
+Status: ${month.status.toUpperCase()}
+    `;
+    
+    // Create a more detailed modal view
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 modal-overlay flex items-center justify-center p-4 z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-xl w-full max-w-md shadow-xl">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">${month.month} - Budget Details</h3>
+                    <button class="close-modal text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <p class="text-blue-900 text-sm">Total Budget</p>
+                        <p class="text-2xl font-bold text-blue-600">${formatCurrency(month.budget)}</p>
+                    </div>
+                    
+                    <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                        <p class="text-orange-900 text-sm">Total Spent</p>
+                        <p class="text-2xl font-bold text-orange-600">${formatCurrency(month.spent)}</p>
+                    </div>
+                    
+                    <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                        <p class="text-green-900 text-sm">${month.saved >= 0 ? 'Remaining' : 'Over Budget'}</p>
+                        <p class="text-2xl font-bold ${month.saved >= 0 ? 'text-green-600' : 'text-red-600'}">${month.saved >= 0 ? '+' : ''}${formatCurrency(month.saved)}</p>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <p class="text-gray-700 font-medium mb-2">Budget Usage</p>
+                        <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                            <div class="bg-blue-500 h-3 rounded-full" style="width: ${Math.min(percentageUsed, 100)}%"></div>
+                        </div>
+                        <p class="text-gray-600 text-sm">${percentageUsed}% of budget used</p>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <p class="text-gray-700 font-medium mb-2">Status</p>
+                        <p class="text-gray-600">
+                            ${month.status === 'good' ? '✅ On Track - You\'re spending within budget' :
+                              month.status === 'warning' ? '⚠️ Close - You\'re approaching your budget limit' :
+                              month.status === 'danger' ? '❌ Over Budget - You\'ve exceeded your budget' :
+                              '📅 Upcoming - Budget period hasn\'t started yet'}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <button class="close-modal w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add close button functionality
+    const closeButtons = modal.querySelectorAll('.close-modal');
+    closeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            modal.remove();
+        });
+    });
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
     });
 }
 
