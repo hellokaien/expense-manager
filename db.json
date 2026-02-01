@@ -157,58 +157,6 @@
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
     },
     {
-      "id": "txn-0058fdb1-12ec-4e87-9639-ae4583c59cba",
-      "title": "Sample income",
-      "amount": 15000,
-      "type": "income",
-      "category": "ctg-e25668d8-9b3c-41b2-8a18-6eccd8e51432",
-      "date": "2026-01-22",
-      "paymentMethod": "digital_wallet",
-      "status": "completed",
-      "notes": "",
-      "tags": [],
-      "userId": null
-    },
-    {
-      "id": "txn-f1da311b-8e43-4aec-b3e6-841fdabcce6c",
-      "title": "Sent to Mama",
-      "amount": 4000,
-      "type": "expense",
-      "category": "ctg-3366f741-7941-4a3b-a779-6a2411624f1e",
-      "date": "2026-01-22",
-      "paymentMethod": "digital_wallet",
-      "status": "completed",
-      "notes": "",
-      "tags": [],
-      "userId": null
-    },
-    {
-      "id": "txn-a0b76e7b-2dd3-4ac7-a724-b982b51c6a4b",
-      "title": "test",
-      "amount": 4000,
-      "type": "expense",
-      "category": "ctg-3366f741-7941-4a3b-a779-6a2411624f1e",
-      "date": "2026-01-22",
-      "paymentMethod": "credit_card",
-      "status": "completed",
-      "notes": "",
-      "tags": [],
-      "userId": null
-    },
-    {
-      "id": "txn-c4a3dbaf-6518-484a-8808-2956840eadc8",
-      "title": "sdsds",
-      "amount": 500,
-      "type": "expense",
-      "category": "ctg-3366f741-7941-4a3b-a779-6a2411624f1e",
-      "date": "2026-01-22",
-      "paymentMethod": "digital_wallet",
-      "status": "completed",
-      "notes": "",
-      "tags": [],
-      "userId": null
-    },
-    {
       "id": "txn-fc045f53-ad59-45de-b483-8fecee946538",
       "title": "From mama 150 for Gas",
       "amount": 125,
@@ -456,7 +404,7 @@
       "cloudBackup": true,
       "dataAnalytics": true,
       "autoCategorization": true,
-      "defaultDashboardView": "transactions",
+      "defaultDashboardView": "overview",
       "recentTransactionsCount": 5
     },
     {
@@ -669,7 +617,7 @@
       "subtype": "essential",
       "icon": "money-bill-wave",
       "color": "#10b981",
-      "transactions_count": 1,
+      "transactions_count": 0,
       "totalAmount": 0,
       "lastUsed": "2026-01-19",
       "monthlyAverage": 0,
@@ -712,23 +660,6 @@
       "isCustom": false,
       "order": 11,
       "userId": "user-1fee1e2b-fe36-45ce-9c1f-9ace95d010d1"
-    },
-    {
-      "id": "ctg-3366f741-7941-4a3b-a779-6a2411624f1e",
-      "name": "Rent/Mortgage",
-      "type": "expense",
-      "subtype": "essential",
-      "icon": "home",
-      "color": "#ef4444",
-      "transactions_count": 1,
-      "totalAmount": 4000,
-      "lastUsed": "2026-01-22",
-      "monthlyAverage": 0,
-      "description": "",
-      "budget": null,
-      "isCustom": false,
-      "order": 2,
-      "userId": null
     }
   ],
   "budgets": [
@@ -768,7 +699,7 @@
       "budgetId": "2674",
       "name": "Rent/Mortage",
       "budget": 8000,
-      "categoryId": "ctg-3366f741-7941-4a3b-a779-6a2411624f1e",
+      "categoryId": "ctg-f4abeedc-f08f-4c44-a49a-bee9bcb42a87",
       "type": "essential",
       "icon": "home"
     },
