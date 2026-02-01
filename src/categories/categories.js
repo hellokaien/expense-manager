@@ -74,6 +74,7 @@ async function loadCategories() {
     await fetchCategories();
     renderCategories();
     updateStats();
+    populateCategoryTypesOverview();
 }
 
 function updateStats(){
@@ -91,6 +92,107 @@ function updateStats(){
     document.getElementById('totalCategories').textContent = categories.length;
     document.getElementById('totalIncomeCategories').textContent = totalIncome;
     document.getElementById('totalExpenseCategories').textContent = totalExpenses;
+}
+
+function populateCategoryTypesOverview() {
+    try {
+        // Get transactions to count usage
+        const getTransactionCount = async () => {
+            try {
+                const transactions = await transactionService.getTransactions();
+                return transactions;
+            } catch (error) {
+                console.warn('Error getting transactions for category overview:', error);
+                return [];
+            }
+        };
+
+        // Call async function
+        getTransactionCount().then(transactions => {
+            // Organize categories by type and subtype
+            const incomeCategories = categories.filter(c => c.type === 'income');
+            const essentialExpenses = categories.filter(c => c.type === 'expense' && c.subtype === 'essential');
+            const discretionaryExpenses = categories.filter(c => c.type === 'expense' && c.subtype === 'discretionary');
+            const customCategories = categories.filter(c => c.type === 'expense' && (c.subtype === 'savings' || c.subtype === 'other' || !c.subtype));
+
+            // Count transactions for each category
+            const transactionsByCategory = {};
+            transactions.forEach(t => {
+                const catId = t.category;
+                transactionsByCategory[catId] = (transactionsByCategory[catId] || 0) + 1;
+            });
+
+            // Find all category type overview containers
+            const overviewContainers = document.querySelectorAll('div.p-5.border.border-gray-200.rounded-lg');
+            
+            // Filter to get only the ones in Category Types Overview (the ones at the end)
+            const categoryTypeOverviews = [];
+            overviewContainers.forEach(container => {
+                // Check if it has h4 with Income/Essential/Discretionary/Custom
+                const h4 = container.querySelector('h4');
+                if (h4 && (h4.textContent.includes('Income') || h4.textContent.includes('Essential') || h4.textContent.includes('Discretionary') || h4.textContent.includes('Custom'))) {
+                    categoryTypeOverviews.push(container);
+                }
+            });
+
+            if (categoryTypeOverviews.length >= 4) {
+                // Income section (first container)
+                populateTypeSection(categoryTypeOverviews[0], incomeCategories, transactionsByCategory, 'Income');
+                
+                // Essential Expenses section (second container)
+                populateTypeSection(categoryTypeOverviews[1], essentialExpenses, transactionsByCategory, 'Essential Expenses');
+                
+                // Discretionary section (third container)
+                populateTypeSection(categoryTypeOverviews[2], discretionaryExpenses, transactionsByCategory, 'Discretionary');
+                
+                // Custom section (fourth container)
+                populateTypeSection(categoryTypeOverviews[3], customCategories, transactionsByCategory, 'Custom');
+            }
+        });
+    } catch (error) {
+        console.warn('Error populating category types overview:', error);
+    }
+}
+
+function populateTypeSection(container, categoryList, transactionsByCategory, typeLabel) {
+    // Find the categories list div within the container
+    const categoriesListDiv = container.querySelector('div.space-y-2');
+    
+    if (!categoriesListDiv) return;
+    
+    // Update category count in header
+    const categoryCountP = container.querySelector('p.text-gray-500.text-sm');
+    if (categoryCountP) {
+        const count = categoryList.length;
+        categoryCountP.textContent = `${count} ${count === 1 ? 'category' : 'categories'}`;
+    }
+    
+    // Clear existing content
+    categoriesListDiv.innerHTML = '';
+    
+    if (categoryList.length === 0) {
+        categoriesListDiv.innerHTML = '<p class="text-gray-500 text-sm">No categories</p>';
+        return;
+    }
+    
+    // Sort by transaction count (descending)
+    const sortedCategories = [...categoryList].sort((a, b) => {
+        const countA = transactionsByCategory[a.id] || 0;
+        const countB = transactionsByCategory[b.id] || 0;
+        return countB - countA;
+    });
+    
+    // Display top categories (limit to 3)
+    sortedCategories.slice(0, 3).forEach(category => {
+        const count = transactionsByCategory[category.id] || 0;
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'flex justify-between';
+        categoryDiv.innerHTML = `
+            <span class="text-gray-600 text-sm">${category.name}</span>
+            <span class="text-gray-800 text-sm font-medium">${count} trans</span>
+        `;
+        categoriesListDiv.appendChild(categoryDiv);
+    });
 }
 
 // Initialize the application

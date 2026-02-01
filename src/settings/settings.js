@@ -97,6 +97,12 @@
             confirmationModal.classList.add('hidden');
         });
 
+        // Change password button
+        const updatePasswordBtn = document.getElementById('updatePasswordBtn');
+        if (updatePasswordBtn) {
+            updatePasswordBtn.addEventListener('click', handleChangePassword);
+        }
+
         // Theme option selection
         document.querySelectorAll('.theme-option').forEach(option => {
             option.addEventListener('click', function() {
@@ -371,6 +377,103 @@
         }
     }
 
+    async function handleChangePassword() {
+        const currentPassword = document.getElementById('currentPassword');
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            showNotification('Password fields not found', 'error');
+            return;
+        }
+
+        const currentPasswordValue = currentPassword.value.trim();
+        const newPasswordValue = newPassword.value.trim();
+        const confirmPasswordValue = confirmPassword.value.trim();
+
+        // Validation
+        if (!currentPasswordValue || !newPasswordValue || !confirmPasswordValue) {
+            showNotification('Please fill in all password fields', 'error');
+            return;
+        }
+
+        if (newPasswordValue.length < 8) {
+            showNotification('New password must be at least 8 characters long', 'error');
+            return;
+        }
+
+        if (!/\d/.test(newPasswordValue)) {
+            showNotification('New password must contain at least one number', 'error');
+            return;
+        }
+
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPasswordValue)) {
+            showNotification('New password must contain at least one special character (!@#$%^&*)', 'error');
+            return;
+        }
+
+        if (newPasswordValue !== confirmPasswordValue) {
+            showNotification('New passwords do not match', 'error');
+            return;
+        }
+
+        if (newPasswordValue === currentPasswordValue) {
+            showNotification('New password must be different from current password', 'error');
+            return;
+        }
+
+        try {
+            const updatePasswordBtn = document.getElementById('updatePasswordBtn');
+            updatePasswordBtn.disabled = true;
+            updatePasswordBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Updating...';
+
+            const currentUser = authManager.getCurrentUser();
+            if (!currentUser) {
+                showNotification('User not found. Please login again.', 'error');
+                return;
+            }
+
+            // Verify current password (passwords stored as Base64 in db)
+            const currentPasswordBase64 = btoa(currentPasswordValue);
+            if (currentUser.password !== currentPasswordBase64) {
+                showNotification('Current password is incorrect', 'error');
+                updatePasswordBtn.disabled = false;
+                updatePasswordBtn.innerHTML = 'Update Password';
+                return;
+            }
+
+            // Update password in API (encode to Base64 before storing)
+            const newPasswordBase64 = btoa(newPasswordValue);
+            await apiService.updateUser(currentUser.id, { password: newPasswordBase64 });
+
+            // Update local storage
+            const updatedUser = { ...currentUser, password: newPasswordBase64 };
+            authManager.saveUserToLocalStorage(updatedUser, localStorage.getItem(STORAGE_KEYS.REMEMBER_ME) === 'true');
+            authManager.currentUser = updatedUser;
+
+            // Clear inputs
+            currentPassword.value = '';
+            newPassword.value = '';
+            confirmPassword.value = '';
+
+            showNotification('Password changed successfully! Please re-login with your new password.', 'success');
+
+            // Log out after 2 seconds
+            setTimeout(() => {
+                authManager.logout();
+                window.location.href = '../auth/login.html';
+            }, 2000);
+
+        } catch (error) {
+            console.error('Failed to change password:', error);
+            showNotification('Failed to change password. Please try again.', 'error');
+        } finally {
+            const updatePasswordBtn = document.getElementById('updatePasswordBtn');
+            updatePasswordBtn.disabled = false;
+            updatePasswordBtn.innerHTML = 'Update Password';
+        }
+    }
+
     function loadUserDataToForm(user) {
         // Load profile data using IDs
         const firstNameInput = document.getElementById('firstName');
@@ -409,6 +512,12 @@
         } else if (recentTransactionsCountSelect) {
             // Set default to 10 if not set
             recentTransactionsCountSelect.value = '10';
+        }
+
+        // Load security question
+        const securityQuestion = document.getElementById('securityQuestion');
+        if (securityQuestion && user.securityQuestion) {
+            securityQuestion.value = user.securityQuestion;
         }
 
         // Update profile avatar
@@ -617,18 +726,150 @@
         };
     }
 
-    // Delete account button functionality
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.danger-zone button.bg-red-600')) {
-            showConfirmationModal(
-                'Delete Account',
-                'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.',
-                () => {
-                    showNotification('Account deletion request submitted.');
+    // Security Questions functionality
+    const updateSecurityBtn = document.getElementById('updateSecurityBtn');
+    if (updateSecurityBtn) {
+        updateSecurityBtn.addEventListener('click', async function() {
+            const securityQuestion = document.getElementById('securityQuestion');
+            const securityAnswer = document.getElementById('securityAnswer');
+
+            if (!securityQuestion.value || !securityAnswer.value.trim()) {
+                showNotification('Please select a question and provide an answer', 'error');
+                return;
+            }
+
+            try {
+                updateSecurityBtn.disabled = true;
+                updateSecurityBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Updating...';
+
+                const currentUser = authManager.getCurrentUser();
+                if (!currentUser) {
+                    showNotification('User not found. Please login again.', 'error');
+                    return;
                 }
-            );
+
+                // Update security question in API
+                await apiService.updateUser(currentUser.id, {
+                    securityQuestion: securityQuestion.value,
+                    securityAnswer: securityAnswer.value.trim()
+                });
+
+                // Update local storage
+                const updatedUser = { 
+                    ...currentUser, 
+                    securityQuestion: securityQuestion.value,
+                    securityAnswer: securityAnswer.value.trim()
+                };
+                authManager.saveUserToLocalStorage(updatedUser, localStorage.getItem(STORAGE_KEYS.REMEMBER_ME) === 'true');
+                authManager.currentUser = updatedUser;
+
+                // Clear inputs
+                securityAnswer.value = '';
+
+                showNotification('Security question updated successfully!', 'success');
+
+                updateSecurityBtn.disabled = false;
+                updateSecurityBtn.innerHTML = 'Update Security Question';
+            } catch (error) {
+                console.error('Error updating security question:', error);
+                showNotification('Failed to update security question', 'error');
+                updateSecurityBtn.disabled = false;
+                updateSecurityBtn.innerHTML = 'Update Security Question';
+            }
+        });
+    }
+
+    // Delete account button functionality
+    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+    if (deleteAccountBtn) {
+        deleteAccountBtn.addEventListener('click', function() {
+            showDeleteAccountModal();
+        });
+    }
+
+    // Show delete account password confirmation modal
+    function showDeleteAccountModal() {
+        const deleteAccountModal = document.getElementById('deleteAccountModal');
+        const deleteAccountPassword = document.getElementById('deleteAccountPassword');
+        const deletePasswordError = document.getElementById('deletePasswordError');
+        const deleteAccountCancelBtn = document.getElementById('deleteAccountCancelBtn');
+        const deleteAccountConfirmBtn = document.getElementById('deleteAccountConfirmBtn');
+
+        // Clear previous inputs
+        deleteAccountPassword.value = '';
+        deletePasswordError.classList.add('hidden');
+
+        // Show modal
+        deleteAccountModal.classList.remove('hidden');
+
+        // Cancel button
+        deleteAccountCancelBtn.onclick = () => {
+            deleteAccountModal.classList.add('hidden');
+        };
+
+        // Confirm button
+        deleteAccountConfirmBtn.onclick = async () => {
+            const passwordValue = deleteAccountPassword.value.trim();
+
+            if (!passwordValue) {
+                deletePasswordError.textContent = 'Please enter your password';
+                deletePasswordError.classList.remove('hidden');
+                return;
+            }
+
+            const currentUser = authManager.getCurrentUser();
+            if (!currentUser) {
+                deletePasswordError.textContent = 'User not found. Please login again.';
+                deletePasswordError.classList.remove('hidden');
+                return;
+            }
+
+            // Verify password (passwords stored as Base64 in db)
+            const passwordBase64 = btoa(passwordValue);
+            if (currentUser.password !== passwordBase64) {
+                deletePasswordError.textContent = 'Incorrect password';
+                deletePasswordError.classList.remove('hidden');
+                return;
+            }
+
+            // Password is correct, proceed with deletion
+            deleteAccountModal.classList.add('hidden');
+            await handleDeleteAccount(currentUser);
+        };
+
+        // Allow Enter key to submit
+        deleteAccountPassword.onkeypress = (e) => {
+            if (e.key === 'Enter') {
+                deleteAccountConfirmBtn.click();
+            }
+        };
+    }
+
+    // Handle account deletion
+    async function handleDeleteAccount(currentUser) {
+        try {
+            if (!currentUser) {
+                showNotification('User not found. Please login again.', 'error');
+                return;
+            }
+
+            // Delete user from API
+            await apiService.delete(`/users/${currentUser.id}`);
+
+            // Clear local storage and redirect to login
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            showNotification('Account deleted successfully. Redirecting to login...', 'success');
+            
+            setTimeout(() => {
+                window.location.href = '../auth/login.html';
+            }, 2000);
+        } catch (error) {
+            console.error('Error deleting account:', error);
+            showNotification('Failed to delete account. Please try again.', 'error');
         }
-    });
+    }
 
     async function updateUserInfo(currentUser) {
         if (!currentUser) return;

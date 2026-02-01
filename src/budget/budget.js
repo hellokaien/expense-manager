@@ -1039,7 +1039,7 @@ function updateBudgetSummary() {
     if (summaryCards[0]) {
         const h3 = summaryCards[0].querySelector('h3');
         if (h3) {
-            h3.textContent = `$${totalBudget.toLocaleString()}`;
+            h3.textContent = `${formatCurrency(totalBudget)}`;
             console.log('Updated Total Budget to:', h3.textContent);
         } else {
             console.error('Total Budget h3 not found in card 0');
@@ -1052,7 +1052,7 @@ function updateBudgetSummary() {
     if (summaryCards[1]) {
         const h3 = summaryCards[1].querySelector('h3');
         if (h3) {
-            h3.textContent = `$${totalSpent.toLocaleString()}`;
+            h3.textContent = `${formatCurrency(totalSpent)}`;
             console.log('Updated Spent to:', h3.textContent);
         }
     }
@@ -1061,7 +1061,7 @@ function updateBudgetSummary() {
     if (summaryCards[2]) {
         const h3 = summaryCards[2].querySelector('h3');
         if (h3) {
-            h3.textContent = `$${remaining.toLocaleString()}`;
+            h3.textContent = `${formatCurrency(remaining)}`;
             console.log('Updated Remaining to:', h3.textContent);
         }
     }
@@ -1070,7 +1070,7 @@ function updateBudgetSummary() {
     if (summaryCards[3]) {
         const h3 = summaryCards[3].querySelector('h3');
         if (h3) {
-            h3.textContent = `$${dailyAverage.toFixed(0)}`;
+            h3.textContent = `${formatCurrency(dailyAverage)}`;
             console.log('Updated Daily Average to:', h3.textContent);
         }
     }
@@ -1117,7 +1117,7 @@ function initializeCharts() {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return '$' + value;
+                                return formatCurrency(value);
                             }
                         }
                     },
@@ -1293,7 +1293,7 @@ function populateCategories() {
                     </div>
                     <div>
                         <h4 class="font-medium text-gray-800">${category.name}</h4>
-                        <p class="text-gray-500 text-sm">$${category.spent.toFixed(2)} of $${category.budget.toFixed(2)}</p>
+                        <p class="text-gray-500 text-sm">${formatCurrency(category.spent)} of ${formatCurrency(category.budget)}</p>
                     </div>
                 </div>
                 <span class="font-bold ${percentage >= 90 ? 'text-red-600' : percentage >= 75 ? 'text-yellow-600' : 'text-green-600'}">${Math.round(percentage)}%</span>
@@ -1302,7 +1302,7 @@ function populateCategories() {
                 <div class="${progressClass} h-2 rounded-full" style="width: ${Math.min(percentage, 100)}%"></div>
             </div>
             <div class="flex justify-between">
-                <span class="text-gray-500 text-sm">$${remaining.toFixed(2)} remaining</span>
+                <span class="text-gray-500 text-sm">${formatCurrency(remaining)} remaining</span>
                 <div class="flex space-x-2">
                     <button class="edit-category text-blue-600 hover:text-blue-800 text-sm" data-id="${category.id}">
                         <i class="fas fa-edit"></i>
@@ -1340,6 +1340,9 @@ function populateCategories() {
             }
         });
     });
+    
+    // Also populate the Budget Status by Category section
+    populateBudgetStatusByCategory();
 }
 
 function editCategory(categoryId) {
@@ -1480,6 +1483,64 @@ function populateGoals() {
             const goalId = this.getAttribute('data-id');
             editGoal(goalId);
         });
+    });
+    
+    // Populate the goal progress overview section
+    populateGoalProgressOverview();
+}
+
+function populateGoalProgressOverview() {
+    const container = document.getElementById('goalProgressContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (savingsGoals.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No goals yet. Add one to start tracking your progress!</p>';
+        return;
+    }
+    
+    savingsGoals.forEach(goal => {
+        const progress = goal.target > 0 ? (goal.saved / goal.target) * 100 : 0;
+        const remaining = goal.target - goal.saved;
+        const deadline = new Date(goal.deadline);
+        
+        // Determine progress color
+        let progressColor = 'text-yellow-600';
+        let barColor = 'bg-yellow-500';
+        let status = `${Math.round(progress)}% Complete`;
+        
+        if (progress >= 100) {
+            progressColor = 'text-green-600';
+            barColor = 'bg-green-500';
+            status = '100% Complete';
+        } else if (progress >= 75) {
+            progressColor = 'text-blue-600';
+            barColor = 'bg-blue-500';
+            status = `${Math.round(progress)}% Complete`;
+        }
+        
+        const goalProgressItem = document.createElement('div');
+        goalProgressItem.innerHTML = `
+            <div>
+                <div class="flex justify-between mb-2">
+                    <div>
+                        <span class="font-medium text-gray-800">${goal.name}</span>
+                        <span class="text-gray-500 text-sm ml-2">${formatCurrency(goal.target)} target</span>
+                    </div>
+                    <span class="font-bold ${progressColor}">${status}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="${barColor} h-3 rounded-full" style="width: ${Math.min(progress, 100)}%"></div>
+                </div>
+                <div class="flex justify-between mt-2">
+                    <span class="text-gray-500 text-sm">${formatCurrency(goal.saved)} saved ${remaining > 0 ? `• ${formatCurrency(remaining)} remaining` : `• Completed`}</span>
+                    <span class="text-gray-500 text-sm">Target: ${deadline.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(goalProgressItem);
     });
 }
 
@@ -1636,7 +1697,7 @@ function populateBudgetHistory() {
         return;
     }
     
-    budgetHistory.forEach(month => {
+    budgetHistory.forEach((month, index) => {
         const row = document.createElement('tr');
         row.className = 'border-b border-gray-100 hover:bg-gray-50';
         
@@ -1667,22 +1728,119 @@ function populateBudgetHistory() {
         
         row.innerHTML = `
             <td class="py-4 text-gray-700 font-medium">${month.month}</td>
-            <td class="py-4 text-gray-800">$${month.budget.toLocaleString()}</td>
-            <td class="py-4 text-gray-800">$${month.spent.toLocaleString()}</td>
-            <td class="py-4 font-medium ${savedClass}">${savedSign}$${Math.abs(month.saved).toLocaleString()}</td>
+            <td class="py-4 text-gray-800">${formatCurrency(month.budget)}</td>
+            <td class="py-4 text-gray-800">${formatCurrency(month.spent)}</td>
+            <td class="py-4 font-medium ${savedClass}">${savedSign}${formatCurrency(Math.abs(month.saved))}</td>
             <td class="py-4">
                 <span class="px-3 py-1 rounded-full text-xs font-medium ${statusColor}">
                     ${statusBadge}
                 </span>
             </td>
             <td class="py-4">
-                <button class="text-blue-600 hover:text-blue-800 text-sm">
+                <button class="view-budget-month text-blue-600 hover:text-blue-800 text-sm" data-index="${index}">
                     <i class="fas fa-eye"></i> View
                 </button>
             </td>
         `;
         
         historyTable.appendChild(row);
+    });
+    
+    // Add event listeners to View buttons
+    document.querySelectorAll('.view-budget-month').forEach(button => {
+        button.addEventListener('click', function() {
+            const index = this.getAttribute('data-index');
+            viewBudgetMonth(index);
+        });
+    });
+}
+
+function viewBudgetMonth(index) {
+    const month = budgetHistory[index];
+    if (!month) return;
+    
+    // Show a notification with month details
+    const percentageUsed = (month.spent / month.budget * 100).toFixed(1);
+    
+    let detailMessage = `
+<strong>${month.month} Budget Summary</strong>
+Budget: ${formatCurrency(month.budget)}
+Spent: ${formatCurrency(month.spent)}
+Saved: ${formatCurrency(month.saved)}
+Usage: ${percentageUsed}%
+Status: ${month.status.toUpperCase()}
+    `;
+    
+    // Create a more detailed modal view
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 modal-overlay flex items-center justify-center p-4 z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-xl w-full max-w-md shadow-xl">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-800">${month.month} - Budget Details</h3>
+                    <button class="close-modal text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <p class="text-blue-900 text-sm">Total Budget</p>
+                        <p class="text-2xl font-bold text-blue-600">${formatCurrency(month.budget)}</p>
+                    </div>
+                    
+                    <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                        <p class="text-orange-900 text-sm">Total Spent</p>
+                        <p class="text-2xl font-bold text-orange-600">${formatCurrency(month.spent)}</p>
+                    </div>
+                    
+                    <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                        <p class="text-green-900 text-sm">${month.saved >= 0 ? 'Remaining' : 'Over Budget'}</p>
+                        <p class="text-2xl font-bold ${month.saved >= 0 ? 'text-green-600' : 'text-red-600'}">${month.saved >= 0 ? '+' : ''}${formatCurrency(month.saved)}</p>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <p class="text-gray-700 font-medium mb-2">Budget Usage</p>
+                        <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                            <div class="bg-blue-500 h-3 rounded-full" style="width: ${Math.min(percentageUsed, 100)}%"></div>
+                        </div>
+                        <p class="text-gray-600 text-sm">${percentageUsed}% of budget used</p>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <p class="text-gray-700 font-medium mb-2">Status</p>
+                        <p class="text-gray-600">
+                            ${month.status === 'good' ? '✅ On Track - You\'re spending within budget' :
+                              month.status === 'warning' ? '⚠️ Close - You\'re approaching your budget limit' :
+                              month.status === 'danger' ? '❌ Over Budget - You\'ve exceeded your budget' :
+                              '📅 Upcoming - Budget period hasn\'t started yet'}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <button class="close-modal w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add close button functionality
+    const closeButtons = modal.querySelectorAll('.close-modal');
+    closeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            modal.remove();
+        });
+    });
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
     });
 }
 
@@ -1730,6 +1888,117 @@ function initializeDragAndDrop() {
                 updateBudgetAllocation();
             }
         });
+    });
+}
+
+function populateBudgetStatusByCategory() {
+    const container = document.getElementById('budgetStatusContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (budgetCategories.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-8">No budget categories yet. Add one in the Categories tab to track spending.</p>';
+        return;
+    }
+    
+    // Calculate days remaining in month
+    const now = new Date();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const daysRemaining = daysInMonth - now.getDate();
+    
+    budgetCategories.forEach(category => {
+        const percentage = category.budget > 0 ? (category.spent / category.budget) * 100 : 0;
+        const remaining = category.budget - category.spent;
+        const isOverBudget = category.spent > category.budget;
+        
+        let statusClass = 'budget-status-good';
+        let progressClass = 'budget-progress-good';
+        let statusColor = 'text-green-600';
+        
+        if (percentage >= 90) {
+            statusClass = 'budget-status-danger';
+            progressClass = 'budget-progress-danger';
+            statusColor = 'text-red-600';
+        } else if (percentage >= 75) {
+            statusClass = 'budget-status-warning';
+            progressClass = 'budget-progress-warning';
+            statusColor = 'text-yellow-600';
+        }
+        
+        // Get icon
+        let iconClass = 'fas fa-tag';
+        let bgColor = 'bg-gray-100';
+        let iconColor = 'text-gray-600';
+        
+        switch(category.icon) {
+            case 'utensils':
+                iconClass = 'fas fa-utensils';
+                bgColor = 'bg-yellow-100';
+                iconColor = 'text-yellow-600';
+                break;
+            case 'shopping-bag':
+                iconClass = 'fas fa-shopping-bag';
+                bgColor = 'bg-purple-100';
+                iconColor = 'text-purple-600';
+                break;
+            case 'home':
+                iconClass = 'fas fa-home';
+                bgColor = 'bg-green-100';
+                iconColor = 'text-green-600';
+                break;
+            case 'car':
+                iconClass = 'fas fa-car';
+                bgColor = 'bg-blue-100';
+                iconColor = 'text-blue-600';
+                break;
+            case 'film':
+                iconClass = 'fas fa-film';
+                bgColor = 'bg-pink-100';
+                iconColor = 'text-pink-600';
+                break;
+            case 'heartbeat':
+                iconClass = 'fas fa-heart';
+                bgColor = 'bg-red-100';
+                iconColor = 'text-red-600';
+                break;
+            case 'graduation-cap':
+                iconClass = 'fas fa-graduation-cap';
+                bgColor = 'bg-indigo-100';
+                iconColor = 'text-indigo-600';
+                break;
+        }
+        
+        const statusCard = document.createElement('div');
+        statusCard.className = `${statusClass} p-4 rounded-lg bg-white border border-gray-200`;
+        statusCard.innerHTML = `
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full ${bgColor} flex items-center justify-center mr-3">
+                        <i class="${iconClass} ${iconColor}"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-gray-800">${category.name}</h4>
+                        <p class="text-gray-500 text-sm">${formatCurrency(category.spent)} spent of ${formatCurrency(category.budget)} budget</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="font-bold ${statusColor}">${Math.round(percentage)}%</span>
+                    <p class="${isOverBudget ? 'text-red-600' : 'text-green-600'} text-sm">
+                        ${isOverBudget ? `$${Math.abs(remaining).toFixed(2)} over budget` : `$${remaining.toFixed(2)} remaining`}
+                    </p>
+                </div>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="${progressClass} h-2 rounded-full" style="width: ${Math.min(percentage, 100)}%"></div>
+            </div>
+            <div class="flex justify-between mt-2">
+                <span class="text-gray-500 text-sm">${Math.abs(remaining).toFixed(2)} ${isOverBudget ? 'over' : 'remaining'}</span>
+                <span class="text-gray-500 text-sm">Due in ${Math.max(daysRemaining, 0)} days</span>
+            </div>
+        `;
+        
+        container.appendChild(statusCard);
     });
 }
 
