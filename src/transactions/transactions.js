@@ -781,6 +781,33 @@ function setupEventListeners() {
             renderTransactions();
         });
     }
+    
+    // Export functionality
+    const exportBtn = document.getElementById('exportBtn');
+    const exportDropdown = document.getElementById('exportDropdown');
+    const exportExcelBtn = document.getElementById('exportExcelBtn');
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
+    
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            exportDropdown.classList.toggle('hidden');
+        });
+    }
+    
+    if (exportExcelBtn) {
+        exportExcelBtn.addEventListener('click', exportToExcel);
+    }
+    
+    if (exportPdfBtn) {
+        exportPdfBtn.addEventListener('click', exportToPDF);
+    }
+    
+    // Close export dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (exportDropdown && !exportBtn.contains(e.target) && !exportDropdown.contains(e.target)) {
+            exportDropdown.classList.add('hidden');
+        }
+    });
 }
 
 function navigateTo(page) {
@@ -1474,5 +1501,250 @@ function updateAmountLabel() {
     if (amountLabel) {
         const currencySymbol = getCurrencySymbol();
         amountLabel.textContent = `Amount (${currencySymbol})`;
+    }
+}
+
+// Export Functions
+function exportToExcel() {
+    if (filteredTransactions.length === 0) {
+        showNotification('No transactions to export', 'error');
+        return;
+    }
+
+    // Check if XLSX library is loaded
+    if (typeof XLSX === 'undefined') {
+        showNotification('Excel export library is loading. Please try again in a moment.', 'error');
+        return;
+    }
+
+    try {
+        // Prepare data for Excel
+        const exportData = filteredTransactions.map(transaction => {
+            const dateObj = new Date(transaction.date);
+            const categoryInfo = getCategoryInfo(transaction.category);
+            
+            return {
+                'Date': dateObj.toLocaleDateString('en-US'),
+                'Time': dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+                'Description': transaction.title,
+                'Category': categoryInfo.name,
+                'Type': transaction.type === 'income' ? 'Income' : 'Expense',
+                'Amount': transaction.amount,
+                'Payment Method': paymentMethods[transaction.paymentMethod] || transaction.paymentMethod,
+                'Notes': transaction.notes || ''
+            };
+        });
+
+        // Create Excel workbook
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Transactions');
+
+        // Set column widths
+        ws['!cols'] = [
+            { wch: 12 }, // Date
+            { wch: 12 }, // Time
+            { wch: 20 }, // Description
+            { wch: 15 }, // Category
+            { wch: 10 }, // Type
+            { wch: 12 }, // Amount
+            { wch: 18 }, // Payment Method
+            { wch: 25 }  // Notes
+        ];
+
+        // Format header row
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            const address = XLSX.utils.encode_col(C) + '1';
+            if (!ws[address]) continue;
+            ws[address].s = {
+                font: { bold: true, color: { rgb: 'FFFFFF' } },
+                fill: { fgColor: { rgb: '3B82F6' } },
+                alignment: { horizontal: 'center', vertical: 'center' }
+            };
+        }
+
+        // Generate filename with timestamp
+        const now = new Date();
+        const timestamp = now.toISOString().split('T')[0];
+        const filename = `transactions_${timestamp}.xlsx`;
+
+        // Save file
+        XLSX.writeFile(wb, filename);
+        showNotification(`Exported ${filteredTransactions.length} transactions to Excel`, 'success');
+        closeExportDropdown();
+    } catch (error) {
+        console.error('Error exporting to Excel:', error);
+        showNotification('Failed to export to Excel: ' + error.message, 'error');
+    }
+}
+
+function exportToPDF() {
+    if (filteredTransactions.length === 0) {
+        showNotification('No transactions to export', 'error');
+        return;
+    }
+
+    // Check if required libraries are loaded
+    if (typeof jsPDF === 'undefined') {
+        showNotification('PDF export library is loading. Please try again in a moment.', 'error');
+        return;
+    }
+
+    if (typeof html2canvas === 'undefined') {
+        showNotification('PDF rendering library is loading. Please try again in a moment.', 'error');
+        return;
+    }
+
+    try {
+        showNotification('Generating PDF... This may take a moment', 'info');
+        
+        // Create a hidden container for PDF content
+        const pdfContainer = document.createElement('div');
+        pdfContainer.style.position = 'absolute';
+        pdfContainer.style.left = '-9999px';
+        pdfContainer.style.top = '-9999px';
+        pdfContainer.style.width = '1000px';
+        pdfContainer.style.backgroundColor = 'white';
+        pdfContainer.style.padding = '20px';
+        document.body.appendChild(pdfContainer);
+
+        // Create PDF content HTML
+        let htmlContent = `
+            <div style="font-family: Arial, sans-serif;">
+                <h1 style="color: #1f2937; margin-bottom: 10px; text-align: center;">Transaction Report</h1>
+                <p style="color: #6b7280; text-align: center; margin-bottom: 20px;">
+                    Generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
+                <p style="color: #6b7280; margin-bottom: 20px;">Total Transactions: ${filteredTransactions.length}</p>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <thead>
+                        <tr style="background-color: #3b82f6; color: white;">
+                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Date</th>
+                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Time</th>
+                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Description</th>
+                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Category</th>
+                            <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">Type</th>
+                            <th style="border: 1px solid #ddd; padding: 10px; text-align: right;">Amount</th>
+                            <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Payment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        // Add transaction rows
+        let totalIncome = 0;
+        let totalExpense = 0;
+        const currencySymbol = getCurrencySymbol();
+
+        filteredTransactions.forEach((transaction, index) => {
+            const dateObj = new Date(transaction.date);
+            const categoryInfo = getCategoryInfo(transaction.category);
+            const isIncome = transaction.type === 'income';
+            const rowBg = index % 2 === 0 ? '#f9fafb' : 'white';
+
+            if (isIncome) {
+                totalIncome += transaction.amount;
+            } else {
+                totalExpense += transaction.amount;
+            }
+
+            htmlContent += `
+                <tr style="background-color: ${rowBg}; border-bottom: 1px solid #e5e7eb;">
+                    <td style="border: 1px solid #ddd; padding: 10px;">${dateObj.toLocaleDateString('en-US')}</td>
+                    <td style="border: 1px solid #ddd; padding: 10px;">${dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</td>
+                    <td style="border: 1px solid #ddd; padding: 10px;">${transaction.title}</td>
+                    <td style="border: 1px solid #ddd; padding: 10px;">${categoryInfo.name}</td>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: center; color: ${isIncome ? '#10b981' : '#ef4444'};">
+                        <strong>${isIncome ? 'Income' : 'Expense'}</strong>
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 10px; text-align: right; color: ${isIncome ? '#10b981' : '#ef4444'};">
+                        <strong>${isIncome ? '+' : '-'}${currencySymbol}${transaction.amount.toFixed(2)}</strong>
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 10px;">${paymentMethods[transaction.paymentMethod] || transaction.paymentMethod}</td>
+                </tr>
+            `;
+        });
+
+        // Add summary
+        const netBalance = totalIncome - totalExpense;
+        htmlContent += `
+                    </tbody>
+                </table>
+                <div style="margin-top: 30px; border-top: 2px solid #e5e7eb; padding-top: 20px;">
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="text-align: right; padding: 8px 0;"><strong>Total Income:</strong></td>
+                            <td style="text-align: right; padding: 8px 20px; color: #10b981;"><strong>${currencySymbol}${totalIncome.toFixed(2)}</strong></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; padding: 8px 0;"><strong>Total Expenses:</strong></td>
+                            <td style="text-align: right; padding: 8px 20px; color: #ef4444;"><strong>${currencySymbol}${totalExpense.toFixed(2)}</strong></td>
+                        </tr>
+                        <tr style="background-color: #f3f4f6; font-size: 16px;">
+                            <td style="text-align: right; padding: 12px 0;"><strong>Net Balance:</strong></td>
+                            <td style="text-align: right; padding: 12px 20px; color: ${netBalance >= 0 ? '#10b981' : '#ef4444'};"><strong>${currencySymbol}${netBalance.toFixed(2)}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        pdfContainer.innerHTML = htmlContent;
+
+        // Convert HTML to canvas then to PDF using correct jsPDF API
+        html2canvas(pdfContainer, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            
+            // Get jsPDF from window.jsPDF if it exists as UMD module
+            const PDFDocument = window.jsPDF.jsPDF || window.jsPDF;
+            
+            const pdf = new PDFDocument({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const imgWidth = 280;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pdf.internal.pageSize.getHeight() - 10);
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= pdf.internal.pageSize.getHeight();
+            }
+
+            // Generate filename with timestamp
+            const now = new Date();
+            const timestamp = now.toISOString().split('T')[0];
+            const filename = `transactions_${timestamp}.pdf`;
+
+            pdf.save(filename);
+            showNotification(`Exported ${filteredTransactions.length} transactions to PDF`, 'success');
+            
+            // Clean up
+            document.body.removeChild(pdfContainer);
+            closeExportDropdown();
+        }).catch(error => {
+            console.error('Error generating PDF:', error);
+            showNotification('Failed to generate PDF: ' + error.message, 'error');
+            document.body.removeChild(pdfContainer);
+        });
+    } catch (error) {
+        console.error('Error exporting to PDF:', error);
+        showNotification('Failed to export to PDF: ' + error.message, 'error');
+    }
+}
+
+function closeExportDropdown() {
+    const exportDropdown = document.getElementById('exportDropdown');
+    if (exportDropdown) {
+        exportDropdown.classList.add('hidden');
     }
 }
