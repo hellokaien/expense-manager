@@ -142,6 +142,9 @@
         
         // Avatar upload functionality
         setupAvatarUpload();
+
+        // Preferences import/export functionality
+        setupPreferencesImportExport();
     }
 
     function switchSettingsTab(tabName) {
@@ -938,5 +941,297 @@
             } else {
             avatarPreview.textContent = initials;
             }
+        }
+    }
+    
+    // Preferences Import/Export Functionality
+    function setupPreferencesImportExport() {
+        // Get or create export button
+        let exportPreferencesBtn = document.getElementById('exportPreferencesBtn');
+        if (!exportPreferencesBtn) {
+            // Create button if it doesn't exist
+            const preferencesContent = document.getElementById('preferencesContent');
+            if (preferencesContent) {
+                const buttonContainer = document.createElement('div');
+                buttonContainer.className = 'flex gap-3 mt-6';
+                buttonContainer.innerHTML = `
+                    <button id="exportPreferencesBtn" class="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                        <i class="fas fa-download mr-2"></i> Export Preferences
+                    </button>
+                    <button id="importPreferencesBtn" class="flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                        <i class="fas fa-upload mr-2"></i> Import Preferences
+                    </button>
+                    <button id="resetPreferencesBtn" class="flex items-center px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                        <i class="fas fa-redo mr-2"></i> Reset to Defaults
+                    </button>
+                    <input type="file" id="preferencesFileInput" accept=".json" style="display:none;">
+                `;
+                preferencesContent.appendChild(buttonContainer);
+            }
+            exportPreferencesBtn = document.getElementById('exportPreferencesBtn');
+        }
+
+        // Export button
+        if (exportPreferencesBtn) {
+            exportPreferencesBtn.addEventListener('click', exportPreferences);
+        }
+
+        // Import button
+        let importPreferencesBtn = document.getElementById('importPreferencesBtn');
+        if (importPreferencesBtn) {
+            importPreferencesBtn.addEventListener('click', () => {
+                document.getElementById('preferencesFileInput').click();
+            });
+        }
+
+        // File input for import
+        const fileInput = document.getElementById('preferencesFileInput');
+        if (fileInput) {
+            fileInput.addEventListener('change', handleImportPreferences);
+        }
+
+        // Reset button
+        let resetPreferencesBtn = document.getElementById('resetPreferencesBtn');
+        if (resetPreferencesBtn) {
+            resetPreferencesBtn.addEventListener('click', () => {
+                showConfirmationModal(
+                    'Reset Preferences',
+                    'Are you sure you want to reset all preferences to defaults? This cannot be undone.',
+                    resetPreferencesToDefaults
+                );
+            });
+        }
+    }
+
+    // Export preferences as JSON file
+    function exportPreferences() {
+        const currentUser = authManager.getCurrentUser();
+        if (!currentUser) {
+            showNotification('User not found. Please login again.', 'error');
+            return;
+        }
+
+        try {
+            // Collect current preferences
+            const preferences = {
+                exportDate: new Date().toISOString(),
+                userName: `${currentUser.firstName} ${currentUser.lastName}`,
+                preferences: {
+                    theme: document.querySelector('.theme-option[data-theme].selected')?.getAttribute('data-theme') || 'light',
+                    accentColor: document.querySelector('.theme-option[data-color].selected')?.getAttribute('data-color') || '#3b82f6',
+                    defaultDashboardView: document.getElementById('defaultDashboardView')?.value || 'overview',
+                    recentTransactionsCount: parseInt(document.getElementById('recentTransactionsCount')?.value || 10),
+                    notifications: {},
+                    other: {}
+                }
+            };
+
+            // Collect toggle states
+            const toggles = document.querySelectorAll('#preferencesContent .toggle-checkbox');
+            toggles.forEach(toggle => {
+                const id = toggle.id;
+                const label = toggle.closest('label')?.textContent.trim() || id;
+                preferences.preferences.notifications[label] = toggle.checked;
+            });
+
+            // Collect other preferences
+            const otherInputs = document.querySelectorAll('#preferencesContent input[type="text"], #preferencesContent select');
+            otherInputs.forEach(input => {
+                if (input.id && !input.id.includes('preferencesFileInput')) {
+                    preferences.preferences.other[input.id] = input.value;
+                }
+            });
+
+            // Create and download JSON file
+            const dataStr = JSON.stringify(preferences, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `preferences_${currentUser.id}_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            showNotification('Preferences exported successfully!', 'success');
+        } catch (error) {
+            console.error('Error exporting preferences:', error);
+            showNotification('Failed to export preferences: ' + error.message, 'error');
+        }
+    }
+
+    // Import preferences from JSON file
+    async function handleImportPreferences(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            const fileContent = await file.text();
+            const preferencesData = JSON.parse(fileContent);
+
+            // Validate file structure
+            if (!preferencesData.preferences) {
+                throw new Error('Invalid preferences file format');
+            }
+
+            // Show confirmation before importing
+            showConfirmationModal(
+                'Import Preferences',
+                `This will replace your current preferences. Settings from: ${preferencesData.userName}`,
+                () => applyImportedPreferences(preferencesData)
+            );
+
+            // Reset file input
+            e.target.value = '';
+        } catch (error) {
+            console.error('Error importing preferences:', error);
+            showNotification('Failed to import preferences: ' + error.message, 'error');
+            e.target.value = '';
+        }
+    }
+
+    // Apply imported preferences
+    async function applyImportedPreferences(preferencesData) {
+        try {
+            const prefs = preferencesData.preferences;
+            const currentUser = authManager.getCurrentUser();
+
+            // Apply theme
+            if (prefs.theme) {
+                const themeBtn = document.querySelector(`.theme-option[data-theme="${prefs.theme}"]`);
+                if (themeBtn) {
+                    selectThemeOption(themeBtn);
+                }
+            }
+
+            // Apply accent color
+            if (prefs.accentColor) {
+                const colorBtn = document.querySelector(`.theme-option[data-color="${prefs.accentColor}"]`);
+                if (colorBtn) {
+                    selectThemeOption(colorBtn);
+                }
+            }
+
+            // Apply dashboard view preference
+            if (prefs.defaultDashboardView) {
+                const dashboardSelect = document.getElementById('defaultDashboardView');
+                if (dashboardSelect) {
+                    dashboardSelect.value = prefs.defaultDashboardView;
+                }
+            }
+
+            // Apply recent transactions count
+            if (prefs.recentTransactionsCount) {
+                const countSelect = document.getElementById('recentTransactionsCount');
+                if (countSelect) {
+                    countSelect.value = prefs.recentTransactionsCount.toString();
+                }
+            }
+
+            // Apply notification toggles
+            if (prefs.notifications) {
+                const toggles = document.querySelectorAll('#preferencesContent .toggle-checkbox');
+                toggles.forEach(toggle => {
+                    const label = toggle.closest('label')?.textContent.trim() || toggle.id;
+                    if (prefs.notifications.hasOwnProperty(label)) {
+                        toggle.checked = prefs.notifications[label];
+                    }
+                });
+            }
+
+            // Apply other preferences
+            if (prefs.other) {
+                Object.entries(prefs.other).forEach(([key, value]) => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        element.value = value;
+                    }
+                });
+            }
+
+            // Save imported preferences to database
+            const settingsToSave = {
+                theme: prefs.theme,
+                accentColor: prefs.accentColor,
+                defaultDashboardView: prefs.defaultDashboardView,
+                recentTransactionsCount: prefs.recentTransactionsCount,
+                ...prefs.notifications,
+                ...prefs.other
+            };
+
+            await apiService.updateUser(currentUser.id, settingsToSave);
+
+            // Update local storage
+            const updatedUser = { ...currentUser, ...settingsToSave };
+            authManager.saveUserToLocalStorage(updatedUser, localStorage.getItem(STORAGE_KEYS.REMEMBER_ME) === 'true');
+            authManager.currentUser = updatedUser;
+
+            showNotification('Preferences imported and saved successfully!', 'success');
+        } catch (error) {
+            console.error('Error applying imported preferences:', error);
+            showNotification('Failed to apply preferences: ' + error.message, 'error');
+        }
+    }
+
+    // Reset preferences to defaults
+    async function resetPreferencesToDefaults() {
+        try {
+            const currentUser = authManager.getCurrentUser();
+            if (!currentUser) {
+                showNotification('User not found. Please login again.', 'error');
+                return;
+            }
+
+            // Default preferences
+            const defaultPreferences = {
+                theme: 'light',
+                accentColor: '#3b82f6',
+                defaultDashboardView: 'overview',
+                recentTransactionsCount: 10
+            };
+
+            // Apply default theme
+            const themeBtn = document.querySelector('.theme-option[data-theme="light"]');
+            if (themeBtn) {
+                selectThemeOption(themeBtn);
+            }
+
+            // Apply default color
+            const colorBtn = document.querySelector('.theme-option[data-color="#3b82f6"]');
+            if (colorBtn) {
+                selectThemeOption(colorBtn);
+            }
+
+            // Apply default dashboard view
+            const dashboardSelect = document.getElementById('defaultDashboardView');
+            if (dashboardSelect) {
+                dashboardSelect.value = 'overview';
+            }
+
+            // Apply default transactions count
+            const countSelect = document.getElementById('recentTransactionsCount');
+            if (countSelect) {
+                countSelect.value = '10';
+            }
+
+            // Reset all toggles to true (default)
+            const toggles = document.querySelectorAll('#preferencesContent .toggle-checkbox');
+            toggles.forEach(toggle => {
+                toggle.checked = true;
+            });
+
+            // Save defaults to database
+            await apiService.updateUser(currentUser.id, defaultPreferences);
+
+            // Update local storage
+            const updatedUser = { ...currentUser, ...defaultPreferences };
+            authManager.saveUserToLocalStorage(updatedUser, localStorage.getItem(STORAGE_KEYS.REMEMBER_ME) === 'true');
+            authManager.currentUser = updatedUser;
+
+            showNotification('Preferences reset to defaults!', 'success');
+        } catch (error) {
+            console.error('Error resetting preferences:', error);
+            showNotification('Failed to reset preferences: ' + error.message, 'error');
         }
     }

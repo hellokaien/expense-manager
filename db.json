@@ -405,7 +405,7 @@
       "dataAnalytics": true,
       "autoCategorization": true,
       "defaultDashboardView": "overview",
-      "recentTransactionsCount": 5
+      "recentTransactionsCount": "5"
     },
     {
       "id": "user-959f505f-16a0-44b2-b28b-900258162eda",
