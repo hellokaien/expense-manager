@@ -1579,20 +1579,28 @@ function exportToExcel() {
     }
 }
 
-function exportToPDF() {
+function exportToPDF(retryCount = 0) {
     if (filteredTransactions.length === 0) {
         showNotification('No transactions to export', 'error');
         return;
     }
 
-    // Check if required libraries are loaded
-    if (typeof jsPDF === 'undefined') {
-        showNotification('PDF export library is loading. Please try again in a moment.', 'error');
-        return;
-    }
-
-    if (typeof html2canvas === 'undefined') {
-        showNotification('PDF rendering library is loading. Please try again in a moment.', 'error');
+    // Check if libraries are available - jsPDF is a UMD module, so check for it correctly
+    const jsPDFLib = window.jspdf?.jsPDF || window.jsPDF?.jsPDF || window.jsPDF;
+    console.log('Checking libraries - jsPDFLib:', !!jsPDFLib, 'html2canvas:', !!window.html2canvas);
+    
+    if (!jsPDFLib || !window.html2canvas) {
+        // Retry up to 3 times with 1s delay between retries
+        if (retryCount < 3) {
+            console.log(`Retrying PDF export (attempt ${retryCount + 1}/3)...`);
+            setTimeout(() => {
+                exportToPDF(retryCount + 1);
+            }, 1000);
+            return;
+        }
+        // After 3 retries, show error with debugging info
+        console.error('PDF libraries not loaded after retries. jsPDFLib:', jsPDFLib, 'html2canvas:', window.html2canvas);
+        showNotification('PDF export libraries not loading. Please refresh the page and try again.', 'error');
         return;
     }
 
@@ -1696,10 +1704,9 @@ function exportToPDF() {
         html2canvas(pdfContainer, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
             const imgData = canvas.toDataURL('image/png');
             
-            // Get jsPDF from window.jsPDF if it exists as UMD module
-            const PDFDocument = window.jsPDF.jsPDF || window.jsPDF;
-            
-            const pdf = new PDFDocument({
+            // Get the jsPDF constructor from the UMD module
+            const jsPDFConstructor = window.jspdf?.jsPDF || window.jsPDF?.jsPDF || window.jsPDF;
+            const pdf = new jsPDFConstructor({
                 orientation: 'landscape',
                 unit: 'mm',
                 format: 'a4'
